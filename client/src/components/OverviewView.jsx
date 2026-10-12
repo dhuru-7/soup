@@ -348,7 +348,7 @@ export default function OverviewView({
 
         {/* Channel Reach Distribution with Subheading Over the Card */}
         <div className="flex flex-col gap-2.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="font-heading text-sm sm:text-base font-bold text-slate-900">
               Reach Distribution
             </span>
