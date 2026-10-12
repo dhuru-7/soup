@@ -125,144 +125,157 @@ export default function OverviewView({
 
   return (
     <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8 animate-fade-in">
-      
-      {/* 1. Header Greeting & Active Strategy Banner */}
+            {/* 1. Header Greeting & Next Action Card */}
       <div className="flex flex-col gap-5">
         <div>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight flex items-center gap-2">
             <span>{getGreeting()} {firstName}</span>
             <span className="text-2xl">👋</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Your brand, performance, and social distribution at a glance
-          </p>
         </div>
 
-        {/* Strategy Card ("Direction in Use") */}
-        <div className="frosted-glass bg-white/80 rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-apple-card relative overflow-hidden bg-gradient-to-r from-amber-50/40 via-white to-amber-50/20">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2.5 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
-                  Your current strategy
+        {/* Action Card: Next action to do + light green covered portion + time period remaining */}
+        <div className="relative rounded-3xl border border-slate-200/90 shadow-apple-card overflow-hidden bg-white/95">
+          {/* Light green covered background portion */}
+          <div 
+            className="absolute top-0 bottom-0 left-0 bg-emerald-500/15 border-r border-emerald-300/60 pointer-events-none transition-all duration-700" 
+            style={{ width: '60%' }} 
+          />
+          
+          <div className="relative z-10 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-700 text-white shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                  Next action: Post to do
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Active
-                </span>
-                <span className="text-xs text-slate-400 font-medium">
-                  Week 2 of 12
+                <span className="text-xs font-semibold text-slate-700">
+                  {pendingDraft?.platform || 'LinkedIn'} · {pendingDraft?.format || 'Text breakdown'}
                 </span>
               </div>
-              <h2 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-1.5">
-                {companyName}: {archetypeName}
+
+              <h2 className="font-heading text-lg sm:text-xl font-bold text-slate-900 tracking-tight mb-1 truncate">
+                {pendingDraft?.title || (isMaya ? 'Why 14 co-packers turned down clean formula' : 'Production post-mortem: Redis scan leak')}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-3xl leading-relaxed">
-                {activePositioning}
+              
+              <p className="text-xs sm:text-sm text-slate-600 font-medium line-clamp-1 max-w-2xl">
+                {pendingDraft?.hook ? `"${pendingDraft.hook.split('\n')[0]}"` : (isMaya ? 'Direct breakdown on refusing synthetic stabilizers for retail shelves.' : 'Technical teardown on unbatched scans and the 12-line Lua proxy fix.')}
               </p>
+
+              {/* Progress: Light green covered portion + remaining time period */}
+              <div className="mt-3.5 flex flex-wrap items-center gap-2.5 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-emerald-800 bg-white/90 px-3 py-1 rounded-full border border-emerald-300 shadow-2xs">
+                  <Icon name="check_circle" size={14} className="text-emerald-600" />
+                  <span>Covered: 4 of 6 posts</span>
+                </div>
+                <div className="flex items-center gap-1.5 font-semibold text-slate-700 bg-white/90 px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+                  <Icon name="schedule" size={14} className="text-slate-500" />
+                  <span>3 days left in current cycle</span>
+                </div>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onNavigateToYou}
-              className="self-start md:self-center px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-900 text-xs font-bold border border-slate-200/90 shadow-2xs flex items-center gap-1.5 active:scale-95 transition-all"
-            >
-              <span>Review strategy</span>
-              <Icon name="arrow_forward" size={14} />
-            </button>
+            <div className="shrink-0 flex items-center gap-2 self-start md:self-center">
+              <button
+                type="button"
+                onClick={() => onNavigateToMuse ? onNavigateToMuse(pendingDraft?.title) : onNavigateToStudio()}
+                className="h-10 px-5 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 text-xs font-bold shadow-apple-btn flex items-center gap-2 active:scale-95 transition-all"
+              >
+                <span>Open in Muse</span>
+                <Icon name="arrow_forward" size={15} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Social Media Performance Snapshot */}
+      {/* 2. Platform Switcher on the Left & Matching Days Pill Group on Right */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 className="font-heading text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>Social Media Performance</span>
-              <span className="text-[11px] font-normal text-slate-400">· Real-time sync</span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Live engagement across your primary distribution channels
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            {/* Platform Filter Buttons */}
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-full border border-slate-200 text-xs font-semibold">
+          {/* Platform Switcher brought to the left */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-full border border-slate-200 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setPlatformFilter('All')}
+              className={`px-3.5 py-1 rounded-full text-xs transition-all ${
+                platformFilter === 'All'
+                  ? 'bg-white text-slate-950 font-bold shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              All Channels
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlatformFilter('LinkedIn')}
+              className={`px-3.5 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
+                platformFilter === 'LinkedIn'
+                  ? 'bg-blue-600 text-white font-bold shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+              </svg>
+              <span>LinkedIn</span>
+            </button>
+            
+            {isMaya ? (
               <button
                 type="button"
-                onClick={() => setPlatformFilter('All')}
-                className={`px-3 py-1 rounded-full text-xs transition-all ${
-                  platformFilter === 'All'
-                    ? 'bg-white text-slate-950 font-bold shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                All Channels
-              </button>
-              <button
-                type="button"
-                onClick={() => setPlatformFilter('LinkedIn')}
-                className={`px-3 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
-                  platformFilter === 'LinkedIn'
-                    ? 'bg-blue-600 text-white font-bold shadow-2xs'
+                onClick={() => setPlatformFilter('Instagram')}
+                className={`px-3.5 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
+                  platformFilter === 'Instagram'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold shadow-2xs'
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                 </svg>
-                <span>LinkedIn</span>
+                <span>Instagram</span>
               </button>
-              
-              {isMaya ? (
-                <button
-                  type="button"
-                  onClick={() => setPlatformFilter('Instagram')}
-                  className={`px-3 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
-                    platformFilter === 'Instagram'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                  </svg>
-                  <span>Instagram</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setPlatformFilter('X')}
-                  className={`px-3 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
-                    platformFilter === 'X'
-                      ? 'bg-slate-950 text-white font-bold shadow-2xs'
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                  <span>X (Twitter)</span>
-                </button>
-              )}
-            </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPlatformFilter('X')}
+                className={`px-3.5 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
+                  platformFilter === 'X'
+                    ? 'bg-slate-950 text-white font-bold shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <span>X</span>
+              </button>
+            )}
+          </div>
 
-            {/* Timeframe Dropdown */}
-            <select
-              value={timeFilter}
-              onChange={e => setTimeFilter(e.target.value)}
-              className="h-8 px-3 pr-7 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-semibold outline-none cursor-pointer hover:border-slate-300"
-            >
-              <option value="Last 7d">Last 7d</option>
-              <option value="Last 30d">Last 30d</option>
-              <option value="Last 90d">Last 90d</option>
-            </select>
+          {/* Timeframe Pill Switcher: Consistent with platform switcher, replacing inconsistent select */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-full border border-slate-200 text-xs font-semibold self-start sm:self-auto">
+            {['Last 7d', 'Last 30d', 'Last 90d'].map(tf => {
+              const isSelected = timeFilter === tf;
+              return (
+                <button
+                  key={tf}
+                  type="button"
+                  onClick={() => setTimeFilter(tf)}
+                  className={`px-3 py-1 rounded-full text-xs transition-all ${
+                    isSelected
+                      ? 'bg-white text-slate-950 font-bold shadow-2xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  {tf}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* 4 Performance Metric Cards */}
+        {/* 4 Performance Metric Cards: Cross-platform tags removed */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
           {currentMetrics.map((stat, i) => (
             <div 
@@ -273,32 +286,33 @@ export default function OverviewView({
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   {stat.label}
                 </span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                  stat.platform === 'LinkedIn' 
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                    : stat.platform === 'Instagram'
-                    ? 'bg-pink-50 text-pink-700 border border-pink-200'
-                    : stat.platform === 'X' 
-                    ? 'bg-slate-100 text-slate-800 border border-slate-300' 
-                    : 'bg-amber-50 text-amber-800 border border-amber-200'
-                }`}>
-                  {stat.platform === 'LinkedIn' && (
-                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
-                    </svg>
-                  )}
-                  {stat.platform === 'Instagram' && (
-                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                  )}
-                  {stat.platform === 'X' && (
-                    <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                  )}
-                  <span>{stat.platform}</span>
-                </span>
+                {/* Platform Badge: Cross-platform tags strictly removed */}
+                {stat.platform && stat.platform !== 'Cross-platform' && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                    stat.platform === 'LinkedIn' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : stat.platform === 'Instagram'
+                      ? 'bg-pink-50 text-pink-700 border border-pink-200'
+                      : 'bg-slate-100 text-slate-800 border border-slate-300'
+                  }`}>
+                    {stat.platform === 'LinkedIn' && (
+                      <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+                      </svg>
+                    )}
+                    {stat.platform === 'Instagram' && (
+                      <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    )}
+                    {stat.platform === 'X' && (
+                      <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                    )}
+                    <span>{stat.platform}</span>
+                  </span>
+                )}
               </div>
               <div className="my-2">
                 <span className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">

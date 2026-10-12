@@ -73,24 +73,39 @@ export default function Navigation({
           </nav>
         </div>
 
-        {/* Bottom Section: Founder Identity */}
+        {/* Bottom Section: Founder Identity (Clicking navigates to Profile) */}
         {profile?.identity && (
-          <div className="pt-3 border-t border-slate-200/80 flex items-center px-1">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div className="pt-3 border-t border-slate-200/80">
+            <button
+              type="button"
+              onClick={() => setActivePage('you')}
+              className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left active:scale-[0.98] ${
+                activePage === 'you'
+                  ? 'bg-slate-950 text-white shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100/80'
+              }`}
+              title="Open Founder Profile (/profile)"
+            >
               <img 
-                src={profile.identity.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'} 
+                src={profile.identity.avatar || (profile.founder_id === 'maya_lin' ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80')} 
                 alt={profile.identity.name || 'Founder'} 
-                className="w-9 h-9 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
+                className={`w-8 h-8 rounded-full object-cover shrink-0 shadow-2xs transition-colors ${
+                  activePage === 'you' ? 'border border-white/20' : 'border border-slate-200 group-hover:border-slate-300'
+                }`}
               />
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold text-slate-900 truncate">
+                <span className={`text-[13px] font-semibold truncate leading-tight transition-colors ${
+                  activePage === 'you' ? 'text-white font-bold' : 'text-slate-900 group-hover:text-slate-950'
+                }`}>
                   {profile.identity.name || 'Founder'}
                 </span>
-                <span className="text-[10px] text-slate-500 truncate">
-                  {profile.identity.company_name || 'Founder Identity'}
+                <span className={`text-[11px] truncate leading-normal transition-colors ${
+                  activePage === 'you' ? 'text-slate-400' : 'text-slate-500 group-hover:text-slate-600'
+                }`}>
+                  {profile.identity.company_name || 'Founder Profile'}
                 </span>
               </div>
-            </div>
+            </button>
           </div>
         )}
       </aside>
@@ -106,6 +121,20 @@ export default function Navigation({
         </div>
 
         <div className="flex items-center gap-2">
+          {profile?.identity && (
+            <button
+              type="button"
+              onClick={() => setActivePage('you')}
+              className="w-8 h-8 rounded-full overflow-hidden border border-slate-300 active:scale-95 shadow-2xs"
+              title="Open Profile"
+            >
+              <img 
+                src={profile.identity.avatar || (profile.founder_id === 'maya_lin' ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80')} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+            </button>
+          )}
           <button
             type="button"
             onClick={onOpenQuickCapture}
