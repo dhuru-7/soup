@@ -259,25 +259,6 @@ export default function YouView({
 
       </div>
 
-      {/* 4. Export Profile Data */}
-      <div className="flex justify-end pt-2">
-        <button
-          type="button"
-          onClick={() => {
-            const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${name.toLowerCase().replace(/\s+/g, '_')}_profile.json`;
-            a.click();
-          }}
-          className="px-4 py-2 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-2 shadow-apple-btn transition-all active:scale-95"
-        >
-          <Icon name="download" size={14} className="text-[#FFCC00]" />
-          <span>Export Profile Data (JSON)</span>
-        </button>
-      </div>
-
     </div>
   );
 }
