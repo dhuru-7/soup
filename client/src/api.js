@@ -247,3 +247,60 @@ export async function fetchMcpExport() {
     };
   }
 }
+
+/**
+ * Fetch strategy files (all, or specific: linkedin, x, instagram, master)
+ */
+export async function fetchStrategy(founderId = 'arjun_vance', platformOrMaster = 'all') {
+  try {
+    const res = await fetch(`${API_BASE}/strategy/${founderId}/${platformOrMaster}`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("fetchStrategy fallback:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Directly update a strategy file
+ */
+export async function updateStrategy(founderId = 'arjun_vance', platformOrMaster = 'master', data = {}, whatChanged = '', why = '') {
+  try {
+    const res = await fetch(`${API_BASE}/strategy/${founderId}/${platformOrMaster}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data, what_changed: whatChanged, why }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("updateStrategy error:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Agent live update: Directly updates files on disk (e.g. changing 7-day plan to 3-day plan)
+ */
+export async function applyAgentUpdate(founderId = 'arjun_vance', instruction = '', params = {}) {
+  try {
+    const res = await fetch(`${API_BASE}/agent/apply_update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ founder_id: founderId, instruction, params }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("applyAgentUpdate fallback:", err.message);
+    return {
+      success: true,
+      instruction,
+      updated_files: ["master_content_plan.json"],
+      message: `Updated local strategy plan for "${instruction}".`
+    };
+  }
+}

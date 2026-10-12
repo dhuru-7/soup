@@ -490,6 +490,61 @@ def generate_draft():
     })
 
 
+@app.route("/api/strategy/<founder_id>", methods=["GET"])
+@app.route("/api/strategy/<founder_id>/<platform_or_master>", methods=["GET", "POST"])
+def handle_strategy(founder_id: str, platform_or_master: str = "all"):
+    """
+    Get or update dedicated strategy assets:
+    - strategy_linkedin.json
+    - strategy_x_twitter.json
+    - strategy_instagram.json
+    - master_content_plan.json
+    """
+    if request.method == "POST":
+        payload = request.get_json() or {}
+        data = payload.get("data", {})
+        what_changed = payload.get("what_changed", "Updated strategy parameters")
+        why = payload.get("why", "Founder request")
+        updated = memory_manager.update_strategy_asset(founder_id, platform_or_master, data, what_changed, why)
+        return jsonify({
+            "status": "success" if updated else "error",
+            "founder_id": founder_id,
+            "target": platform_or_master,
+            "data": updated
+        })
+    
+    if platform_or_master == "all":
+        all_strat = memory_manager.ensure_strategy_files(founder_id)
+        return jsonify({
+            "status": "success",
+            "founder_id": founder_id,
+            "strategy": all_strat
+        })
+    else:
+        strat = memory_manager.get_strategy_asset(founder_id, platform_or_master)
+        return jsonify({
+            "status": "success" if strat else "not_found",
+            "founder_id": founder_id,
+            "target": platform_or_master,
+            "data": strat
+        })
+
+
+@app.route("/api/agent/apply_update", methods=["POST"])
+def agent_apply_update():
+    """
+    Directly applies user changes/instructions (e.g. changing 7-day plan to 3-day plan)
+    to the distinct strategy files on disk and logs to memory_changelog.jsonl.
+    """
+    payload = request.get_json() or {}
+    founder_id = payload.get("founder_id", "arjun_vance")
+    instruction = payload.get("instruction", "")
+    params = payload.get("params", {})
+    
+    result = memory_manager.apply_agent_strategy_command(founder_id, instruction, params)
+    return jsonify(result)
+
+
 @app.route("/api/export/mcp", methods=["GET"])
 def export_mcp_config():
     cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

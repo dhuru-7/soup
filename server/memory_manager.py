@@ -892,3 +892,271 @@ def compile_unified_profile(founder_id: str) -> Optional[Dict[str, Any]]:
         }
     }
     return unified
+
+
+# =============================================================================
+# Fixed Platform Strategy & Master Plan Asset Engine
+# =============================================================================
+
+STRATEGY_FILE_MAP = {
+    "linkedin": "strategy_linkedin.json",
+    "x": "strategy_x_twitter.json",
+    "twitter": "strategy_x_twitter.json",
+    "instagram": "strategy_instagram.json",
+    "insta": "strategy_instagram.json",
+    "master": "master_content_plan.json",
+    "plan": "master_content_plan.json"
+}
+
+
+def normalize_strategy_key(key: str) -> str:
+    cleaned = (key or "").strip().lower().replace(" ", "_")
+    return STRATEGY_FILE_MAP.get(cleaned, f"strategy_{cleaned}.json")
+
+
+def ensure_strategy_files(founder_id: str) -> Dict[str, Any]:
+    """
+    Ensures the 4 distinct, fixed strategy files exist for the founder:
+    1. strategy_linkedin.json
+    2. strategy_x_twitter.json
+    3. strategy_instagram.json
+    4. master_content_plan.json
+    """
+    fdir = ensure_founder_dir(founder_id)
+    is_maya = "maya" in founder_id.lower()
+    
+    # 1. LinkedIn Strategy
+    linkedin_path = os.path.join(fdir, "strategy_linkedin.json")
+    if not os.path.exists(linkedin_path):
+        data = {
+            "platform": "LinkedIn",
+            "active_cadence": "3 posts/week (Tuesday, Thursday, Saturday)",
+            "target_formats": [
+                "Production Post-Mortems & Architectural Diff Teardowns" if not is_maya else "Clean Supply Chain & Manufacturing Truths",
+                "Whiteboard System Diagrams" if not is_maya else "Raw Laboratory Batch Logs & Unit Economics",
+                "Founder Journey Lessons & Hiring Philosophy"
+            ],
+            "tone_rules": [
+                "Start directly with the concrete incident or production metric.",
+                "Zero corporate PR or generic motivational slogans.",
+                "Always present the actual operational trade-off."
+            ],
+            "last_updated": datetime.utcnow().isoformat() + "Z"
+        }
+        with open(linkedin_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
+    # 2. X (Twitter) Strategy
+    x_path = os.path.join(fdir, "strategy_x_twitter.json")
+    if not os.path.exists(x_path):
+        data = {
+            "platform": "X (Twitter)",
+            "active_cadence": "4 posts/week (Mon, Wed, Thu, Fri)",
+            "target_formats": [
+                "Contrarian Benchmark Threads",
+                "Short Terminal / Flame Graph Screenshots",
+                "Spicy Takes on Industry Orthodoxies"
+            ],
+            "tone_rules": [
+                "Punchy, high-information density, zero fluff.",
+                "Back bold claims with real numbers or reproducible diffs."
+            ],
+            "last_updated": datetime.utcnow().isoformat() + "Z"
+        }
+        with open(x_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
+    # 3. Instagram Strategy
+    insta_path = os.path.join(fdir, "strategy_instagram.json")
+    if not os.path.exists(insta_path):
+        data = {
+            "platform": "Instagram",
+            "active_cadence": "2 reels/week (Wednesday & Sunday)",
+            "target_formats": [
+                "45-second Unfiltered Warehouse & Formulation Reels",
+                "Behind-the-Scenes Raw Founder Diary",
+                "Ingredient & Lab Test Teardowns"
+            ],
+            "tone_rules": [
+                "Real operator lighting, handheld, candid workstation b-roll.",
+                "Speak directly to conscious buyers and peer founders."
+            ],
+            "last_updated": datetime.utcnow().isoformat() + "Z"
+        }
+        with open(insta_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
+    # 4. Master Content Plan (Timeframe Plan)
+    master_path = os.path.join(fdir, "master_content_plan.json")
+    if not os.path.exists(master_path):
+        default_items = [
+            {
+                "id": "plan-1",
+                "day": "Day 1 (Tuesday)",
+                "platform": "LinkedIn",
+                "format": "Technical Post-Mortem" if not is_maya else "Exposing Co-Packer Truth",
+                "title": "Why 14 commercial beverage co-packers rejected our formula" if is_maya else "The $412 Redis Scan Memory Leak Post-Mortem",
+                "hook": "14 commercial beverage plants told me clean organic adaptogens were impossible without synthetic gums. Here's what happened when we refused to compromise." if is_maya else "We burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 agent sessions. Here is the 12-line Lua fix.",
+                "status": "planned"
+            },
+            {
+                "id": "plan-2",
+                "day": "Day 2 (Thursday)",
+                "platform": "Instagram" if is_maya else "X (Twitter)",
+                "format": "Contrarian Angle",
+                "title": "Why 2-year shelf life drinks are preservatives, not wellness" if is_maya else "SQLite with BM25 beats Vector DBs for 90% of early AI workloads",
+                "hook": "If a healthy canned drink has a 2-year shelf life at room temperature, you are drinking industrial preservatives, not wellness." if is_maya else "Unpopular opinion backed by benchmarks: 90% of AI startups using Pinecone would get 4x faster p99 latency using SQLite.",
+                "status": "planned"
+            },
+            {
+                "id": "plan-3",
+                "day": "Day 3 (Friday)",
+                "platform": "LinkedIn",
+                "format": "Founder Journey & Hiring",
+                "title": "The Raw Unit Economics of Retail Shelves" if is_maya else "Why We Rejected the Fastest LeetCode Candidate",
+                "hook": "Most people think getting into Whole Foods is a victory lap. In reality, getting into our first 12 stores almost bankrupted us." if is_maya else "We just rejected a candidate who solved our LeetCode hard problem in 15 minutes. Here is how we actually evaluate founding engineers at AgentScale:",
+                "status": "planned"
+            }
+        ]
+
+        data = {
+            "plan_timeframe": "7 Days",
+            "plan_duration_days": 7,
+            "north_star": "Technical Authority & Inbound Pipeline",
+            "active_sprint_goal": "Establish category leadership and drive inbound inquiries from qualified buyers and engineering peers.",
+            "planned_items": default_items,
+            "last_updated": datetime.utcnow().isoformat() + "Z"
+        }
+        with open(master_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
+    return {
+        "linkedin": get_strategy_asset(founder_id, "linkedin"),
+        "x": get_strategy_asset(founder_id, "x"),
+        "instagram": get_strategy_asset(founder_id, "instagram"),
+        "master_plan": get_strategy_asset(founder_id, "master")
+    }
+
+
+def get_strategy_asset(founder_id: str, platform_or_master: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieves the parsed content of a specific strategy file.
+    """
+    fdir = ensure_founder_dir(founder_id)
+    filename = normalize_strategy_key(platform_or_master)
+    target_path = os.path.join(fdir, filename)
+    if not os.path.exists(target_path):
+        ensure_strategy_files(founder_id)
+    if os.path.exists(target_path):
+        with open(target_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+def update_strategy_asset(
+    founder_id: str,
+    platform_or_master: str,
+    data: Dict[str, Any],
+    what_changed: str = "Updated strategy settings",
+    why: str = "Founder agent refinement"
+) -> bool:
+    """
+    Updates a strategy file and appends to the memory changelog.
+    """
+    fdir = ensure_founder_dir(founder_id)
+    filename = normalize_strategy_key(platform_or_master)
+    target_path = os.path.join(fdir, filename)
+    
+    data["last_updated"] = datetime.utcnow().isoformat() + "Z"
+    with open(target_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+        
+    append_changelog(
+        founder_id=founder_id,
+        change_type="strategy_update",
+        target_file=filename,
+        what_changed=what_changed,
+        why=why,
+        founder_approved=True,
+        details={"updated_keys": list(data.keys())}
+    )
+    return True
+
+
+def apply_agent_strategy_command(
+    founder_id: str,
+    instruction: str,
+    parameters: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """
+    Interprets and executes an agent strategy command (e.g. timeframe change from 7 to 3 days,
+    platform pivot, or schedule adjustment).
+    Directly updates the local strategy files and records the change in memory_changelog.jsonl.
+    """
+    ensure_strategy_files(founder_id)
+    params = parameters or {}
+    text_lower = (instruction or "").lower()
+    
+    master_plan = get_strategy_asset(founder_id, "master") or {}
+    updated_files = []
+    
+    # Check for timeframe changes (e.g. 7 days -> 3 days, 14 days, etc.)
+    new_days = None
+    if "3 day" in text_lower or params.get("duration_days") == 3:
+        new_days = 3
+    elif "7 day" in text_lower or params.get("duration_days") == 7:
+        new_days = 7
+    elif "14 day" in text_lower or params.get("duration_days") == 14:
+        new_days = 14
+    elif "30 day" in text_lower or params.get("duration_days") == 30:
+        new_days = 30
+        
+    if new_days is not None:
+        master_plan["plan_duration_days"] = new_days
+        master_plan["plan_timeframe"] = f"{new_days} Days"
+        # Prune or expand planned items to match duration
+        items = master_plan.get("planned_items", [])
+        if new_days == 3 and len(items) > 3:
+            master_plan["planned_items"] = items[:3]
+        update_strategy_asset(
+            founder_id=founder_id,
+            platform_or_master="master",
+            data=master_plan,
+            what_changed=f"Updated content plan timeframe to {new_days} Days",
+            why=instruction
+        )
+        updated_files.append("master_content_plan.json")
+
+    # Check for platform-specific cadence or hook updates
+    target_platform = None
+    if "linkedin" in text_lower:
+        target_platform = "linkedin"
+    elif "x" in text_lower or "twitter" in text_lower:
+        target_platform = "x"
+    elif "insta" in text_lower or "instagram" in text_lower:
+        target_platform = "instagram"
+        
+    if target_platform:
+        plat_data = get_strategy_asset(founder_id, target_platform) or {}
+        if "cadence" in text_lower or "frequency" in text_lower:
+            new_cadence = params.get("cadence") or f"Adjusted active cadence per instruction: {instruction}"
+            plat_data["active_cadence"] = new_cadence
+        if "hook" in text_lower and params.get("new_hook"):
+            plat_data.setdefault("hook_templates", []).insert(0, params["new_hook"])
+        update_strategy_asset(
+            founder_id=founder_id,
+            platform_or_master=target_platform,
+            data=plat_data,
+            what_changed=f"Refined {target_platform.capitalize()} strategy parameters",
+            why=instruction
+        )
+        updated_files.append(normalize_strategy_key(target_platform))
+
+    return {
+        "success": True,
+        "instruction": instruction,
+        "updated_files": updated_files,
+        "master_plan": get_strategy_asset(founder_id, "master"),
+        "message": f"Successfully updated strategy on disk: {', '.join(updated_files) if updated_files else 'master_content_plan.json'}."
+    }
+

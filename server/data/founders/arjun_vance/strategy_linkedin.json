@@ -1,0 +1,15 @@
+{
+  "platform": "LinkedIn",
+  "active_cadence": "3 posts/week (Tuesday, Thursday, Saturday)",
+  "target_formats": [
+    "Production Post-Mortems & Architectural Diff Teardowns",
+    "Whiteboard System Diagrams",
+    "Founder Journey Lessons & Hiring Philosophy"
+  ],
+  "tone_rules": [
+    "Start directly with the concrete incident or production metric.",
+    "Zero corporate PR or generic motivational slogans.",
+    "Always present the actual operational trade-off."
+  ],
+  "last_updated": "2026-10-12T20:52:07.943432Z"
+}

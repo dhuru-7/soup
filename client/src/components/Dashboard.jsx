@@ -144,7 +144,7 @@ export default function Dashboard({
       />
 
       {/* Main View Area */}
-      <main ref={mainRef} className="flex-1 min-w-0 pb-20 md:pb-16 overflow-y-auto">
+      <main ref={mainRef} className={`flex-1 min-w-0 ${activePage === 'muse' ? 'h-screen overflow-hidden' : 'pb-20 md:pb-16 overflow-y-auto'}`}>
         {activePage === 'overview' && (
           <OverviewView
             profile={profile}

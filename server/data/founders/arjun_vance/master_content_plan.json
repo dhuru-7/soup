@@ -1,0 +1,36 @@
+{
+  "plan_timeframe": "3 Days",
+  "plan_duration_days": 3,
+  "north_star": "Technical Authority & Inbound Pipeline",
+  "active_sprint_goal": "Establish category leadership and drive inbound inquiries from qualified buyers and engineering peers.",
+  "planned_items": [
+    {
+      "id": "plan-1",
+      "day": "Day 1 (Tuesday)",
+      "platform": "LinkedIn",
+      "format": "Technical Post-Mortem",
+      "title": "The $412 Redis Scan Memory Leak Post-Mortem",
+      "hook": "We burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 agent sessions. Here is the 12-line Lua fix.",
+      "status": "planned"
+    },
+    {
+      "id": "plan-2",
+      "day": "Day 2 (Thursday)",
+      "platform": "X (Twitter)",
+      "format": "Contrarian Angle",
+      "title": "SQLite with BM25 beats Vector DBs for 90% of early AI workloads",
+      "hook": "Unpopular opinion backed by benchmarks: 90% of AI startups using Pinecone would get 4x faster p99 latency using SQLite.",
+      "status": "planned"
+    },
+    {
+      "id": "plan-3",
+      "day": "Day 3 (Friday)",
+      "platform": "LinkedIn",
+      "format": "Founder Journey & Hiring",
+      "title": "Why We Rejected the Fastest LeetCode Candidate",
+      "hook": "We just rejected a candidate who solved our LeetCode hard problem in 15 minutes. Here is how we actually evaluate founding engineers at AgentScale:",
+      "status": "planned"
+    }
+  ],
+  "last_updated": "2026-10-12T20:52:14.326833Z"
+}
