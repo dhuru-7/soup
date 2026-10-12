@@ -341,50 +341,44 @@ export default function OverviewView({
                 <span className="text-xs font-bold text-emerald-600">
                   {stat.change} vs previous period
                 </span>
-                <span className="text-[11px] text-slate-400 font-medium">
-                  {stat.note}
-                </span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Channel Distribution Split Bar */}
-        <div className="frosted-glass bg-white/70 rounded-2xl p-4 border border-slate-200/80 shadow-2xs flex flex-col gap-2.5 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-slate-900">Reach Distribution</span>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 font-bold text-blue-700">
-                  <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  {isMaya ? 'LinkedIn 45% (14.2k)' : 'LinkedIn 43% (18.4k)'}
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="inline-flex items-center gap-1.5 font-bold text-slate-900">
-                  <span className={`w-2 h-2 rounded-full ${isMaya ? 'bg-pink-600' : 'bg-slate-950'}`} />
-                  {isMaya ? 'Instagram 55% (17.6k)' : 'X / Twitter 57% (24.5k)'}
-                </span>
-              </div>
-            </div>
-            <span className="text-[11px] text-slate-500 font-medium">
-              {isMaya 
-                ? 'High intent: Instagram DMs leading to regional retail & co-op requests' 
-                : 'High intent: LinkedIn DMs (2.1x higher inbound response)'}
+        {/* Channel Reach Distribution with Subheading Over the Card */}
+        <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+            <span className="font-heading text-sm sm:text-base font-bold text-slate-900">
+              Reach Distribution
             </span>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="inline-flex items-center gap-1.5 font-bold text-blue-700">
+                <span className="w-2 h-2 rounded-full bg-blue-600" />
+                {isMaya ? 'LinkedIn 45% (14.2k)' : 'LinkedIn 43% (18.4k)'}
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="inline-flex items-center gap-1.5 font-bold text-slate-900">
+                <span className={`w-2 h-2 rounded-full ${isMaya ? 'bg-pink-600' : 'bg-slate-950'}`} />
+                {isMaya ? 'Instagram 55% (17.6k)' : 'X / Twitter 57% (24.5k)'}
+              </span>
+            </div>
           </div>
 
-          {/* Visual Segmented Progress Bar */}
-          <div className="w-full bg-slate-100 rounded-full h-2.5 flex overflow-hidden p-0.5 border border-slate-200/70">
-            <div 
-              className="bg-blue-600 h-full rounded-l-full transition-all duration-500" 
-              style={{ width: isMaya ? '45%' : '43%' }} 
-              title={isMaya ? 'LinkedIn: 45% of total reach' : 'LinkedIn: 43% of total reach'} 
-            />
-            <div 
-              className={`${isMaya ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-slate-950'} h-full rounded-r-full transition-all duration-500`} 
-              style={{ width: isMaya ? '55%' : '57%' }} 
-              title={isMaya ? 'Instagram: 55% of total reach' : 'X (Twitter): 57% of total reach'} 
-            />
+          {/* Visual Segmented Progress Bar Card */}
+          <div className="frosted-glass bg-white/70 rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 shadow-2xs">
+            <div className="w-full bg-slate-100 rounded-full h-3 flex overflow-hidden p-0.5 border border-slate-200/70">
+              <div 
+                className="bg-blue-600 h-full rounded-l-full transition-all duration-500" 
+                style={{ width: isMaya ? '45%' : '43%' }} 
+                title={isMaya ? 'LinkedIn: 45% of total reach' : 'LinkedIn: 43% of total reach'} 
+              />
+              <div 
+                className={`${isMaya ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-slate-950'} h-full rounded-r-full transition-all duration-500`} 
+                style={{ width: isMaya ? '55%' : '57%' }} 
+                title={isMaya ? 'Instagram: 55% of total reach' : 'X (Twitter): 57% of total reach'} 
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -392,15 +386,9 @@ export default function OverviewView({
       {/* 3. Real Social Media Engagement Insights */}
       <div className="flex flex-col gap-4">
         <div>
-          <h3 className="font-heading text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>Engagement & Distribution Insights</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEEC98] text-slate-950">
-              Verified Signals
-            </span>
+          <h3 className="font-heading text-base sm:text-lg font-bold text-slate-900">
+            Engagement & Distribution Insights
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Concrete engagement signals and format teardowns analyzed from your recent posts
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

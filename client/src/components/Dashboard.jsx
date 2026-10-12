@@ -42,6 +42,17 @@ export default function Dashboard({
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [museInitialPrompt, setMuseInitialPrompt] = useState('');
 
+  // Main scroll container ref
+  const mainRef = React.useRef(null);
+
+  // Reset scroll to top cleanly whenever activePage changes
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
+  }, [activePage]);
+
   // Subscribe to Firebase Auth
   useEffect(() => {
     const unsubscribe = subscribeToAuth((user) => {
@@ -133,7 +144,7 @@ export default function Dashboard({
       />
 
       {/* Main View Area */}
-      <main className="flex-1 min-w-0 pb-20 md:pb-16 overflow-y-auto">
+      <main ref={mainRef} className="flex-1 min-w-0 pb-20 md:pb-16 overflow-y-auto">
         {activePage === 'overview' && (
           <OverviewView
             profile={profile}
