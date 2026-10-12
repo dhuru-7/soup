@@ -1127,6 +1127,30 @@ def apply_agent_strategy_command(
         )
         updated_files.append("master_content_plan.json")
 
+    # Check for item deletion (e.g. "delete this", "remove note")
+    if "delete" in text_lower or "remove" in text_lower:
+        item_id = params.get("item_id")
+        items = master_plan.get("planned_items", [])
+        original_count = len(items)
+        if item_id:
+            master_plan["planned_items"] = [it for it in items if it.get("id") != item_id]
+        else:
+            master_plan["planned_items"] = [
+                it for it in items
+                if it.get("id") not in text_lower and it.get("title", "").lower() not in text_lower
+            ]
+        if len(master_plan["planned_items"]) < original_count or item_id:
+            update_strategy_asset(
+                founder_id=founder_id,
+                platform_or_master="master",
+                data=master_plan,
+                what_changed=f"Deleted item from content plan per user command",
+                why=instruction
+            )
+            if "master_content_plan.json" not in updated_files:
+                updated_files.append("master_content_plan.json")
+
+
     # Check for platform-specific cadence or hook updates
     target_platform = None
     if "linkedin" in text_lower:

@@ -10,7 +10,8 @@ export default function StudioView({
   onOpenContentModal, 
   onOpenInMuse, 
   onTransferToCalendar,
-  onOpenQuickCapture 
+  onOpenQuickCapture,
+  showToast 
 }) {
   const [activeSubView, setActiveSubView] = useState('board'); // 'board' | 'calendar' | 'published'
   const [platformFilter, setPlatformFilter] = useState('All');
@@ -224,14 +225,33 @@ export default function StudioView({
                         className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:border-amber-300 hover:shadow-xs cursor-pointer flex flex-col justify-between gap-3 transition-all active:scale-[0.99] group"
                       >
                         <div>
-                          {/* Tags */}
+                          {/* Tags: Platform, Format, Calendar Day & Quick Delete */}
                           <div className="flex items-center justify-between gap-1 mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
-                              {item.platform}
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-medium">
-                              {item.format}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
+                                {item.platform}
+                              </span>
+                              <span className="text-[11px] text-slate-400 font-medium">
+                                {item.format}
+                              </span>
+                              {item.day && (
+                                <span className="text-[10px] font-bold text-amber-900 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5" title={`Scheduled for ${item.day}`}>
+                                  <Icon name="calendar_month" size={10} className="text-amber-800" />
+                                  <span>{item.day.slice(0, 3)}</span>
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteContentItem(item.id);
+                              }}
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+                              title="Delete note"
+                            >
+                              <Icon name="delete" size={13} />
+                            </button>
                           </div>
 
                           {/* Title */}
@@ -356,15 +376,47 @@ export default function StudioView({
                         <div
                           key={item.id}
                           onClick={() => onOpenContentModal(item)}
-                          className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/70 text-left cursor-pointer hover:bg-amber-100/70 transition-colors"
+                          className="p-3 rounded-2xl bg-white border border-amber-200/90 text-left cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all flex flex-col justify-between gap-2.5 group shadow-2xs"
                         >
-                          <div className="flex items-center justify-between text-[9px] font-bold text-amber-900 mb-1">
-                            <span>{item.platform}</span>
-                            <span className="uppercase">{item.stage}</span>
+                          <div>
+                            <div className="flex items-center justify-between text-[9px] font-bold text-amber-900 mb-1.5">
+                              <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200/70">{item.platform}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="uppercase text-[9px] text-slate-400 font-semibold">{item.stage}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteContentItem(item.id);
+                                  }}
+                                  className="w-4.5 h-4.5 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Remove from calendar"
+                                >
+                                  <Icon name="delete" size={11} />
+                                </button>
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">
+                              {item.title}
+                            </span>
                           </div>
-                          <span className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">
-                            {item.title}
-                          </span>
+
+                          {/* Direct Muse Refine Link */}
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenInMuse(`Let's refine this scheduled ${day} note: "${item.title}". Hook: "${item.hook || ''}". What are the best hooks and distribution angles?`, item);
+                              }}
+                              className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                              title="Refine this scheduled note in Muse"
+                            >
+                              <Icon name="muse_star" size={10} className="text-[#FEEC98]" />
+                              <span>Muse</span>
+                            </button>
+                            <span className="text-[10px] text-slate-400 font-medium group-hover:text-slate-600 transition-colors">Details →</span>
+                          </div>
                         </div>
                       ))}
                     </div>

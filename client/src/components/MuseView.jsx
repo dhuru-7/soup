@@ -21,9 +21,11 @@ export default function MuseView({
   activeNote,
   onClearActiveNote,
   onUpdateContentItem,
+  onDeleteContentItem,
   onTransferToCalendar,
   onAddContentToStudio, 
-  onNavigateToStudio 
+  onNavigateToStudio,
+  showToast 
 }) {
   const isMaya = profile?.founder_id === 'maya_lin';
   const founderId = profile?.founder_id || (isMaya ? 'maya_lin' : 'arjun_vance');
@@ -72,6 +74,12 @@ export default function MuseView({
   useEffect(() => {
     if (initialPrompt) {
       setInputText(initialPrompt);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+          textareaRef.current.style.height = `${Math.max(90, Math.min(textareaRef.current.scrollHeight, 260))}px`;
+        }
+      }, 50);
     }
   }, [initialPrompt]);
 
@@ -94,7 +102,7 @@ export default function MuseView({
     setInputText(e.target.value);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      textareaRef.current.style.height = `${Math.max(90, Math.min(textareaRef.current.scrollHeight, 260))}px`;
     }
   };
 
@@ -132,7 +140,7 @@ export default function MuseView({
     setIsPlusMenuOpen(false);
     setIsToolsSubmenuOpen(false);
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '90px';
     }
   };
 
@@ -183,7 +191,54 @@ export default function MuseView({
     setIsTyping(true);
 
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '90px';
+    }
+
+    // Intercept deletion commands for the active note
+    const textLower = textToSend.toLowerCase().trim();
+    const isDeleteCommand = Boolean(
+      activeNote && (
+        textLower === 'delete this' ||
+        textLower === 'delete' ||
+        textLower === 'delete it' ||
+        textLower === 'delete note' ||
+        textLower === 'remove this' ||
+        textLower === 'remove note' ||
+        textLower.startsWith('delete this') ||
+        textLower.startsWith('delete note') ||
+        textLower.includes('delete this note') ||
+        textLower.includes('remove this note') ||
+        textLower.includes('delete note')
+      )
+    );
+
+    if (isDeleteCommand) {
+      const deletedTitle = activeNote.title;
+      const deletedId = activeNote.id;
+      if (onDeleteContentItem) {
+        onDeleteContentItem(deletedId);
+      }
+      if (onClearActiveNote) {
+        onClearActiveNote();
+      }
+      if (showToast) {
+        showToast(`✓ Removed "${deletedTitle}" from Board & Calendar`);
+      }
+
+      // Sync disk update to master_content_plan.json
+      applyAgentUpdate(founderId, textToSend, { item_id: deletedId }).catch(console.warn);
+
+      setIsTyping(false);
+      setMessages([
+        ...newMessages,
+        {
+          id: `muse-${Date.now()}`,
+          sender: 'muse',
+          text: `Understood. The note "${deletedTitle}" (ID: \`${deletedId}\`) has been permanently deleted from your Board and Calendar.\n\nI have also synchronized your local strategy files on disk to reflect this deletion.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+      return;
     }
 
     try {
@@ -376,7 +431,7 @@ export default function MuseView({
         
         {/* State A: EMPTY / FRESH CHAT — Type box squarely in the center of the screen */}
         {messages.length === 0 && !streamingText && !isTyping ? (
-          <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 max-w-2xl mx-auto w-full -mt-12">
+          <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 max-w-3xl mx-auto w-full -mt-10">
             
             {/* Clean heading without star or subtitle */}
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-center mb-6">
@@ -395,7 +450,7 @@ export default function MuseView({
             
             {/* Scrollable messages column */}
             <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-              <div className="max-w-2xl mx-auto w-full flex flex-col gap-6">
+              <div className="max-w-3xl mx-auto w-full flex flex-col gap-6">
                 
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex flex-col gap-1.5 animate-fade-in">
@@ -473,6 +528,9 @@ export default function MuseView({
                                       script: msg.text,
                                       stage: 'draft'
                                     });
+                                    if (showToast) {
+                                      showToast(`✓ Saved "${activeNote.title}" to Board`);
+                                    }
                                   }
                                 }}
                                 className="h-7 px-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1 shadow-2xs transition-all cursor-pointer active:scale-95"
@@ -486,6 +544,9 @@ export default function MuseView({
                                 onClick={() => {
                                   if (onTransferToCalendar) {
                                     onTransferToCalendar(activeNote, activeNote.day || 'Wednesday');
+                                    if (showToast) {
+                                      showToast(`✓ Scheduled for ${activeNote.day || 'Wednesday'} on Calendar`);
+                                    }
                                   }
                                 }}
                                 className="h-7 px-3 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer active:scale-95"
@@ -507,6 +568,9 @@ export default function MuseView({
                               type="button"
                               onClick={() => {
                                 onAddContentToStudio(msg.draftPayload);
+                                if (showToast) {
+                                  showToast(`✓ Added draft to Board & Calendar`);
+                                }
                                 onNavigateToStudio?.();
                               }}
                               className="h-7 px-3 rounded-full bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
@@ -574,7 +638,7 @@ export default function MuseView({
 
             {/* Bottom Anchored Type Box */}
             <div className="shrink-0 px-4 sm:px-6 pb-4 pt-2 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/95 to-transparent z-10">
-              <div className="max-w-2xl mx-auto w-full">
+              <div className="max-w-3xl mx-auto w-full">
                 {renderInputBox()}
               </div>
             </div>
@@ -601,13 +665,13 @@ export default function MuseView({
    */
   function renderInputBox() {
     return (
-      <div className="relative w-full rounded-2xl bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all flex flex-col p-2.5">
+      <div className="relative w-full rounded-3xl bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all flex flex-col p-3.5 sm:p-4">
         
         {/* Linked Active Board Note Chip if present */}
         {activeNote && (
-          <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-amber-50/80 border border-amber-200/70 mb-2 text-xs">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <Icon name="description" size={13} className="text-amber-700 shrink-0" />
+          <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-amber-50/90 border border-amber-200/80 mb-2.5 text-xs animate-fade-in shadow-2xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <Icon name="description" size={14} className="text-amber-700 shrink-0" />
               <span className="font-semibold text-amber-950 truncate">Editing note: "{activeNote.title}"</span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
@@ -617,30 +681,88 @@ export default function MuseView({
                   if (onTransferToCalendar) {
                     onTransferToCalendar(activeNote, activeNote.day || 'Wednesday');
                   }
+                  if (showToast) {
+                    showToast(`✓ Scheduled for ${activeNote.day || 'Wednesday'} on Calendar`);
+                  }
                 }}
-                className="px-2 py-0.5 rounded-md bg-white border border-amber-300 text-amber-900 text-[10.5px] font-semibold hover:bg-amber-100/70 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[11px] font-semibold hover:bg-amber-100/70 cursor-pointer shadow-2xs flex items-center gap-1 transition-colors"
                 title="Transfer directly to calendar"
               >
-                To Calendar
+                <Icon name="calendar_month" size={11} className="text-amber-800" />
+                <span>{activeNote.day ? activeNote.day.slice(0, 3) : 'To Calendar'}</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const noteTitle = activeNote.title;
+                  const noteId = activeNote.id;
+                  if (onDeleteContentItem) {
+                    onDeleteContentItem(noteId);
+                  }
+                  if (onClearActiveNote) {
+                    onClearActiveNote();
+                  }
+                  if (showToast) {
+                    showToast(`✓ Removed "${noteTitle}" from Board & Calendar`);
+                  }
+                  setMessages(prev => [
+                    ...prev,
+                    {
+                      id: `muse-del-${Date.now()}`,
+                      sender: 'muse',
+                      text: `Understood. The note "${noteTitle}" has been permanently deleted from your Board and Calendar.`,
+                      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    }
+                  ]);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-rose-700 text-[11px] font-semibold hover:bg-rose-50 cursor-pointer shadow-2xs flex items-center gap-1 transition-colors"
+                title="Delete this note permanently from Board & Calendar"
+              >
+                <Icon name="delete" size={11} className="text-rose-600" />
+                <span>Delete</span>
+              </button>
+
               {onClearActiveNote && (
                 <button
                   type="button"
                   onClick={onClearActiveNote}
-                  className="w-4 h-4 rounded-full hover:bg-amber-200/70 flex items-center justify-center text-amber-800 cursor-pointer"
-                  title="Detach note"
+                  className="w-5 h-5 rounded-full hover:bg-amber-200/70 flex items-center justify-center text-amber-800 cursor-pointer ml-0.5"
+                  title="Detach note without deleting"
                 >
-                  <Icon name="close" size={11} />
+                  <Icon name="close" size={12} />
                 </button>
               )}
             </div>
           </div>
         )}
 
+        {/* Textarea: Multi-line, generous height, comfortable text */}
+        <textarea
+          ref={textareaRef}
+          rows={3}
+          value={inputText}
+          onChange={handleTextareaChange}
+          onKeyDown={handleKeyDown}
+          placeholder={
+            activeNote
+              ? `Ask Muse to refine or transfer "${activeNote.title}"...`
+              : activeTool 
+                ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
+                : "Ask Muse, tell to update strategy files, or draft a post..."
+          }
+          className="w-full min-h-[84px] sm:min-h-[96px] max-h-64 py-1.5 px-1 bg-transparent text-[15px] text-slate-900 placeholder:text-slate-400 font-sans leading-relaxed resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0"
+          style={{ 
+            outline: 'none', 
+            border: 'none', 
+            boxShadow: 'none',
+            WebkitTapHighlightColor: 'transparent'
+          }}
+        />
+
         {/* Chips for Active Tool & Attached Files */}
         {(activeTool || attachedFiles.length > 0) && (
-          <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-slate-100 mb-2">
-            
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 pb-1 border-t border-slate-100/90 mb-1">
             {/* Active Tool Chip */}
             {activeTool && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEEC98] text-slate-900 text-xs font-semibold">
@@ -673,8 +795,8 @@ export default function MuseView({
           </div>
         )}
 
-        {/* Input Row: '+' Button, Textarea, Send Button */}
-        <div className="flex items-end gap-2">
+        {/* Bottom Toolbar: '+' Button & Tools on Left · Send Button on Right */}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100/90 mt-1">
           
           {/* '+' Button with Popover Menu (Opens UPWARDS) */}
           <div className="relative" ref={plusMenuRef}>
@@ -684,19 +806,20 @@ export default function MuseView({
                 setIsPlusMenuOpen(prev => !prev);
                 setIsToolsSubmenuOpen(false);
               }}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              className={`h-8 px-2.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer text-xs font-semibold ${
                 isPlusMenuOpen 
                   ? 'bg-slate-900 text-white' 
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80'
               }`}
               title="Add files or tools"
             >
-              <Icon name="add" size={20} />
+              <Icon name="add" size={16} />
+              <span>Attach</span>
             </button>
 
             {/* Floating Popover: Opens UPWARDS (bottom-full mb-2) */}
             {isPlusMenuOpen && (
-              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
+              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
                 
                 {/* 1. Add files */}
                 <button
@@ -732,7 +855,7 @@ export default function MuseView({
                   {/* Tools Submenu Flyout (anchored bottom-0 so it opens UPWARDS) */}
                   {isToolsSubmenuOpen && (
                     <div 
-                      className="absolute left-full bottom-0 ml-1.5 w-52 rounded-xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in"
+                      className="absolute left-full bottom-0 ml-1.5 w-52 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in"
                       onMouseLeave={() => setIsToolsSubmenuOpen(false)}
                     >
                       
@@ -797,42 +920,19 @@ export default function MuseView({
             )}
           </div>
 
-          {/* Textarea: Strictly ZERO inner box/rectangle outline */}
-          <textarea
-            ref={textareaRef}
-            rows={1}
-            value={inputText}
-            onChange={handleTextareaChange}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              activeNote
-                ? `Ask Muse to refine or transfer "${activeNote.title}"...`
-                : activeTool 
-                  ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
-                  : "Ask Muse, tell to update strategy files, or draft a post..."
-            }
-            className="flex-1 max-h-44 min-h-[36px] py-1.5 px-2 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 font-sans leading-relaxed resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0"
-            style={{ 
-              outline: 'none', 
-              border: 'none', 
-              boxShadow: 'none',
-              WebkitTapHighlightColor: 'transparent'
-            }}
-          />
-
           {/* Send Button */}
           <button
             type="button"
             onClick={handleSendMessage}
             disabled={!inputText.trim() && attachedFiles.length === 0}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
               inputText.trim() || attachedFiles.length > 0
-                ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-2xs active:scale-95 cursor-pointer'
+                ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95 cursor-pointer'
                 : 'bg-slate-100 text-slate-300 cursor-not-allowed'
             }`}
             title="Send message"
           >
-            <Icon name="arrow_upward" size={17} />
+            <Icon name="arrow_upward" size={18} />
           </button>
 
         </div>

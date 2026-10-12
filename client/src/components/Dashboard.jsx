@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Icon from './Icon';
 import Navigation from './Navigation';
 import OverviewView from './OverviewView';
 import MuseView from './MuseView';
@@ -74,17 +75,40 @@ export default function Dashboard({
     }
   }, [profile?.founder_id, currentUser?.uid]);
 
+  // Universal Toast Notification System
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (message, type = 'info') => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast({ message, type });
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+    }, 2800);
+  };
+
   // Content Pipeline Handlers
   const handleUpdateContentItem = (updatedItem) => {
     setContentItems(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+    if (activeNoteContext?.id === updatedItem.id) {
+      setActiveNoteContext(updatedItem);
+    }
+    showToast(`✓ Saved "${updatedItem.title || 'Note'}"`);
   };
 
   const handleAddContentItem = (newItem) => {
     setContentItems(prev => [newItem, ...prev]);
+    showToast(`✓ Added "${newItem.title || 'New item'}" to Board & Calendar`);
   };
 
   const handleDeleteContentItem = (itemId) => {
+    const itemToDelete = contentItems.find(item => item.id === itemId);
+    const title = itemToDelete?.title || 'Note';
     setContentItems(prev => prev.filter(item => item.id !== itemId));
+    if (activeNoteContext?.id === itemId) {
+      setActiveNoteContext(null);
+    }
+    showToast(`✓ Removed "${title}" from Board & Calendar`);
   };
 
   const handleOpenContentModal = (item) => {
@@ -95,6 +119,7 @@ export default function Dashboard({
   // Quick Capture Idea handler
   const handleSaveIdea = (newIdea) => {
     setCollectedInbox(prev => [newIdea, ...prev]);
+    showToast(`✓ Captured note "${newIdea.title || 'Idea'}"`);
   };
 
   // Memory handlers
@@ -122,10 +147,11 @@ export default function Dashboard({
       day: targetDay,
       stage: noteItem.stage === 'idea' ? 'draft' : noteItem.stage
     };
-    handleUpdateContentItem(updated);
+    setContentItems(prev => prev.map(item => item.id === updated.id ? updated : item));
     if (activeNoteContext?.id === noteItem.id) {
       setActiveNoteContext(updated);
     }
+    showToast(`✓ Scheduled "${noteItem.title || 'Note'}" for ${targetDay} on Calendar`);
     return updated;
   };
 
@@ -180,9 +206,11 @@ export default function Dashboard({
             activeNote={activeNoteContext}
             onClearActiveNote={() => setActiveNoteContext(null)}
             onUpdateContentItem={handleUpdateContentItem}
+            onDeleteContentItem={handleDeleteContentItem}
             onTransferToCalendar={handleTransferNoteToCalendar}
             onAddContentToStudio={handleAddContentItem}
             onNavigateToStudio={() => setActivePage('studio')}
+            showToast={showToast}
           />
         )}
 
@@ -198,6 +226,7 @@ export default function Dashboard({
             onOpenInMuse={handleNavigateToMuse}
             onTransferToCalendar={handleTransferNoteToCalendar}
             onOpenQuickCapture={() => setIsQuickCaptureOpen(true)}
+            showToast={showToast}
           />
         )}
 
@@ -232,6 +261,7 @@ export default function Dashboard({
         onUpdateItem={handleUpdateContentItem}
         onDeleteItem={handleDeleteContentItem}
         onOpenInMuse={handleNavigateToMuse}
+        showToast={showToast}
       />
 
       <AuthModal
@@ -239,6 +269,14 @@ export default function Dashboard({
         onClose={() => setIsAuthOpen(false)}
         currentUser={currentUser}
       />
+
+      {/* Universal Floating Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-slate-900/95 text-white text-xs font-semibold shadow-2xl border border-slate-700/80 backdrop-blur-md animate-fade-in pointer-events-none">
+          <Icon name="check_circle" size={15} className="text-[#FFCC00]" />
+          <span>{toast.message}</span>
+        </div>
+      )}
 
     </div>
   );

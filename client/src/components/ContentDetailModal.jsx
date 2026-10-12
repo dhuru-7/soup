@@ -7,7 +7,8 @@ export default function ContentDetailModal({
   onClose, 
   onUpdateItem, 
   onDeleteItem,
-  onOpenInMuse 
+  onOpenInMuse,
+  showToast
 }) {
   if (!isOpen || !item) return null;
 
@@ -18,6 +19,7 @@ export default function ContentDetailModal({
       onUpdateItem={onUpdateItem}
       onDeleteItem={onDeleteItem}
       onOpenInMuse={onOpenInMuse}
+      showToast={showToast}
     />
   );
 }
@@ -27,8 +29,10 @@ function ContentDetailModalInner({
   onClose, 
   onUpdateItem, 
   onDeleteItem, 
-  onOpenInMuse 
+  onOpenInMuse,
+  showToast 
 }) {
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [title, setTitle] = useState(item.title || '');
   const [stage, setStage] = useState(item.stage || 'draft');
   const [platform, setPlatform] = useState(item.platform || 'LinkedIn');
@@ -260,19 +264,37 @@ function ContentDetailModalInner({
 
         {/* Modal Footer */}
         <div className="px-6 py-4 border-t border-slate-200/80 bg-slate-50/80 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm("Delete this content item?")) {
-                onDeleteItem(item.id);
-                onClose();
-              }
-            }}
-            className="text-xs font-semibold text-rose-600 hover:text-rose-800 flex items-center gap-1"
-          >
-            <Icon name="delete" size={15} />
-            <span>Delete</span>
-          </button>
+          {!isConfirmingDelete ? (
+            <button
+              type="button"
+              onClick={() => setIsConfirmingDelete(true)}
+              className="text-xs font-semibold text-rose-600 hover:text-rose-800 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+            >
+              <Icon name="delete" size={15} />
+              <span>Delete</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 animate-fade-in bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
+              <span className="text-xs font-bold text-rose-850">Delete this note?</span>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteItem(item.id);
+                  onClose();
+                }}
+                className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-2xs transition-all cursor-pointer"
+              >
+                Yes, delete
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsConfirmingDelete(false)}
+                className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-medium hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <button
