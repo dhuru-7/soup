@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, Sparkles, X, Plus, ShieldAlert, Camera, Terminal, FileText, Zap, Globe, Link2, Heart } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, X, Plus, ChevronDown } from 'lucide-react';
 
 function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
   const [isWiping, setIsWiping] = useState(true);
@@ -13,52 +13,25 @@ function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
     return () => clearTimeout(timer);
   }, [currentStep]);
 
-  const circumference = 56.548;
-  const strokeOffset = circumference - (currentStep / totalSteps) * circumference;
   const progressPercent = Math.round((currentStep / totalSteps) * 100);
 
   return (
-    <div className="w-full bg-white/75 backdrop-blur-md px-6 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between border-b border-slate-200/80 relative select-none">
-      {/* Brand area that wipes to Step Title for 3 seconds, then wipes back to Soup */}
-      <div className="h-7 flex items-center overflow-hidden">
+    <div className="w-full bg-white/80 backdrop-blur-md px-6 sm:px-8 py-4 flex items-center justify-between border-b border-slate-200/80 relative select-none">
+      {/* Brand area: 20% larger text, NO yellow dot, NO 'Step X:' prefix */}
+      <div className="h-8 flex items-center overflow-hidden">
         {isWiping ? (
-          <div key={`title-${currentStep}`} className="animate-header-wipe flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#FAD02C] animate-pulse" />
-            <span className="font-heading text-sm sm:text-[15px] font-bold text-slate-900 tracking-tight">
+          <div key={`title-${currentStep}`} className="animate-header-wipe flex items-center">
+            <span className="font-heading text-[18px] sm:text-[19px] font-bold text-slate-900 tracking-tight">
               {stepTitle}
             </span>
           </div>
         ) : (
-          <div key="soup-brand" className="animate-header-wipe flex items-center gap-2">
-            <span className="font-heading text-[16px] font-bold text-slate-900 tracking-tight">
+          <div key="soup-brand" className="animate-header-wipe flex items-center">
+            <span className="font-heading text-[19px] sm:text-[20px] font-bold text-slate-900 tracking-tight">
               Soup
             </span>
           </div>
         )}
-      </div>
-
-      {/* Step Counter & Circular Ring */}
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-semibold text-slate-500 font-sans tracking-wide">
-          Step {currentStep} of {totalSteps}
-        </span>
-        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-slate-200/90 shadow-2xs">
-          <svg className="w-3.5 h-3.5 -rotate-90" viewBox="0 0 24 24">
-            <circle 
-              className="text-slate-200" 
-              cx="12" cy="12" fill="none" r="9" 
-              stroke="currentColor" strokeWidth="2.5" 
-            />
-            <circle 
-              className="text-[#FAD02C] transition-all duration-700 ease-out" 
-              cx="12" cy="12" fill="none" r="9" 
-              stroke="currentColor" strokeWidth="2.5" 
-              strokeDasharray={circumference} 
-              strokeDashoffset={strokeOffset} 
-              strokeLinecap="round" 
-            />
-          </svg>
-        </div>
       </div>
 
       {/* Hairline Progress Track along bottom edge of card header */}
@@ -76,56 +49,62 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
   const totalSteps = 5;
   const [isInitializing, setIsInitializing] = useState(false);
   const [initProgress, setInitProgress] = useState(0);
-  const [initStageText, setInitStageText] = useState('Vectorizing founder persona & turning point...');
+  const [initStageText, setInitStageText] = useState('Vectorizing founder persona & origins...');
   const [initComplete, setInitComplete] = useState(false);
-  const [customBannedInput, setCustomBannedInput] = useState('');
-  const [customHobbyInput, setCustomHobbyInput] = useState('');
+
+  // Other hobby input state
+  const [showOtherHobby, setShowOtherHobby] = useState(false);
+  const [otherHobbyText, setOtherHobbyText] = useState('');
+
+  // Add Link state (smooth expandable like hobbies 'Other...')
+  const [showAddLink, setShowAddLink] = useState(false);
+  const [newLinkType, setNewLinkType] = useState('Website');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
 
   // Mouse ambient spotlight
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+  // Clean titles without 'Step X:'
   const stepTitles = {
-    1: 'Step 1: Your Role, Background & Hobbies',
-    2: 'Step 2: Company, Links & The Turning Point',
-    3: 'Step 3: Unpopular Opinions & Brand Style',
-    4: 'Step 4: Who You’re Building For & Pet Peeves',
-    5: 'Step 5: Words You Hate & Real Things to Share'
+    1: 'Your Role, Strengths & Hobbies',
+    2: 'Company, Links & Why You Started',
+    3: 'Unpopular Opinions & Brand Style',
+    4: 'Who You’re Building For & Pet Peeves',
+    5: 'Real Assets & Publishing Platforms'
   };
 
-  // Form State
+  // Form State with normalized default values matching pill literals
   const [state, setState] = useState({
-    // Step 1: You, Your Role & Hobbies
+    // Step 1: You, Role & Hobbies
     fullName: initialProfile?.identity?.name || 'Arjun Vance',
-    role: initialProfile?.identity?.role || 'Technical Architect / CTO',
-    expertise: initialProfile?.identity?.expertise || ['Engineering / AI', 'Product Architecture'],
-    hobbies: ['Chess & Strategy', 'Marathon running', 'Specialty Coffee'],
+    role: 'Technical Architect / CTO',
+    expertise: ['Engineering / AI', 'Product Architecture'],
+    hobbies: ['Chess & Strategy', 'Specialty Coffee'],
 
-    // Step 2: Company, Links & Turning Point
+    // Step 2: Company, Links & Why You Started
     entityName: initialProfile?.identity?.company_name || 'AgentScale',
     mission: initialProfile?.identity?.mission || 'Distributed observability and trace debugger for multi-agent LLM systems in production.',
-    turningPoint: initialProfile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are blind to agent loops.',
+    whyStarted: initialProfile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are completely blind to autonomous agent loops.',
     links: [
       { id: 1, type: 'Website', url: 'https://agentscale.dev' },
       { id: 2, type: 'X / Twitter', url: 'https://x.com/arjun_scale' },
       { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/arjunvance' }
     ],
 
-    // Step 3: Unpopular Opinions & Brand Persona
+    // Step 3: Unpopular Opinions & Brand Style
     unpopularOpinion: initialProfile?.voiceprint?.spicy_take || 'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.',
-    brandStyle: initialProfile?.voiceprint?.insead_archetype || 'The Builder (Share the Work)',
+    brandStyle: 'The Builder (Share the Work)',
 
-    // Step 4: Who You’re Building For & Pet Peeves
-    audience: Array.isArray(initialProfile?.domain_radar?.target_audience) 
-      ? initialProfile.domain_radar.target_audience[0] 
-      : 'Staff Backend Engineers & AI Platform Leads',
-    annoyances: initialProfile?.domain_radar?.audience_taboos || [
+    // Step 4: Audience & Pet Peeves
+    audiences: ['Staff Backend Engineers & AI Leads', 'Enterprise Buyers & CTOs'],
+    customAudience: '',
+    annoyances: [
       'Hollow AI wrapper marketing',
-      'Unverified latency benchmarks',
-      'Over-engineered bloatware'
+      'Unverified latency benchmarks'
     ],
 
-    // Step 5: Words You Hate & Real Things to Share
-    bannedPhrases: initialProfile?.voiceprint?.banned_phrases || [
+    // Step 5: Words to Avoid & Real Assets
+    bannedPhrases: [
       'delve into',
       'game-changer',
       'thrilled to announce',
@@ -133,12 +112,11 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
       'revolutionary',
       'synergy'
     ],
-    realAssets: initialProfile?.execution_capacity?.available_assets || [
-      'Terminal screenshots & trace logs',
-      'Whiteboard architecture sketches',
-      'Raw voice notes & unscripted brain dumps'
+    realAssets: [
+      'Terminal screenshots & logs',
+      'Whiteboard architecture sketches'
     ],
-    platforms: initialProfile?.execution_capacity?.channels || ['LinkedIn', 'X / Twitter']
+    platforms: ['LinkedIn', 'X / Twitter']
   });
 
   const goToStep = (step) => {
@@ -159,73 +137,66 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const toggleArrayItem = (key, item, max = null) => {
+  // Universal rock-solid multiselect toggle
+  const toggleArrayItem = (key, item) => {
     setState(prev => {
-      const list = [...(prev[key] || [])];
-      const index = list.indexOf(item);
+      const currentList = Array.isArray(prev[key]) ? [...prev[key]] : [];
+      const index = currentList.indexOf(item);
       if (index > -1) {
-        list.splice(index, 1);
+        currentList.splice(index, 1);
       } else {
-        if (max && list.length >= max) {
-          list.shift();
-        }
-        list.push(item);
+        currentList.push(item);
       }
-      return { ...prev, [key]: list };
+      return { ...prev, [key]: currentList };
     });
   };
 
-  // Dynamic link handlers
-  const handleLinkChange = (id, field, value) => {
+  // Dynamic links handlers (expandable like hobbies 'Other...')
+  const handleSaveNewLink = () => {
+    let url = newLinkUrl.trim();
+    if (!url) {
+      setShowAddLink(false);
+      return;
+    }
+    if (!/^https?:\/\//i.test(url)) {
+      url = `https://${url}`;
+    }
     setState(prev => ({
       ...prev,
-      links: prev.links.map(lnk => lnk.id === id ? { ...lnk, [field]: value } : lnk)
+      links: [...prev.links, { id: Date.now(), type: newLinkType, url }]
     }));
+    setNewLinkUrl('');
+    setShowAddLink(false);
   };
 
-  const addLinkRow = () => {
-    setState(prev => ({
-      ...prev,
-      links: [...prev.links, { id: Date.now(), type: 'Website', url: '' }]
-    }));
-  };
-
-  const removeLinkRow = (id) => {
-    if (state.links.length <= 1) return;
+  const removeLink = (id) => {
     setState(prev => ({
       ...prev,
       links: prev.links.filter(lnk => lnk.id !== id)
     }));
   };
 
-  const addCustomBanned = () => {
-    if (!customBannedInput.trim()) return;
-    const token = customBannedInput.trim().toLowerCase();
-    if (!state.bannedPhrases.includes(token)) {
-      setState(prev => ({
-        ...prev,
-        bannedPhrases: [...prev.bannedPhrases, token]
-      }));
+  // Custom hobby handler
+  const handleSaveOtherHobby = () => {
+    if (!otherHobbyText.trim()) {
+      setShowOtherHobby(false);
+      return;
     }
-    setCustomBannedInput('');
-  };
-
-  const addCustomHobby = () => {
-    if (!customHobbyInput.trim()) return;
-    const val = customHobbyInput.trim();
+    const val = otherHobbyText.trim();
     if (!state.hobbies.includes(val)) {
       setState(prev => ({
         ...prev,
         hobbies: [...prev.hobbies, val]
       }));
     }
-    setCustomHobbyInput('');
+    setOtherHobbyText('');
+    setShowOtherHobby(false);
   };
 
   const startInitialization = () => {
     setIsInitializing(true);
     const stages = [
-      { p: 25, label: "Vectorizing founder persona & turning point..." },
+      { p: 25, label: "Vectorizing founder persona & origins..." },
       { p: 55, label: "Weaving personal hobbies & analogies into tone..." },
       { p: 85, label: "Calibrating 3 content pillars & anti-AI filters..." },
       { p: 100, label: "Ready. Soup agent online." }
@@ -268,20 +239,20 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
       <div className="relative z-10 w-full max-w-[820px] mx-auto flex flex-col justify-center my-auto">
         {!isInitializing ? (
           <div className="w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 flex flex-col">
-            {/* Stable Header with 3s title wipe */}
+            {/* Stable Header with 3s title wipe, 20% bigger font, no yellow dot, no 'Step X:' */}
             <CardHeader 
               currentStep={currentStep} 
               totalSteps={totalSteps} 
               stepTitle={stepTitles[currentStep]}
             />
 
-            {/* Inner Step Content (No headings or subheadings inside, starts straight with fields) */}
+            {/* Inner Step Content (Zero subheadings, zero icons before labels, clean pill options) */}
             <div className="px-6 sm:px-9 py-6 sm:py-7">
-              <div key={currentStep} className="animate-step-content flex flex-col gap-6">
+              <div key={currentStep} className="animate-step-content flex flex-col gap-5 sm:gap-6">
 
                 {/* STEP 1: You, Your Role & Hobbies */}
                 {currentStep === 1 && (
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-5 sm:gap-6">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="input-fullname">
                         Your Full Name <span className="text-amber-500">*</span>
@@ -300,7 +271,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                         What best describes your role? <span className="text-amber-500">*</span>
                       </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
                           'Founder / Co-founder',
                           'Technical Architect / CTO',
@@ -314,8 +285,10 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               key={r}
                               type="button"
                               onClick={() => setState({ ...state, role: r })}
-                              className={`selection-chip p-3 rounded-xl text-left border text-xs sm:text-xs font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
                               {r}
@@ -328,11 +301,11 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                          Your core background & strengths
+                          Your core strengths
                         </label>
-                        <span className="text-[11px] text-slate-400">Multi-select</span>
+                        <span className="text-[11px] text-slate-400 font-normal">Multi-select</span>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
                           'Engineering / AI',
                           'Product Architecture',
@@ -348,8 +321,10 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               key={exp}
                               type="button"
                               onClick={() => toggleArrayItem('expertise', exp)}
-                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
                               {exp}
@@ -359,19 +334,15 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                       </div>
                     </div>
 
-                    {/* Hobbies & Passions (Powers the Human Metaphor Engine) */}
-                    <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
+                    {/* Hobbies & Passions with 'Other' expanding pill */}
+                    <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <Heart size={13} className="text-amber-500 fill-amber-500" />
-                          <span>What do you nerd out on outside of work?</span>
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          What do you nerd out on outside of work?
                         </label>
                         <span className="text-[11px] text-slate-400 font-normal">Personal Analogies</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        Pick a few hobbies. Soup weaves these real-life analogies into your posts so you sound human, relatable, and authentic.
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mb-2">
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
                           'Chess & Strategy',
                           'Marathon running',
@@ -388,41 +359,87 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               key={h}
                               type="button"
                               onClick={() => toggleArrayItem('hobbies', h)}
-                              className={`selection-chip px-3 py-1.5 rounded-xl text-xs border font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
                               {h}
                             </button>
                           );
                         })}
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="text"
-                          value={customHobbyInput}
-                          onChange={e => setCustomHobbyInput(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomHobby())}
-                          className="flex-1 h-9 px-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs"
-                          placeholder="Add another hobby or obsession (e.g. Sailing, Cycling, Gaming)..."
-                        />
+                        {/* Custom Hobbies rendered as active pills */}
+                        {state.hobbies
+                          .filter(h => ![
+                            'Chess & Strategy',
+                            'Marathon running',
+                            'Specialty Coffee',
+                            'Sci-Fi & Cyberpunk',
+                            'Mechanical Keyboards',
+                            'Electronic Music',
+                            'Photography',
+                            'Philosophy / Books'
+                          ].includes(h))
+                          .map(customH => (
+                            <span
+                              key={customH}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#FAD02C] border border-[#EAB308] text-slate-950 shadow-xs"
+                            >
+                              <span>{customH}</span>
+                              <button
+                                type="button"
+                                onClick={() => toggleArrayItem('hobbies', customH)}
+                                className="text-slate-950/70 hover:text-slate-950"
+                              >
+                                <X size={13} />
+                              </button>
+                            </span>
+                          ))}
+
+                        {/* 'Other' Pill */}
                         <button
                           type="button"
-                          onClick={addCustomHobby}
-                          className="h-9 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center gap-1"
+                          onClick={() => setShowOtherHobby(!showOtherHobby)}
+                          className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                            showOtherHobby 
+                              ? 'bg-amber-100 border-amber-300 text-slate-950 font-semibold' 
+                              : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
+                          }`}
                         >
-                          <Plus size={13} />
-                          <span>Add</span>
+                          Other...
                         </button>
                       </div>
+
+                      {/* Smooth expanding input for 'Other' */}
+                      {showOtherHobby && (
+                        <div className="animate-fade-in flex items-center gap-2 pt-1 transition-all">
+                          <input
+                            type="text"
+                            autoFocus
+                            value={otherHobbyText}
+                            onChange={e => setOtherHobbyText(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleSaveOtherHobby())}
+                            placeholder="Type your hobby (e.g. Sailing, Cycling, Gaming)..."
+                            className="flex-1 h-10 px-4 rounded-full frosted-input text-slate-900 text-xs sm:text-sm outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleSaveOtherHobby}
+                            className="h-10 px-5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs active:scale-95 transition-all"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* STEP 2: Company, Links & Turning Point */}
+                {/* STEP 2: Company, Links & Why You Started */}
                 {currentStep === 2 && (
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-5 sm:gap-6">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="input-entity-name">
                         Company or Project Name <span className="text-amber-500">*</span>
@@ -437,29 +454,63 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                       />
                     </div>
 
-                    {/* Dynamic Multiple Links */}
+                    {/* Public Links */}
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <Link2 size={13} className="text-slate-500" />
-                          <span>Public Links & Social Footprint</span>
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Public Links
                         </label>
-                        <button 
+                        <span className="text-[11px] text-slate-400 font-normal">Profiles & Docs</span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5 items-center">
+                        {state.links.map(lnk => {
+                          const displayUrl = (lnk.url || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                          return (
+                            <span
+                              key={lnk.id}
+                              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-semibold bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-slate-300 transition-all"
+                            >
+                              <span className="text-amber-600 font-bold">{lnk.type}:</span>
+                              <span className="text-slate-600 truncate max-w-[140px] sm:max-w-[200px] font-medium" title={lnk.url}>
+                                {displayUrl}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => removeLink(lnk.id)}
+                                className="w-4 h-4 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                title="Remove link"
+                              >
+                                <X size={12} />
+                              </button>
+                            </span>
+                          );
+                        })}
+
+                        {/* '+ Add link' Pill (matching 'Other...' in hobbies) */}
+                        <button
                           type="button"
-                          onClick={addLinkRow}
-                          className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 transition-colors"
+                          onClick={() => setShowAddLink(!showAddLink)}
+                          className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] flex items-center gap-1.5 ${
+                            showAddLink
+                              ? 'bg-amber-100 border-amber-300 text-slate-950 font-semibold'
+                              : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
+                          }`}
                         >
-                          <Plus size={13} />
-                          <span>Add another link</span>
+                          <Plus size={14} />
+                          <span>Add link...</span>
                         </button>
                       </div>
-                      <div className="flex flex-col gap-2">
-                        {state.links.map(lnk => (
-                          <div key={lnk.id} className="flex items-center gap-2">
+
+                      {/* Smooth expanding drawer for adding a link */}
+                      {showAddLink && (
+                        <div className="animate-fade-in flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1 transition-all">
+                          {/* Fixed platform selection dropdown with custom chevron icon */}
+                          <div className="relative shrink-0">
                             <select
-                              value={lnk.type}
-                              onChange={e => handleLinkChange(lnk.id, 'type', e.target.value)}
-                              className="h-10 px-3 rounded-xl bg-white/90 border border-slate-200 text-slate-700 text-xs font-semibold outline-none shrink-0"
+                              value={newLinkType}
+                              onChange={e => setNewLinkType(e.target.value)}
+                              className="w-full sm:w-auto h-10 pl-4 pr-9 rounded-full bg-white border border-slate-200 text-slate-800 text-xs sm:text-sm font-semibold outline-none appearance-none cursor-pointer hover:border-slate-300 focus:border-amber-400 focus:ring-2 focus:ring-amber-200/60 shadow-2xs transition-all"
                             >
                               <option value="Website">Website</option>
                               <option value="X / Twitter">X / Twitter</option>
@@ -469,69 +520,80 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               <option value="YouTube">YouTube</option>
                               <option value="Other">Other</option>
                             </select>
-                            <input 
-                              type="url"
-                              value={lnk.url}
-                              onChange={e => handleLinkChange(lnk.id, 'url', e.target.value)}
-                              className="flex-1 h-10 px-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs"
-                              placeholder={`URL for ${lnk.type}...`}
-                            />
-                            {state.links.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => removeLinkRow(lnk.id)}
-                                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-400 flex items-center justify-center transition-colors shrink-0"
-                              >
-                                <X size={14} />
-                              </button>
-                            )}
+                            <ChevronDown size={14} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                           </div>
-                        ))}
-                      </div>
+
+                          {/* URL Input */}
+                          <input
+                            type="text"
+                            autoFocus
+                            value={newLinkUrl}
+                            onChange={e => setNewLinkUrl(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleSaveNewLink())}
+                            placeholder={`e.g. ${
+                              newLinkType === 'X / Twitter' ? 'x.com/username' :
+                              newLinkType === 'LinkedIn' ? 'linkedin.com/in/username' :
+                              newLinkType === 'GitHub' ? 'github.com/username' :
+                              'https://yoursite.com'
+                            }`}
+                            className="flex-1 h-10 px-4 rounded-full frosted-input text-slate-900 text-xs sm:text-sm outline-none"
+                          />
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleSaveNewLink}
+                              className="h-10 px-5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs active:scale-95 transition-all shadow-xs"
+                            >
+                              Add
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setShowAddLink(false); setNewLinkUrl(''); }}
+                              className="h-10 px-3.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs active:scale-95 transition-all"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-mission">
-                        What does your company do? (In 1 simple sentence) <span className="text-amber-500">*</span>
+                        What does your company do? <span className="text-amber-500">*</span>
                       </label>
                       <textarea 
                         id="text-mission"
                         rows={2}
                         value={state.mission}
                         onChange={e => setState({ ...state, mission: e.target.value })}
-                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs leading-relaxed"
+                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs sm:text-sm leading-relaxed"
                         placeholder="e.g. Distributed observability and trace debugger for multi-agent LLM systems in production."
                       />
                     </div>
 
-                    {/* The Turning Point */}
+                    {/* Crystal Clear: Why did you start this? */}
                     <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-turning-point">
-                          The Turning Point <span className="text-amber-500">*</span>
-                        </label>
-                        <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                          Story Anchor
-                        </span>
-                      </div>
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-why-started">
+                        Why did you start this company? <span className="text-amber-500">*</span>
+                      </label>
                       <textarea 
-                        id="text-turning-point"
+                        id="text-why-started"
                         rows={3}
-                        value={state.turningPoint}
-                        onChange={e => setState({ ...state, turningPoint: e.target.value })}
-                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs leading-relaxed"
-                        placeholder="What frustrating breakdown, painful failure, or broken tool made you say 'I have to build this myself'?"
+                        value={state.whyStarted}
+                        onChange={e => setState({ ...state, whyStarted: e.target.value })}
+                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs sm:text-sm leading-relaxed"
+                        placeholder="e.g. Existing tools were slow, lacked real-time traces, and cost $400/hr in cloud overruns. We wanted a 10x simpler debugger built specifically for multi-agent loops."
                       />
-                      <p className="text-[11px] text-slate-400 leading-relaxed">
-                        Audiences bond over the struggle that started your company. Soup uses this turning point to build emotional tension in your stories.
-                      </p>
                     </div>
                   </div>
                 )}
 
-                {/* STEP 3: Unpopular Opinions & Brand Persona */}
+                {/* STEP 3: Unpopular Opinions & Brand Style */}
                 {currentStep === 3 && (
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-5 sm:gap-6">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-unpopular">
                         Your Unpopular Opinion <span className="text-amber-500">*</span>
@@ -541,53 +603,34 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                         rows={2}
                         value={state.unpopularOpinion}
                         onChange={e => setState({ ...state, unpopularOpinion: e.target.value })}
-                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs leading-relaxed"
-                        placeholder="What is one belief or 'best practice' in your space that you think is completely wrong?"
+                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs sm:text-sm leading-relaxed"
+                        placeholder="e.g. Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability."
                       />
-                      <p className="text-[11px] text-slate-400 leading-relaxed">
-                        This sparks your weekly contrarian teardown posts.
-                      </p>
                     </div>
 
                     <div className="flex flex-col gap-2">
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                         How do you want your content to feel? <span className="text-amber-500">*</span>
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div className="flex flex-wrap gap-2.5">
                         {[
-                          {
-                            id: 'The Builder (Share the Work)',
-                            tag: 'Transparent',
-                            desc: 'Shares real numbers, metrics, bugs, and behind-the-scenes engineering.'
-                          },
-                          {
-                            id: 'The Visionary (Challenge Dogma)',
-                            tag: 'Big Picture',
-                            desc: 'Challenges legacy players, introduces new philosophies, and thinks in paradigm shifts.'
-                          },
-                          {
-                            id: 'The Practical Guide (Actionable)',
-                            tag: 'Tactical',
-                            desc: 'Step-by-step systems, architecture diagrams, zero fluff, how-to teardowns.'
-                          }
+                          'The Builder (Share the Work)',
+                          'The Visionary (Challenge Dogma)',
+                          'The Practical Guide (Actionable Teardowns)'
                         ].map(arch => {
-                          const isSelected = state.brandStyle === arch.id;
+                          const isSelected = state.brandStyle === arch;
                           return (
                             <button
-                              key={arch.id}
+                              key={arch}
                               type="button"
-                              onClick={() => setState({ ...state, brandStyle: arch.id })}
-                              className={`selection-card p-4 rounded-2xl border text-left flex flex-col justify-between transition-all ${
-                                isSelected ? 'active' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              onClick={() => setState({ ...state, brandStyle: arch })}
+                              className={`px-5 py-3 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
-                              <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-block mb-2">
-                                  {arch.tag}
-                                </span>
-                                <h3 className="text-xs font-bold text-slate-900 mb-1">{arch.id}</h3>
-                                <p className="text-[11px] text-slate-500 leading-relaxed">{arch.desc}</p>
-                              </div>
+                              {arch}
                             </button>
                           );
                         })}
@@ -598,12 +641,15 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
 
                 {/* STEP 4: Who You’re Building For & Pet Peeves */}
                 {currentStep === 4 && (
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-5 sm:gap-6">
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                        Who are you building for? <span className="text-amber-500">*</span>
-                      </label>
-                      <div className="flex flex-wrap gap-1.5 mb-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Who are you building for? <span className="text-amber-500">*</span>
+                        </label>
+                        <span className="text-[11px] text-slate-400 font-normal">Multi-select</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
                           'Staff Backend Engineers & AI Leads',
                           'Seed & Series A Venture Investors',
@@ -611,14 +657,16 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                           'Independent Developers & Builders',
                           'Direct Consumers & Enthusiasts'
                         ].map(aud => {
-                          const isSelected = state.audience === aud;
+                          const isSelected = state.audiences.includes(aud);
                           return (
                             <button
                               key={aud}
                               type="button"
-                              onClick={() => setState({ ...state, audience: aud })}
-                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              onClick={() => toggleArrayItem('audiences', aud)}
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
                               {aud}
@@ -626,13 +674,6 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                           );
                         })}
                       </div>
-                      <input 
-                        type="text"
-                        value={state.audience}
-                        onChange={e => setState({ ...state, audience: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-xs"
-                        placeholder="Or type custom audience profile..."
-                      />
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -640,12 +681,9 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                           What annoys your audience about existing tools or posts?
                         </label>
-                        <span className="text-[11px] text-slate-400">Multi-select</span>
+                        <span className="text-[11px] text-slate-400 font-normal">Multi-select</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        Communities bond over shared pet peeves. Soup will frame your solutions around these pain points.
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
                           'Hollow AI wrapper marketing',
                           'Vendor lock-in & punitive licensing',
@@ -661,8 +699,10 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               key={annoyance}
                               type="button"
                               onClick={() => toggleArrayItem('annoyances', annoyance)}
-                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
                               {annoyance}
@@ -674,92 +714,39 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                   </div>
                 )}
 
-                {/* STEP 5: Words You Hate & Real Things to Share */}
+                {/* STEP 5: Real Assets & Publishing Platforms */}
                 {currentStep === 5 && (
-                  <div className="flex flex-col gap-5">
-                    {/* Banned Words */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <ShieldAlert size={13} className="text-rose-500" />
-                          <span>Words you hate (AI Cliches to Avoid)</span>
-                        </label>
-                        <span className="text-[11px] text-slate-400 font-normal">Auto-Reject Filter</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        Any post containing these words will be rejected by our automated filter before you see it.
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mb-1.5">
-                        {state.bannedPhrases.map(phrase => (
-                          <span 
-                            key={phrase}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium"
-                          >
-                            <span>"{phrase}"</span>
-                            <button 
-                              type="button"
-                              onClick={() => toggleArrayItem('bannedPhrases', phrase)}
-                              className="hover:text-rose-950 text-rose-500"
-                            >
-                              <X size={12} />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="text"
-                          value={customBannedInput}
-                          onChange={e => setCustomBannedInput(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomBanned())}
-                          className="flex-1 h-9 px-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs"
-                          placeholder="Add phrase to ban (e.g. 'game-changer', 'synergy')..."
-                        />
-                        <button
-                          type="button"
-                          onClick={addCustomBanned}
-                          className="h-9 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center gap-1"
-                        >
-                          <Plus size={13} />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    </div>
-
+                  <div className="flex flex-col gap-5 sm:gap-6">
                     {/* Real Things to Share */}
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                           Real things you can share from your camera roll or laptop
                         </label>
-                        <span className="text-[11px] text-slate-400 font-normal">Visual Prompts</span>
+                        <span className="text-[11px] text-slate-400 font-normal">Multi-select</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        Soup pairs every weekly post with one of these real assets instead of generic stock images.
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
-                          { label: 'Terminal screenshots & trace logs', icon: Terminal },
-                          { label: 'Whiteboard architecture sketches', icon: FileText },
-                          { label: 'Raw voice notes & unscripted brain dumps', icon: Zap },
-                          { label: 'Candid workstation / lab photos', icon: Camera },
-                          { label: 'Redacted Slack wins & customer receipts', icon: FileText },
-                          { label: 'Loom / informal selfie video clips', icon: Camera }
+                          'Terminal screenshots & logs',
+                          'Whiteboard architecture sketches',
+                          'Raw voice notes & brain dumps',
+                          'Candid workstation / lab photos',
+                          'Redacted Slack wins & receipts',
+                          'Loom / informal selfie video clips'
                         ].map(asset => {
-                          const isSelected = state.realAssets.includes(asset.label);
-                          const IconComp = asset.icon;
+                          const isSelected = state.realAssets.includes(asset);
                           return (
                             <button
-                              key={asset.label}
+                              key={asset}
                               type="button"
-                              onClick={() => toggleArrayItem('realAssets', asset.label)}
-                              className={`selection-chip p-2.5 rounded-xl border text-left flex items-center gap-2.5 text-xs font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              onClick={() => toggleArrayItem('realAssets', asset)}
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
-                              <IconComp size={14} className={isSelected ? 'text-slate-950' : 'text-slate-400'} />
-                              <span className="flex-1">{asset.label}</span>
+                              {asset}
                             </button>
                           );
                         })}
@@ -771,7 +758,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                       <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                         Where do you want to publish?
                       </label>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {['LinkedIn', 'X / Twitter', 'Substack / Newsletter', 'YouTube'].map(plat => {
                           const isSelected = state.platforms.includes(plat);
                           return (
@@ -779,8 +766,10 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               key={plat}
                               type="button"
                               onClick={() => toggleArrayItem('platforms', plat)}
-                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
-                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                                isSelected 
+                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
                               {plat}
@@ -795,22 +784,20 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
               </div>
             </div>
 
-            {/* Stable Footer: Clean, balanced alignment, no weird cuts or floating badges */}
+            {/* Stable Footer: Zero ugly labels, clean Back on left (if step > 1) and Continue on right */}
             <div className="px-6 sm:px-9 py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md flex items-center justify-between select-none">
               <div>
                 {currentStep > 1 ? (
                   <button
                     type="button"
                     onClick={() => goToStep(currentStep - 1)}
-                    className="h-10 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition-all border border-slate-200 shadow-2xs text-xs font-semibold active:scale-95"
+                    className="h-10 px-5 rounded-full bg-white hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition-all border border-slate-200 shadow-2xs text-xs font-semibold active:scale-95"
                   >
                     <ArrowLeft size={15} />
                     <span>Back</span>
                   </button>
                 ) : (
-                  <span className="text-[11px] text-slate-400 font-medium">
-                    2-minute founder intake
-                  </span>
+                  <div className="w-1" />
                 )}
               </div>
 

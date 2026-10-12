@@ -12,12 +12,13 @@ export default function App() {
   const activeProfile = customProfile || PROFILES_DATA[currentProfileId] || PROFILES_DATA['arjun_vance'];
 
   const handleOnboardingComplete = (onboardingState) => {
-    const turningPt = onboardingState.turningPoint || onboardingState.originScar || '';
+    const turningPt = onboardingState.whyStarted || onboardingState.turningPoint || onboardingState.originScar || '';
     const spicy = onboardingState.unpopularOpinion || onboardingState.spicyTake || '';
     const hobbiesList = (onboardingState.hobbies || []).join(', ');
     const brandArch = onboardingState.brandStyle || onboardingState.archetype || 'The Builder (Share the Work)';
     const realAssetsList = onboardingState.realAssets || onboardingState.availableAssets || [];
     const annoyancesList = onboardingState.annoyances || onboardingState.audienceTaboos || [];
+    const targetAudiencesList = onboardingState.audiences || (onboardingState.audience ? [onboardingState.audience] : ['Technical Leaders']);
 
     const dynamicProfile = {
       founder_id: 'custom_founder',
@@ -34,7 +35,7 @@ export default function App() {
       },
       domain_radar: {
         industry: onboardingState.entityName ? `${onboardingState.entityName} Space` : 'Technology & Innovation',
-        target_audience: [onboardingState.audience],
+        target_audience: targetAudiencesList,
         audience_taboos: annoyancesList,
         competitors_watched: ['Market Incumbents', 'Legacy Tools']
       },
