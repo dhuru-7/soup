@@ -106,10 +106,27 @@ export default function Dashboard({
     setAgentMemory(prev => prev.filter(m => m.id !== noteId));
   };
 
+  const [activeNoteContext, setActiveNoteContext] = useState(null);
+
   // Inter-page Navigation Actions
-  const handleNavigateToMuse = (prompt = '') => {
-    setMuseInitialPrompt(prompt);
+  const handleNavigateToMuse = (prompt = '', noteItem = null) => {
+    setMuseInitialPrompt(prompt || '');
+    setActiveNoteContext(noteItem || null);
     setActivePage('muse');
+  };
+
+  const handleTransferNoteToCalendar = (noteItem, targetDay = 'Wednesday') => {
+    if (!noteItem) return;
+    const updated = {
+      ...noteItem,
+      day: targetDay,
+      stage: noteItem.stage === 'idea' ? 'draft' : noteItem.stage
+    };
+    handleUpdateContentItem(updated);
+    if (activeNoteContext?.id === noteItem.id) {
+      setActiveNoteContext(updated);
+    }
+    return updated;
   };
 
   const handleNavigateToStudio = (itemId = null) => {
@@ -160,6 +177,10 @@ export default function Dashboard({
           <MuseView
             profile={profile}
             initialPrompt={museInitialPrompt}
+            activeNote={activeNoteContext}
+            onClearActiveNote={() => setActiveNoteContext(null)}
+            onUpdateContentItem={handleUpdateContentItem}
+            onTransferToCalendar={handleTransferNoteToCalendar}
             onAddContentToStudio={handleAddContentItem}
             onNavigateToStudio={() => setActivePage('studio')}
           />
@@ -175,6 +196,7 @@ export default function Dashboard({
             onDeleteContentItem={handleDeleteContentItem}
             onOpenContentModal={handleOpenContentModal}
             onOpenInMuse={handleNavigateToMuse}
+            onTransferToCalendar={handleTransferNoteToCalendar}
             onOpenQuickCapture={() => setIsQuickCaptureOpen(true)}
           />
         )}

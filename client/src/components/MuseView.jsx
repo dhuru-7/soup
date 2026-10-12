@@ -1,27 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
-import { sendSarvamChat, TOOL_SKILLS } from '../sarvam';
+import { sendAiChat, TOOL_SKILLS } from '../sarvam';
 import { applyAgentUpdate, fetchStrategy } from '../api';
 
 /**
  * MuseView - Founder Brand Strategist AI Chat
  * Clean, Apple-minimal, distraction-free:
- * - Empty state: type box squarely in the center of the screen with "What are we building today?".
- * - Top header: Clean, un-distorted "New chat" button on top right.
- * - '+' button on type box with 'Add files' and 'Tools' (hover reveals: New update, Brainstorm, Research, Plan) that opens UPWARDS.
- * - Zero inner border/box inside the textarea.
- * - No white cards for AI responses (direct canvas text).
- * - Spinning star SVG during Sarvam 105B thinking and typing animation, hidden once generation finishes.
+ * - Model switcher on top left: Gemini 3.5 Flash Lite <-> Sarvam 105B
+ * - Pinned board note context: Muse knows which note is being edited, updates it on the board, and can transfer it to the calendar
+ * - Empty state: type box squarely in the center with "What are we building today?"
+ * - Top header right: clean, undistorted "New chat" button
+ * - '+' button on type box with 'Add files' and 'Tools' that opens UPWARDS
+ * - Zero inner border/box inside textarea
+ * - Responses rendered directly on canvas without card boxes
+ * - Spinning star SVG during thinking/streaming, hidden once generated
  */
 export default function MuseView({ 
   profile, 
   initialPrompt, 
+  activeNote,
+  onClearActiveNote,
+  onUpdateContentItem,
+  onTransferToCalendar,
   onAddContentToStudio, 
   onNavigateToStudio 
 }) {
   const isMaya = profile?.founder_id === 'maya_lin';
   const founderId = profile?.founder_id || (isMaya ? 'maya_lin' : 'arjun_vance');
   const companyName = profile?.identity?.company_name || (isMaya ? 'Solace Botanicals' : 'AgentScale');
+
+  // Multi-Model Switcher: 'gemini-flash' | 'sarvam-105b'
+  const [activeModel, setActiveModel] = useState('gemini-flash');
+  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+  const modelMenuRef = useRef(null);
 
   // Messages state
   const [messages, setMessages] = useState([]);
@@ -42,17 +53,27 @@ export default function MuseView({
   const plusMenuRef = useRef(null);
   const streamingIntervalRef = useRef(null);
 
-  // Handle outside click to close the '+' menu
+  // Close menus on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (plusMenuRef.current && !plusMenuRef.current.contains(e.target)) {
         setIsPlusMenuOpen(false);
         setIsToolsSubmenuOpen(false);
       }
+      if (modelMenuRef.current && !modelMenuRef.current.contains(e.target)) {
+        setIsModelMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Update input text if initialPrompt changes
+  useEffect(() => {
+    if (initialPrompt) {
+      setInputText(initialPrompt);
+    }
+  }, [initialPrompt]);
 
   // Cleanup streaming on unmount
   useEffect(() => {
@@ -140,6 +161,7 @@ export default function MuseView({
 
     const currentTool = activeTool;
     const currentFiles = [...attachedFiles];
+    const currentModel = activeModel;
 
     // Build user message
     const userMsg = {
@@ -175,14 +197,16 @@ export default function MuseView({
         }
       }
 
-      // 2. Call Sarvam AI Agent with Anti-AI-Slop & Tool Skills
-      const agentReply = await sendSarvamChat({
+      // 2. Call Multi-Model AI Agent (Gemini 3.5 Flash Lite or Sarvam 105B)
+      const agentReply = await sendAiChat({
         messages: newMessages,
         profile,
-        activeTool: currentTool
+        activeTool: currentTool,
+        activeNote,
+        model: currentModel
       });
 
-      // 3. Draft payload extraction if applicable
+      // 3. Draft payload extraction
       const isDraftable = agentReply.toLowerCase().includes('hook') || 
                           textToSend.toLowerCase().includes('draft') || 
                           textToSend.toLowerCase().includes('post');
@@ -191,15 +215,15 @@ export default function MuseView({
       if (isDraftable) {
         draftPayload = {
           id: `muse-draft-${Date.now()}`,
-          title: `Calibrated draft: ${textToSend.slice(0, 40) || 'Founder post'}...`,
-          platform: 'LinkedIn',
-          format: 'Founder Story & Insight',
+          title: activeNote ? `Refined: ${activeNote.title}` : `Draft: ${textToSend.slice(0, 36)}...`,
+          platform: activeNote?.platform || 'LinkedIn',
+          format: activeNote?.format || 'Founder Story & Insight',
           theme: 'Building in Public',
-          day: 'Thursday',
+          day: activeNote?.day || 'Wednesday',
           hook: agentReply.slice(0, 200),
           script: agentReply,
           visualDirection: profile?.execution_capacity?.available_assets?.[0] || 'Unfiltered terminal trace or workstation photo.',
-          sourceMaterial: `Disk Memory · ${companyName}`
+          sourceMaterial: activeNote ? `Linked Board Note: ${activeNote.title}` : `Disk Memory · ${companyName}`
         };
       }
 
@@ -208,12 +232,13 @@ export default function MuseView({
       setStreamingMeta({
         diskUpdate: diskUpdateResult,
         draftPayload,
-        tool: currentTool ? TOOL_SKILLS[currentTool]?.name : null
+        tool: currentTool ? TOOL_SKILLS[currentTool]?.name : null,
+        model: currentModel
       });
 
       let charIdx = 0;
       const fullText = agentReply;
-      const step = Math.max(2, Math.floor(fullText.length / 55));
+      const step = Math.max(2, Math.floor(fullText.length / 50));
 
       streamingIntervalRef.current = setInterval(() => {
         charIdx += step;
@@ -229,6 +254,7 @@ export default function MuseView({
               sender: 'muse',
               text: fullText,
               tool: currentTool ? TOOL_SKILLS[currentTool]?.name : null,
+              model: currentModel,
               diskUpdate: diskUpdateResult,
               draftPayload,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -271,8 +297,69 @@ export default function MuseView({
   return (
     <div className="h-screen flex flex-col bg-[#F8FAFC] relative overflow-hidden select-none animate-fade-in font-sans">
       
-      {/* Top Header: Clean, only New Chat on right */}
-      <header className="h-14 shrink-0 px-6 sm:px-8 bg-transparent flex items-center justify-end z-20 sticky top-0">
+      {/* Top Header: Model Switcher on Left · New Chat on Right */}
+      <header className="h-14 shrink-0 px-6 sm:px-8 bg-transparent flex items-center justify-between z-20 sticky top-0">
+        
+        {/* Model Switcher on Top Left Corner */}
+        <div className="relative" ref={modelMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsModelMenuOpen(prev => !prev)}
+            className="h-9 px-3.5 rounded-full border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all cursor-pointer"
+            title="Switch AI model"
+          >
+            <span className={`w-2 h-2 rounded-full ${activeModel === 'gemini-flash' ? 'bg-blue-500' : 'bg-amber-500'} animate-pulse`} />
+            <span>{activeModel === 'gemini-flash' ? 'Gemini 3.5 Flash Lite' : 'Sarvam 105B'}</span>
+            <Icon name="expand_more" size={14} className="text-slate-400" />
+          </button>
+
+          {/* Model Switcher Dropdown */}
+          {isModelMenuOpen && (
+            <div className="absolute left-0 top-full mt-1.5 w-52 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveModel('gemini-flash');
+                  setIsModelMenuOpen(false);
+                }}
+                className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between hover:bg-slate-100/80 transition-colors cursor-pointer ${
+                  activeModel === 'gemini-flash' ? 'bg-slate-50 text-slate-950 font-bold' : 'text-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <div>
+                    <div className="font-semibold text-slate-900">Gemini 3.5 Flash Lite</div>
+                    <div className="text-[10px] text-slate-400">Google Ultra-Fast</div>
+                  </div>
+                </div>
+                {activeModel === 'gemini-flash' && <Icon name="check" size={14} className="text-blue-600" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveModel('sarvam-105b');
+                  setIsModelMenuOpen(false);
+                }}
+                className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between hover:bg-slate-100/80 transition-colors cursor-pointer ${
+                  activeModel === 'sarvam-105b' ? 'bg-slate-50 text-slate-950 font-bold' : 'text-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <div>
+                    <div className="font-semibold text-slate-900">Sarvam 105B</div>
+                    <div className="text-[10px] text-slate-400">Indian Sovereign LLM</div>
+                  </div>
+                </div>
+                {activeModel === 'sarvam-105b' && <Icon name="check" size={14} className="text-amber-600" />}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Top Right: Clean New Chat button */}
         <button
           type="button"
           onClick={handleNewChat}
@@ -364,13 +451,54 @@ export default function MuseView({
                           </div>
                         )}
 
-                        {/* Clean response text without card wrapper */}
+                        {/* Clean response text directly on canvas */}
                         <div className="w-full text-slate-800 text-[14.5px] leading-relaxed whitespace-pre-wrap font-sans py-1">
                           {msg.text}
                         </div>
 
-                        {/* Post Draft Action Card if generated */}
-                        {msg.draftPayload && (
+                        {/* Connected Board Note Actions (if linked) */}
+                        {activeNote && (
+                          <div className="mt-2.5 w-full pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/60">
+                            <div className="text-[11px] text-slate-500 font-medium truncate max-w-xs">
+                              Linked note: <span className="font-semibold text-slate-800">"{activeNote.title}"</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onUpdateContentItem) {
+                                    onUpdateContentItem({
+                                      ...activeNote,
+                                      hook: msg.text.slice(0, 200),
+                                      script: msg.text,
+                                      stage: 'draft'
+                                    });
+                                  }
+                                }}
+                                className="h-7 px-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1 shadow-2xs transition-all cursor-pointer active:scale-95"
+                              >
+                                <Icon name="check" size={12} />
+                                <span>Update on Board</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onTransferToCalendar) {
+                                    onTransferToCalendar(activeNote, activeNote.day || 'Wednesday');
+                                  }
+                                }}
+                                className="h-7 px-3 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                              >
+                                <Icon name="calendar_month" size={12} className="text-amber-800" />
+                                <span>Transfer to Calendar</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Post Draft Action Card if generated (and not linked to a note) */}
+                        {!activeNote && msg.draftPayload && (
                           <div className="mt-2 w-full pt-2 flex items-center justify-between gap-2 border-t border-slate-200/50">
                             <div className="text-[11px] text-slate-400 font-medium">
                               Ready for calendar scheduling
@@ -396,11 +524,13 @@ export default function MuseView({
                   </div>
                 ))}
 
-                {/* Thinking Indicator: bare spinning star, text "Sarvam 105B is thinking..." */}
+                {/* Thinking Indicator: bare spinning star, text reflecting active model */}
                 {isTyping && !streamingText && (
                   <div className="flex items-center gap-2.5 text-slate-600 text-xs py-2 animate-fade-in">
                     <Icon name="muse_star" size={16} className="text-slate-800 animate-spin" />
-                    <span className="font-medium text-slate-700">Sarvam 105B is thinking...</span>
+                    <span className="font-medium text-slate-700">
+                      {activeModel === 'gemini-flash' ? 'Gemini 3.5 Flash Lite is thinking...' : 'Sarvam 105B is thinking...'}
+                    </span>
                   </div>
                 )}
 
@@ -411,7 +541,9 @@ export default function MuseView({
                     {/* Header with bare spinning star */}
                     <div className="flex items-center gap-2 text-xs text-slate-600 mb-2">
                       <Icon name="muse_star" size={16} className="text-slate-800 animate-spin" />
-                      <span className="font-semibold text-slate-800">Sarvam 105B</span>
+                      <span className="font-semibold text-slate-800">
+                        {activeModel === 'gemini-flash' ? 'Gemini 3.5 Flash Lite' : 'Sarvam 105B'}
+                      </span>
                     </div>
 
                     {/* Live disk update preview if available during stream */}
@@ -466,12 +598,45 @@ export default function MuseView({
 
   /**
    * Helper to render the Type Box Component
-   * Used in both Centered Empty State and Bottom Conversation Flow
    */
   function renderInputBox() {
     return (
       <div className="relative w-full rounded-2xl bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all flex flex-col p-2.5">
         
+        {/* Linked Active Board Note Chip if present */}
+        {activeNote && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-amber-50/80 border border-amber-200/70 mb-2 text-xs">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Icon name="description" size={13} className="text-amber-700 shrink-0" />
+              <span className="font-semibold text-amber-950 truncate">Editing note: "{activeNote.title}"</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  if (onTransferToCalendar) {
+                    onTransferToCalendar(activeNote, activeNote.day || 'Wednesday');
+                  }
+                }}
+                className="px-2 py-0.5 rounded-md bg-white border border-amber-300 text-amber-900 text-[10.5px] font-semibold hover:bg-amber-100/70 cursor-pointer"
+                title="Transfer directly to calendar"
+              >
+                To Calendar
+              </button>
+              {onClearActiveNote && (
+                <button
+                  type="button"
+                  onClick={onClearActiveNote}
+                  className="w-4 h-4 rounded-full hover:bg-amber-200/70 flex items-center justify-center text-amber-800 cursor-pointer"
+                  title="Detach note"
+                >
+                  <Icon name="close" size={11} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Chips for Active Tool & Attached Files */}
         {(activeTool || attachedFiles.length > 0) && (
           <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-slate-100 mb-2">
@@ -564,7 +729,7 @@ export default function MuseView({
                     <Icon name="chevron_right" size={16} className="text-slate-400" />
                   </button>
 
-                  {/* Tools Submenu Flyout (opens to right and anchors to bottom-0 so it goes UP) */}
+                  {/* Tools Submenu Flyout (anchored bottom-0 so it opens UPWARDS) */}
                   {isToolsSubmenuOpen && (
                     <div 
                       className="absolute left-full bottom-0 ml-1.5 w-52 rounded-xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in"
@@ -640,9 +805,11 @@ export default function MuseView({
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder={
-              activeTool 
-                ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
-                : "Ask Muse, tell to update strategy files, or draft a post..."
+              activeNote
+                ? `Ask Muse to refine or transfer "${activeNote.title}"...`
+                : activeTool 
+                  ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
+                  : "Ask Muse, tell to update strategy files, or draft a post..."
             }
             className="flex-1 max-h-44 min-h-[36px] py-1.5 px-2 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 font-sans leading-relaxed resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0"
             style={{ 

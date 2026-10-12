@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Icon from './Icon';
 
 export default function StudioView({ 
   profile, 
   contentItems, 
-  collectedInbox, 
   onUpdateContentItem, 
   onAddContentItem, 
   onDeleteContentItem,
   onOpenContentModal, 
   onOpenInMuse, 
+  onTransferToCalendar,
   onOpenQuickCapture 
 }) {
-  const [activeSubView, setActiveSubView] = useState('board'); // 'board' | 'calendar' | 'inbox' | 'published'
+  const [activeSubView, setActiveSubView] = useState('board'); // 'board' | 'calendar' | 'published'
   const [platformFilter, setPlatformFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isPlatformMenuOpen, setIsPlatformMenuOpen] = useState(false);
+  const platformMenuRef = useRef(null);
+
+  // Close platform menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (platformMenuRef.current && !platformMenuRef.current.contains(e.target)) {
+        setIsPlatformMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const stages = [
     { id: 'idea', label: 'Ideas', color: 'border-slate-300 text-slate-700 bg-slate-100' },
@@ -41,26 +54,30 @@ export default function StudioView({
     });
   };
 
+  const handleQuickTransferToCalendar = (e, item, day = 'Wednesday') => {
+    e.stopPropagation();
+    if (onTransferToCalendar) {
+      onTransferToCalendar(item, day);
+    }
+  };
+
   return (
-    <div className="max-w-[1320px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6 animate-fade-in">
+    <div className="max-w-[1320px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6 animate-fade-in font-sans">
       
-      {/* Studio Header & Navigation Sub-Tabs */}
+      {/* Studio Header: Subheading removed per request */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
         <div>
           <h1 className="font-heading text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">
             Scrapbook
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-            Turn ideas, research, personal stories, and raw uploads into an organized publishing pipeline.
-          </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          {/* Primary CTA button: 10% more intense canary gold #FFCC00 */}
+          {/* Primary CTA button: canary gold */}
           <button
             type="button"
             onClick={onOpenQuickCapture}
-            className="px-4 py-2 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 text-xs font-bold shadow-2xs flex items-center gap-1.5 active:scale-95 transition-all"
+            className="px-4 py-2 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 text-xs font-bold shadow-2xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
           >
             <Icon name="add" size={16} />
             <span>Capture note</span>
@@ -71,12 +88,11 @@ export default function StudioView({
       {/* Sub-View Switcher & Filter Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         
-        {/* 4 Internal Views: Board · Calendar · Collected (Inbox) · Published */}
+        {/* 3 Internal Views: Board · Calendar · Published (Collected Inbox removed) */}
         <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-full border border-slate-200/80 self-start">
           {[
             { id: 'board', label: 'Board', icon: 'view_kanban', count: contentItems.length },
-            { id: 'calendar', label: 'Calendar', icon: 'calendar_month', count: 3 },
-            { id: 'inbox', label: 'Collected (Inbox)', icon: 'inbox', count: collectedInbox.length },
+            { id: 'calendar', label: 'Calendar', icon: 'calendar_month', count: contentItems.filter(i => i.day).length || 3 },
             { id: 'published', label: 'Published', icon: 'task_alt', count: contentItems.filter(i => i.stage === 'published').length },
           ].map(view => {
             const isActive = activeSubView === view.id;
@@ -85,7 +101,7 @@ export default function StudioView({
                 key={view.id}
                 type="button"
                 onClick={() => setActiveSubView(view.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
                   isActive
                     ? 'bg-white text-slate-950 shadow-2xs font-bold border border-slate-200/90'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
@@ -101,19 +117,43 @@ export default function StudioView({
           })}
         </div>
 
-        {/* Filter and Search */}
+        {/* Filter and Search: Consistent Sleek UI */}
         <div className="flex items-center gap-2">
-          <select
-            value={platformFilter}
-            onChange={e => setPlatformFilter(e.target.value)}
-            className="h-8 px-3 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-semibold outline-none"
-          >
-            <option value="All">All platforms</option>
-            <option value="LinkedIn">LinkedIn</option>
-            <option value="X">X / Twitter</option>
-            <option value="Instagram">Instagram</option>
-          </select>
+          
+          {/* Consistent Platform Filter Pill Dropdown */}
+          <div className="relative" ref={platformMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsPlatformMenuOpen(prev => !prev)}
+              className="h-8.5 px-3.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs hover:border-slate-300 transition-all cursor-pointer"
+            >
+              <span>{platformFilter === 'All' ? 'All platforms' : platformFilter}</span>
+              <Icon name="expand_more" size={14} className="text-slate-400" />
+            </button>
 
+            {isPlatformMenuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-36 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1 z-40 animate-fade-in font-sans">
+                {['All', 'LinkedIn', 'X', 'Instagram'].map(plat => (
+                  <button
+                    key={plat}
+                    type="button"
+                    onClick={() => {
+                      setPlatformFilter(plat);
+                      setIsPlatformMenuOpen(false);
+                    }}
+                    className={`w-full px-3 py-1.5 text-left text-xs font-medium flex items-center justify-between hover:bg-slate-100/80 transition-colors cursor-pointer ${
+                      platformFilter === plat ? 'text-slate-950 font-bold bg-slate-50' : 'text-slate-700'
+                    }`}
+                  >
+                    <span>{plat === 'All' ? 'All platforms' : plat === 'X' ? 'X / Twitter' : plat}</span>
+                    {platformFilter === plat && <Icon name="check" size={14} className="text-amber-500" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Search Box */}
           <div className="relative">
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 flex items-center">
               <Icon name="search" size={13} />
@@ -123,7 +163,7 @@ export default function StudioView({
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search posts..."
-              className="h-8 pl-7 pr-3 rounded-full bg-white border border-slate-200 text-slate-800 text-xs outline-none w-36 sm:w-44 focus:w-52 transition-all"
+              className="h-8.5 pl-7 pr-3 rounded-full bg-white border border-slate-200 text-slate-800 text-xs outline-none w-36 sm:w-44 focus:w-52 transition-all shadow-2xs focus:border-slate-400"
             />
           </div>
         </div>
@@ -162,7 +202,7 @@ export default function StudioView({
                         hook: 'Hook draft...',
                         day: 'Friday'
                       })}
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors cursor-pointer"
                       title="Add quick idea"
                     >
                       <Icon name="add" size={15} />
@@ -181,7 +221,7 @@ export default function StudioView({
                       <div
                         key={item.id}
                         onClick={() => onOpenContentModal(item)}
-                        className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:border-amber-300 hover:shadow-xs cursor-pointer flex flex-col justify-between gap-3 transition-all active:scale-[0.99]"
+                        className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:border-amber-300 hover:shadow-xs cursor-pointer flex flex-col justify-between gap-3 transition-all active:scale-[0.99] group"
                       >
                         <div>
                           {/* Tags */}
@@ -213,25 +253,52 @@ export default function StudioView({
                           )}
                         </div>
 
-                        {/* Action Bar & Quick Stage Move */}
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-[10px] text-amber-700 font-bold flex items-center gap-0.5">
-                            <span>Edit card</span>
-                            <Icon name="chevron_right" size={13} />
-                          </span>
+                        {/* Connected Actions: Edit with Muse & Transfer to Calendar */}
+                        <div className="pt-2.5 border-t border-slate-100 flex flex-col gap-2">
+                          
+                          <div className="flex items-center justify-between gap-1.5">
+                            {/* Connect directly to Muse with this Note */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenInMuse(`Let's refine this board note: "${item.title}". Hook: "${item.hook}". How can we make it hit harder?`, item);
+                              }}
+                              className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-[10.5px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                              title="Open and edit this note inside Muse"
+                            >
+                              <Icon name="muse_star" size={12} className="text-[#FEEC98]" />
+                              <span>Edit with Muse</span>
+                            </button>
 
-                          {/* Quick stage selector */}
-                          <select
-                            value={item.stage}
-                            onClick={e => e.stopPropagation()}
-                            onChange={e => handleMoveStage(e, item, e.target.value)}
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 outline-none cursor-pointer"
-                          >
-                            <option value="idea">Idea</option>
-                            <option value="draft">Draft</option>
-                            <option value="approved">Approved</option>
-                            <option value="published">Published</option>
-                          </select>
+                            {/* Transfer to Calendar Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => handleQuickTransferToCalendar(e, item, item.day || 'Wednesday')}
+                              className="px-2 py-1 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[10.5px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                              title="Schedule this note onto the calendar"
+                            >
+                              <Icon name="calendar_month" size={12} className="text-amber-700" />
+                              <span>{item.day ? item.day.slice(0, 3) : 'To Calendar'}</span>
+                            </button>
+                          </div>
+
+                          {/* Stage selector */}
+                          <div className="flex items-center justify-between text-[10px] text-slate-400">
+                            <span>Stage:</span>
+                            <select
+                              value={item.stage}
+                              onClick={e => e.stopPropagation()}
+                              onChange={e => handleMoveStage(e, item, e.target.value)}
+                              className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 outline-none cursor-pointer"
+                            >
+                              <option value="idea">Idea</option>
+                              <option value="draft">Draft</option>
+                              <option value="approved">Approved</option>
+                              <option value="published">Published</option>
+                            </select>
+                          </div>
+
                         </div>
                       </div>
                     ))
@@ -244,17 +311,14 @@ export default function StudioView({
         </div>
       )}
 
-      {/* VIEW 2: CALENDAR VIEW */}
+      {/* VIEW 2: CALENDAR VIEW (Subheading removed per request) */}
       {activeSubView === 'calendar' && (
         <div className="frosted-glass bg-white/70 rounded-3xl p-6 border border-slate-200/80 shadow-2xs flex flex-col gap-4">
           <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
             <div>
               <h3 className="font-heading text-base font-bold text-slate-900">
-                Weekly Content Cadence (Week 2 of 12)
+                Weekly Content Cadence
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Publishing slots vs planning tasks for this sprint
-              </p>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
               Target: 3 Posts / Week
@@ -263,7 +327,7 @@ export default function StudioView({
 
           <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
             {calendarDays.map(day => {
-              const dayItems = filteredItems.filter(i => i.day === day || (day === 'Wednesday' && i.stage === 'draft'));
+              const dayItems = filteredItems.filter(i => i.day === day || (day === 'Wednesday' && i.stage === 'draft' && !i.day));
               const isPublishDay = ['Monday', 'Wednesday', 'Friday'].includes(day);
 
               return (
@@ -310,7 +374,7 @@ export default function StudioView({
                     <button
                       type="button"
                       onClick={() => onOpenQuickCapture()}
-                      className="w-full py-1.5 rounded-lg border border-dashed border-amber-300 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 transition-colors"
+                      className="w-full py-1.5 rounded-lg border border-dashed border-amber-300 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 transition-colors cursor-pointer"
                     >
                       + Schedule slot
                     </button>
@@ -322,72 +386,7 @@ export default function StudioView({
         </div>
       )}
 
-      {/* VIEW 3: COLLECTED / IDEA INBOX */}
-      {activeSubView === 'inbox' && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-heading text-base font-bold text-slate-900">
-                Idea Inbox (Raw Scraps & Proof Receipts)
-              </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Unprocessed voice notes, Slack quotes, customer feedback, and quick thoughts
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onOpenQuickCapture}
-              className="px-3.5 py-1.5 rounded-full bg-slate-950 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs hover:bg-slate-800 transition-all"
-            >
-              <Icon name="add" size={14} />
-              <span>Capture new note</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {collectedInbox.map(inboxItem => (
-              <div 
-                key={inboxItem.id}
-                className="frosted-glass bg-white/70 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4 hover:border-amber-300 transition-all"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">
-                      {inboxItem.type}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      {inboxItem.date}
-                    </span>
-                  </div>
-
-                  <h4 className="font-heading text-sm font-bold text-slate-900 mb-1.5">
-                    {inboxItem.title}
-                  </h4>
-
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-200/60">
-                    "{inboxItem.snippet}"
-                  </p>
-
-                  <span className="text-[10px] text-slate-400 block mt-2">
-                    Source: {inboxItem.source}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onOpenInMuse(`Develop this raw thought into a calibrated post:\n\nTitle: ${inboxItem.title}\nSnippet: ${inboxItem.snippet}`)}
-                  className="self-start px-3.5 py-1.5 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all"
-                >
-                  <Icon name="smart_toy" size={14} className="text-[#FEEC98]" />
-                  <span>Develop with Muse →</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 4: PUBLISHED ARCHIVE */}
+      {/* VIEW 3: PUBLISHED ARCHIVE */}
       {activeSubView === 'published' && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -449,8 +448,8 @@ export default function StudioView({
                   )}
                   <button
                     type="button"
-                    onClick={() => onOpenInMuse(`Repurpose this published post into a new format:\n\nTitle: ${item.title}\nHook: ${item.hook}`)}
-                    className="px-4 py-2 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all"
+                    onClick={() => onOpenInMuse(`Repurpose this published post into a new format:\n\nTitle: ${item.title}\nHook: ${item.hook}`, item)}
+                    className="px-4 py-2 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
                   >
                     <Icon name="autorenew" size={14} className="text-[#FEEC98]" />
                     <span>Repurpose</span>
