@@ -12,8 +12,6 @@ export default function Navigation({
   currentUser,
   onOpenAuth 
 }) {
-  const [isHovered, setIsHovered] = React.useState(false);
-
   const navItems = [
     { id: 'overview', label: 'Home', icon: 'home', desc: 'Command center & pulse' },
     { id: 'muse', label: 'Muse', icon: 'star', desc: 'AI collaborator & research' },
@@ -26,20 +24,22 @@ export default function Navigation({
       <div className="hidden md:block w-[72px] shrink-0" aria-hidden="true" />
 
       {/* =========================================================================
-          DESKTOP VERTICAL SIDEMENU (Expands OVER content on hover)
+          DESKTOP VERTICAL SIDEMENU (Apple Fluid Hover Overlay Rail)
+          - Expands over content at 220ms with cubic-bezier(0.16, 1, 0.3, 1)
+          - Icon positions are 100% spatially anchored (never jump or twitch)
+          - Labels glide and crossfade with synchronized hardware-accelerated timing
          ========================================================================= */}
       <aside 
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={`hidden md:flex fixed top-0 left-0 h-screen flex-col justify-between select-none z-50 transition-[width,padding,box-shadow] duration-300 ease-out overflow-hidden ${
-          isHovered 
-            ? 'w-64 p-5 bg-white/98 backdrop-blur-xl border-r border-slate-200/90 shadow-2xl ring-1 ring-black/5' 
-            : 'w-[72px] px-2.5 py-5 bg-white/95 backdrop-blur-md border-r border-slate-200/80 shadow-xs'
-        }`}
+        className="apple-sidebar-rail hidden md:flex fixed top-0 left-0 h-screen flex-col justify-between select-none z-50 bg-white/95 backdrop-blur-2xl border-r border-slate-200/80 p-3.5 overflow-hidden"
       >
         
-        {/* Navigation Items (No Soup in top header) */}
+        {/* Navigation Items with subtle header revealed on expansion */}
         <div className="flex flex-col pt-1">
+          <div className="apple-sidebar-label h-6 flex items-center px-3 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Navigation
+            </span>
+          </div>
           <nav className="flex flex-col gap-1.5">
             {navItems.map(item => {
               const isActive = activePage === item.id;
@@ -48,9 +48,7 @@ export default function Navigation({
                   key={item.id}
                   type="button"
                   onClick={() => setActivePage(item.id)}
-                  className={`flex items-center rounded-xl text-xs font-semibold transition-all text-left active:scale-[0.98] ${
-                    isHovered ? 'px-3.5 py-2.5 gap-3' : 'p-2.5 justify-center'
-                  } ${
+                  className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-left transition-colors duration-150 active:scale-[0.97] ${
                     isActive
                       ? 'bg-slate-950 text-white shadow-xs font-bold'
                       : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100/80'
@@ -61,13 +59,11 @@ export default function Navigation({
                     name={item.icon} 
                     size={20} 
                     fill={isActive}
-                    className={`shrink-0 ${isActive ? 'text-[#FFCC00]' : 'text-slate-400'}`} 
+                    className={`shrink-0 transition-colors ${isActive ? 'text-[#FFCC00]' : 'text-slate-400'}`} 
                   />
-                  {isHovered && (
-                    <span className="text-[13px] whitespace-nowrap truncate animate-fade-in font-medium">
-                      {item.label}
-                    </span>
-                  )}
+                  <span className="apple-sidebar-label text-[13px] font-medium truncate">
+                    {item.label}
+                  </span>
                 </button>
               );
             })}
@@ -76,13 +72,11 @@ export default function Navigation({
 
         {/* Bottom Section: Founder Identity (Clicking navigates to Profile) */}
         {profile?.identity && (
-          <div className={`pt-3 border-t border-slate-200/80 transition-all ${isHovered ? '' : 'flex justify-center'}`}>
+          <div className="pt-3 border-t border-slate-200/80">
             <button
               type="button"
               onClick={() => setActivePage('you')}
-              className={`group w-full flex items-center rounded-xl text-xs font-semibold transition-all text-left active:scale-[0.98] ${
-                isHovered ? 'px-3 py-2.5 gap-3' : 'p-1.5 justify-center'
-              } ${
+              className={`w-full flex items-center gap-3 p-1 rounded-xl text-xs font-semibold text-left transition-colors duration-150 active:scale-[0.97] ${
                 activePage === 'you'
                   ? 'bg-slate-950 text-white shadow-xs font-bold'
                   : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100/80'
@@ -92,24 +86,22 @@ export default function Navigation({
               <img 
                 src={profile.identity.avatar || (profile.founder_id === 'maya_lin' ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80')} 
                 alt={profile.identity.name || profile.name || 'User Profile'} 
-                className={`w-8 h-8 rounded-full object-cover shrink-0 shadow-2xs transition-colors ${
-                  activePage === 'you' ? 'border border-white/20' : 'border border-slate-200 group-hover:border-slate-300'
+                className={`w-9 h-9 rounded-full object-cover shrink-0 shadow-2xs transition-colors ${
+                  activePage === 'you' ? 'border border-white/20' : 'border border-slate-200'
                 }`}
               />
-              {isHovered && (
-                <div className="flex flex-col min-w-0 animate-fade-in">
-                  <span className={`text-[13px] font-semibold truncate leading-tight transition-colors ${
-                    activePage === 'you' ? 'text-white font-bold' : 'text-slate-900 group-hover:text-slate-950'
-                  }`}>
-                    {profile.identity.name || profile.name || 'User Profile'}
-                  </span>
-                  <span className={`text-[11px] truncate leading-normal transition-colors ${
-                    activePage === 'you' ? 'text-slate-400' : 'text-slate-500 group-hover:text-slate-600'
-                  }`}>
-                    {profile.identity.company_name || profile.company || profile.identity.role || ''}
-                  </span>
-                </div>
-              )}
+              <div className="apple-sidebar-label flex flex-col min-w-0">
+                <span className={`text-[13px] font-semibold truncate leading-tight transition-colors ${
+                  activePage === 'you' ? 'text-white font-bold' : 'text-slate-900'
+                }`}>
+                  {profile.identity.name || profile.name || 'User Profile'}
+                </span>
+                <span className={`text-[11px] truncate leading-normal transition-colors ${
+                  activePage === 'you' ? 'text-slate-400' : 'text-slate-500'
+                }`}>
+                  {profile.identity.company_name || profile.company || profile.identity.role || ''}
+                </span>
+              </div>
             </button>
           </div>
         )}
