@@ -362,89 +362,63 @@ export default function StudioView({
           <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
             {calendarDays.map(day => {
               const dayItems = filteredItems.filter(i => i.day === day || (day === 'Wednesday' && i.stage === 'draft' && !i.day));
-              const isPublishDay = ['Monday', 'Wednesday', 'Friday'].includes(day);
 
               return (
                 <div 
                   key={day} 
-                  className={`p-3.5 rounded-2xl border min-h-[220px] flex flex-col justify-between ${
-                    isPublishDay 
-                      ? 'bg-white border-amber-200/80 shadow-2xs' 
-                      : 'bg-slate-50/60 border-slate-200/60'
-                  }`}
+                  className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs min-h-[200px] flex flex-col justify-between transition-all hover:border-slate-300"
                 >
                   <div>
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
+                    {/* 1. Day */}
+                    <div className="pb-2 border-b border-slate-100 mb-2.5">
                       <span className="text-xs font-bold text-slate-800">{day.slice(0, 3)}</span>
-                      {isPublishDay ? (
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded">
-                          Live slot
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 font-medium">Rest/Prep</span>
-                      )}
                     </div>
 
+                    {/* Content Items */}
                     <div className="flex flex-col gap-2">
                       {dayItems.map(item => (
                         <div
                           key={item.id}
                           onClick={() => onOpenContentModal(item)}
-                          className="p-3 rounded-2xl bg-white border border-amber-200/90 text-left cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all flex flex-col justify-between gap-2.5 group shadow-2xs"
+                          className="p-3 rounded-2xl bg-slate-50/70 border border-slate-200/80 text-left cursor-pointer hover:border-amber-400 hover:bg-white hover:shadow-xs transition-all flex flex-col justify-between gap-3 shadow-2xs group"
                         >
                           <div>
-                            <div className="flex items-center justify-between mb-1.5">
+                            {/* 2. Social Media Platform Icon */}
+                            <div className="flex items-center mb-1.5">
                               {renderPlatformIcons(item.platform)}
-                              <div className="flex items-center gap-1.5">
-                                <span className="uppercase text-[9px] text-slate-400 font-semibold">{item.stage}</span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteContentItem(item.id);
-                                  }}
-                                  className="w-4.5 h-4.5 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                                  title="Remove from calendar"
-                                >
-                                  <Icon name="delete" size={11} />
-                                </button>
-                              </div>
                             </div>
-                            <span className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug">
+
+                            {/* 3. The Content */}
+                            <span className="text-xs font-bold text-slate-900 line-clamp-3 leading-snug">
                               {item.title}
                             </span>
                           </div>
 
-                          {/* Direct Muse Refine Link */}
-                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          {/* 4. The Muse Option */}
+                          <div className="pt-2 border-t border-slate-100">
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onOpenInMuse(`Let's refine this scheduled ${day} note: "${item.title}". Hook: "${item.hook || ''}". What are the best hooks and distribution angles?`, item);
                               }}
-                              className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
-                              title="Refine this scheduled note in Muse"
+                              className="w-full py-1.5 px-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                              title="Edit with Muse"
                             >
                               <Icon name="muse_star" size={10} className="text-[#FEEC98]" />
-                              <span>Muse</span>
+                              <span>Edit w Muse</span>
                             </button>
-                            <span className="text-[10px] text-slate-400 font-medium group-hover:text-slate-600 transition-colors">Details →</span>
                           </div>
                         </div>
                       ))}
+
+                      {dayItems.length === 0 && (
+                        <div className="py-6 flex items-center justify-center text-slate-300 text-xs font-medium">
+                          —
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {isPublishDay && dayItems.length === 0 && (
-                    <button
-                      type="button"
-                      onClick={() => onOpenQuickCapture()}
-                      className="w-full py-1.5 rounded-lg border border-dashed border-amber-300 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 transition-colors cursor-pointer"
-                    >
-                      + Schedule slot
-                    </button>
-                  )}
                 </div>
               );
             })}
