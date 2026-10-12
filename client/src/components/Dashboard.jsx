@@ -31,10 +31,10 @@ export default function Dashboard({
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Data stores initialized from profile
-  const [contentItems, setContentItems] = useState([]);
-  const [collectedInbox, setCollectedInbox] = useState([]);
-  const [agentMemory, setAgentMemory] = useState([]);
+  // Data stores initialized synchronously from profile
+  const [contentItems, setContentItems] = useState(() => getInitialStudioData(profile).contentItems);
+  const [collectedInbox, setCollectedInbox] = useState(() => getInitialStudioData(profile).collectedInbox);
+  const [agentMemory, setAgentMemory] = useState(() => getInitialStudioData(profile).agentMemory);
 
   // Modals & Navigation intents
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);

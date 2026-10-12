@@ -11,6 +11,24 @@ export default function ContentDetailModal({
 }) {
   if (!isOpen || !item) return null;
 
+  return (
+    <ContentDetailModalInner
+      item={item}
+      onClose={onClose}
+      onUpdateItem={onUpdateItem}
+      onDeleteItem={onDeleteItem}
+      onOpenInMuse={onOpenInMuse}
+    />
+  );
+}
+
+function ContentDetailModalInner({ 
+  item, 
+  onClose, 
+  onUpdateItem, 
+  onDeleteItem, 
+  onOpenInMuse 
+}) {
   const [title, setTitle] = useState(item.title || '');
   const [stage, setStage] = useState(item.stage || 'draft');
   const [platform, setPlatform] = useState(item.platform || 'LinkedIn');
