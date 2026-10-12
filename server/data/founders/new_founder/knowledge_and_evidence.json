@@ -1,0 +1,76 @@
+{
+  "founder_id": "new_founder",
+  "claims": [
+    {
+      "claim_id": "ev_01",
+      "topic": "Production Redis Memory Leak",
+      "claim": "Burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 autonomous agent sessions; resolved via 12-line Lua atomic proxy.",
+      "fact": "Burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 autonomous agent sessions; resolved via 12-line Lua atomic proxy.",
+      "source": "AWS CloudWatch Incident Log #412 & Git Commit 9a41c2",
+      "verification_status": "verified",
+      "permission_to_cite": true,
+      "context_visual": "Dark-mode terminal CPU flame graph before/after Lua script optimization."
+    },
+    {
+      "claim_id": "ev_02",
+      "topic": "SQLite vs Vector DB Benchmark",
+      "claim": "SQLite with BM25 achieved 1.8ms p99 latency compared to 42ms on managed vector DBs for corpora under 250,000 chunks, cutting server costs to zero.",
+      "fact": "SQLite with BM25 achieved 1.8ms p99 latency compared to 42ms on managed vector DBs for corpora under 250,000 chunks, cutting server costs to zero.",
+      "source": "AgentScale Internal Benchmark Report #07",
+      "verification_status": "verified",
+      "permission_to_cite": true,
+      "context_visual": "High-contrast latency vs cost benchmark table."
+    },
+    {
+      "claim_id": "ev_03",
+      "topic": "eBPF Trace Proxy Overhead",
+      "claim": "Our custom eBPF trace kernel captures recursive multi-agent tool loops with under 0.4% CPU overhead.",
+      "fact": "Our custom eBPF trace kernel captures recursive multi-agent tool loops with under 0.4% CPU overhead.",
+      "source": "AgentScale eBPF Kernel Architecture Paper v1.0",
+      "verification_status": "verified",
+      "permission_to_cite": true,
+      "context_visual": "Whiteboard kernel architecture diagram."
+    }
+  ],
+  "achievements": [
+    {
+      "title": "$1.8M Seed Round Closed",
+      "details": "Backed by developer tools seed syndicate to build autonomous agent observability.",
+      "source": "SEC Form D & Syndicate Term Sheet",
+      "verification_status": "verified",
+      "permission_to_cite": true
+    },
+    {
+      "title": "AgentScale Tracing Engine v1.0",
+      "details": "Shipped deterministic replay debugger for multi-agent loops.",
+      "source": "GitHub Release Tags v1.0.0",
+      "verification_status": "verified",
+      "permission_to_cite": true
+    }
+  ],
+  "projects": [
+    {
+      "project_name": "AgentScale Observability Proxy",
+      "description": "Low-overhead distributed trace debugger for LLM agent clusters.",
+      "stage": "Production",
+      "public": true
+    },
+    {
+      "project_name": "AgentBench Suite",
+      "description": "Open latency benchmark comparing SQLite and remote vector stores.",
+      "stage": "Open Source",
+      "public": true
+    }
+  ],
+  "metrics": {
+    "stage": "Seed ($1.8M raised, 14-person engineering team)",
+    "company": "AgentScale",
+    "primary_metric": "1.8ms p99 latency",
+    "team_size": 14
+  },
+  "lessons": [
+    "Unbatched scans across high-throughput distributed stores will inevitably fail at p99 scale.",
+    "Engineers respect code diffs and flame graphs infinitely more than high-level thought leadership."
+  ],
+  "last_updated": "2026-10-12T17:21:32.939511Z"
+}
