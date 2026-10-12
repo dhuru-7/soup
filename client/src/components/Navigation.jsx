@@ -16,10 +16,7 @@ export default function Navigation({
     { id: 'overview', label: 'Home', icon: 'home', desc: 'Command center & pulse' },
     { id: 'muse', label: 'Muse', icon: 'star', desc: 'AI collaborator & research' },
     { id: 'studio', label: 'Scrapbook', icon: 'collections_bookmark', desc: 'Content command center & board' },
-    { id: 'you', label: 'Profile', icon: 'person', desc: 'Founder identity & memory' },
   ];
-
-  const activeId = currentProfileId || profile?.founder_id || 'arjun_vance';
 
   return (
     <>
@@ -75,61 +72,26 @@ export default function Navigation({
           </nav>
         </div>
 
-        {/* Bottom Section: Founder Profile & Switcher */}
-        <div className="pt-3 border-t border-slate-200/80 flex flex-col gap-2.5">
-          {/* Quick Profile Switcher for Judges */}
-          <div className="flex items-center justify-between bg-slate-100 p-0.5 rounded-xl border border-slate-200/70 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => onSwitchProfile && onSwitchProfile('arjun_vance')}
-              className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-bold transition-all text-center ${
-                activeId === 'arjun_vance'
-                  ? 'bg-white text-slate-950 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Arjun (AI)
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchProfile && onSwitchProfile('maya_lin')}
-              className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-bold transition-all text-center ${
-                activeId === 'maya_lin'
-                  ? 'bg-emerald-700 text-white shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Maya (D2C)
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between px-1">
+        {/* Bottom Section: Founder Identity */}
+        {profile?.identity && (
+          <div className="pt-3 border-t border-slate-200/80 flex items-center px-1">
             <div className="flex items-center gap-2.5 min-w-0">
               <img 
-                src={profile.identity.avatar} 
-                alt={profile.identity.name} 
+                src={profile.identity.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'} 
+                alt={profile.identity.name || 'Founder'} 
                 className="w-9 h-9 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
               />
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold text-slate-900 truncate">
-                  {profile.identity.name}
+                  {profile.identity.name || 'Founder'}
                 </span>
                 <span className="text-[10px] text-slate-500 truncate">
-                  {profile.identity.company_name}
+                  {profile.identity.company_name || 'Founder Identity'}
                 </span>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={onRestartOnboarding}
-              title="Restart Intake Form"
-              className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-1 rounded-lg hover:bg-amber-50 shrink-0"
-            >
-              + Onboard
-            </button>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* =========================================================================
@@ -140,22 +102,6 @@ export default function Navigation({
           <span className="font-heading text-xl font-black tracking-tight text-slate-950">
             Soup
           </span>
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-bold">
-            <button
-              type="button"
-              onClick={() => onSwitchProfile && onSwitchProfile('arjun_vance')}
-              className={`px-2 py-0.5 rounded ${activeId === 'arjun_vance' ? 'bg-white text-slate-950 shadow-2xs' : 'text-slate-500'}`}
-            >
-              Arjun
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchProfile && onSwitchProfile('maya_lin')}
-              className={`px-2 py-0.5 rounded ${activeId === 'maya_lin' ? 'bg-emerald-700 text-white shadow-2xs' : 'text-slate-500'}`}
-            >
-              Maya
-            </button>
-          </div>
         </div>
 
         <div className="flex items-center gap-2">
