@@ -33,19 +33,8 @@ export default function Navigation({
             </span>
           </div>
 
-          {/* Primary Action Button: 10% more intense canary gold (#FFCC00) */}
-          <button
-            type="button"
-            onClick={onOpenQuickCapture}
-            className="w-full mt-4 h-10 px-4 rounded-xl bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-2xs active:scale-[0.98] transition-all"
-            title="Capture raw note, voice memo, or idea"
-          >
-            <Icon name="add" size={18} className="text-slate-950 font-bold" />
-            <span>New idea</span>
-          </button>
-
           {/* Vertical Page Switcher Menu */}
-          <nav className="flex flex-col gap-1.5 mt-6">
+          <nav className="flex flex-col gap-1.5 mt-4">
             {navItems.map(item => {
               const isActive = activePage === item.id;
               return (
@@ -88,7 +77,7 @@ export default function Navigation({
             >
               <img 
                 src={profile.identity.avatar || (profile.founder_id === 'maya_lin' ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80')} 
-                alt={profile.identity.name || 'Founder'} 
+                alt={profile.identity.name || profile.name || 'User Profile'} 
                 className={`w-8 h-8 rounded-full object-cover shrink-0 shadow-2xs transition-colors ${
                   activePage === 'you' ? 'border border-white/20' : 'border border-slate-200 group-hover:border-slate-300'
                 }`}
@@ -97,12 +86,12 @@ export default function Navigation({
                 <span className={`text-[13px] font-semibold truncate leading-tight transition-colors ${
                   activePage === 'you' ? 'text-white font-bold' : 'text-slate-900 group-hover:text-slate-950'
                 }`}>
-                  {profile.identity.name || 'Founder'}
+                  {profile.identity.name || profile.name || 'User Profile'}
                 </span>
                 <span className={`text-[11px] truncate leading-normal transition-colors ${
                   activePage === 'you' ? 'text-slate-400' : 'text-slate-500 group-hover:text-slate-600'
                 }`}>
-                  {profile.identity.company_name || 'Founder Profile'}
+                  {profile.identity.company_name || profile.company || profile.identity.role || ''}
                 </span>
               </div>
             </button>
@@ -135,14 +124,6 @@ export default function Navigation({
               />
             </button>
           )}
-          <button
-            type="button"
-            onClick={onOpenQuickCapture}
-            className="h-8 px-3 rounded-lg bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 font-bold text-xs flex items-center gap-1 shadow-2xs active:scale-95"
-          >
-            <Icon name="add" size={16} />
-            <span>New</span>
-          </button>
         </div>
       </header>
 

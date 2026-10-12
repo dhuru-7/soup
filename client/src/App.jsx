@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import { PROFILES_DATA } from './data/profilesData';
-import { onboardFounder } from './api';
+import { onboardFounder, fetchProfile } from './api';
 
 function parseUrlState() {
   if (typeof window === 'undefined') {
@@ -13,7 +13,7 @@ function parseUrlState() {
   const profileParam = params.get('profile') || 'arjun_vance';
   const stepParam = parseInt(params.get('step') || '1', 10);
 
-  const validProfileId = ['arjun_vance', 'maya_lin'].includes(profileParam) ? profileParam : 'arjun_vance';
+  const validProfileId = ['arjun_vance', 'maya_lin', 'new_founder', 'custom_founder'].includes(profileParam) ? profileParam : 'arjun_vance';
   const validStep = stepParam >= 1 && stepParam <= 5 ? stepParam : 1;
 
   // 1. Check path-based routing (/home, /muse, /scrapbook, /profile, /onboarding)
@@ -45,8 +45,44 @@ export default function App() {
   const [viewMode, setViewMode] = useState(initialState.viewMode); // 'onboarding' | 'dashboard'
   const [activePage, setActivePage] = useState(initialState.activePage); // 'overview' | 'muse' | 'studio' | 'you'
   const [currentProfileId, setCurrentProfileId] = useState(initialState.profileId);
-  const [customProfile, setCustomProfile] = useState(null);
+  const [customProfile, setCustomProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('soup_custom_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [onboardingStep, setOnboardingStep] = useState(initialState.step);
+
+  // Sync profile directly from backend memory assets/files whenever active profile changes
+  useEffect(() => {
+    let isMounted = true;
+    async function loadBackendProfile() {
+      try {
+        const targetId = currentProfileId === 'custom_founder' ? 'new_founder' : currentProfileId;
+        const backendProfile = await fetchProfile(targetId);
+        if (backendProfile && isMounted) {
+          setCustomProfile(prev => ({
+            ...(prev || {}),
+            ...backendProfile,
+            identity: {
+              ...(backendProfile.identity || {}),
+              name: backendProfile.identity?.name || backendProfile.name || prev?.identity?.name,
+              role: backendProfile.identity?.role || backendProfile.role || prev?.identity?.role,
+              company_name: backendProfile.identity?.company_name || backendProfile.company || prev?.identity?.company_name,
+              tagline: backendProfile.identity?.tagline || backendProfile.product_description || prev?.identity?.tagline,
+              origin_scar: backendProfile.identity?.origin_scar || backendProfile.origin_scar || prev?.identity?.origin_scar
+            }
+          }));
+        }
+      } catch (err) {
+        console.warn("Could not load backend profile:", err);
+      }
+    }
+    loadBackendProfile();
+    return () => { isMounted = false; };
+  }, [currentProfileId]);
 
   const activeProfile = customProfile || PROFILES_DATA[currentProfileId] || PROFILES_DATA['arjun_vance'];
 
@@ -228,7 +264,14 @@ export default function App() {
       }
     };
 
+    try {
+      localStorage.setItem('soup_custom_profile', JSON.stringify(dynamicProfile));
+    } catch (e) {
+      console.warn("Storage save:", e);
+    }
+
     setCustomProfile(dynamicProfile);
+    setCurrentProfileId('custom_founder');
     setViewMode('dashboard');
     setActivePage('overview');
     syncUrl('dashboard', 'overview', 'custom_founder', 1);
