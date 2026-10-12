@@ -1,0 +1,76 @@
+{
+  "founder_id": "maya_lin",
+  "claims": [
+    {
+      "claim_id": "ev_01",
+      "topic": "Co-Packer Rejections",
+      "claim": "14 commercial beverage manufacturing plants refused to bottle our formula without synthetic stabilizers and gums.",
+      "fact": "14 commercial beverage manufacturing plants refused to bottle our formula without synthetic stabilizers and gums.",
+      "source": "Co-packer technical specification correspondence #01-#14",
+      "verification_status": "verified",
+      "permission_to_cite": true,
+      "context_visual": "Candid warehouse photo holding batch test sheets next to canning line."
+    },
+    {
+      "claim_id": "ev_02",
+      "topic": "Retail Unit Economics",
+      "claim": "Getting into the first 12 Whole Foods locations required absorbing $0.14 margin sacrifice per can to keep ingredients 100% whole plant extract.",
+      "fact": "Getting into the first 12 Whole Foods locations required absorbing $0.14 margin sacrifice per can to keep ingredients 100% whole plant extract.",
+      "source": "Solace Botanicals COGS Spreadsheet v4.2",
+      "verification_status": "verified",
+      "permission_to_cite": true,
+      "context_visual": "Photo of handwritten pallet inventory clipboard."
+    },
+    {
+      "claim_id": "ev_03",
+      "topic": "FDA Ingredient Loopholes",
+      "claim": "Under FDA Title 21 Code of Federal Regulations, brands can group synthetic chemical solvents and extraction carriers under the umbrella term 'Natural Flavors'.",
+      "fact": "Under FDA Title 21 Code of Federal Regulations, brands can group synthetic chemical solvents and extraction carriers under the umbrella term 'Natural Flavors'.",
+      "source": "FDA CFR Title 21 \u00a7 101.22",
+      "verification_status": "verified",
+      "permission_to_cite": true,
+      "context_visual": "Macro comparison photo of pure organic ashwagandha root vs synthetic extract powder."
+    }
+  ],
+  "achievements": [
+    {
+      "title": "Bootstrapped to $65k MRR",
+      "details": "Reached $65,000 in monthly recurring revenue with zero outside venture capital.",
+      "source": "Stripe Revenue Dashboard",
+      "verification_status": "verified",
+      "permission_to_cite": true
+    },
+    {
+      "title": "Whole Foods Regional Shelf Placement",
+      "details": "Secured authorization across 12 Northern California retail locations.",
+      "source": "Whole Foods Vendor Agreement",
+      "verification_status": "verified",
+      "permission_to_cite": true
+    }
+  ],
+  "projects": [
+    {
+      "project_name": "Solace Adaptogenic Elixir",
+      "description": "Clean functional beverage with 0g sugar and zero artificial gums.",
+      "stage": "In Market",
+      "public": true
+    },
+    {
+      "project_name": "Zero-Gum Botanical Canning Protocol",
+      "description": "Proprietary ultrasonic emulsion protocol replacing guar gum.",
+      "stage": "Patent Pending",
+      "public": false
+    }
+  ],
+  "metrics": {
+    "stage": "Bootstrapped to $65k MRR, raising $750k Angel Seed",
+    "company": "Solace Botanicals",
+    "primary_metric": "$65k MRR (Organic)",
+    "team_size": 6
+  },
+  "lessons": [
+    "Formulation compromises destroy long-term brand equity faster than supply chain delays.",
+    "Direct customer relationships beat distributor hype every single quarter."
+  ],
+  "last_updated": "2026-10-12T17:07:51.447935Z"
+}

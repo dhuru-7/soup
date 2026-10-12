@@ -1,0 +1,57 @@
+{
+  "founder_id": "arjun_vance",
+  "tone": "The Builder (Share the Work) - Direct, transparent, practitioner-level depth, zero synthetic buzzwords.",
+  "archetype": "The Builder (Share the Work)",
+  "writing_samples": [
+    "We accidentally burned $412 in 14 hours on AWS because of a single unbatched Redis scan across 50,000 agent sessions.\n\nHere is the post-mortem and the 12-line Lua script that fixed it:",
+    "Unpopular opinion: \"Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.\"\n\nHere is our benchmark comparing p99 latency under concurrent load:"
+  ],
+  "preferred_formats": [
+    "Production Post-Mortem",
+    "Contrarian Architecture Wedge",
+    "Terminal / Whiteboard Teardown"
+  ],
+  "format_breakdown": {
+    "text_posts": 60,
+    "short_videos_reels": 20,
+    "carousels_and_graphics": 20
+  },
+  "format_preferences": {
+    "prefers_text_posts": true,
+    "prefers_videos": false,
+    "prefers_carousels": true,
+    "notes": "Prefers raw candid assets (warehouse logs or terminal flame graphs) over corporate marketing graphics."
+  },
+  "vocabulary": {
+    "signature_terms": [
+      "p99 latency",
+      "distributed state",
+      "eBPF trace",
+      "Lua atomic script",
+      "deterministic replay"
+    ],
+    "voice_rules": [
+      "Archetype tone: The Builder (Share the Work).",
+      "Always include concrete proof: exact cost per can, exact batch numbers, or exact millisecond latency.",
+      "Zero synthetic AI boilerplate words (no 'in today's world', 'delve', or rocket emojis).",
+      "Keep sentence rhythm conversational, direct, and unpretentious."
+    ]
+  },
+  "phrases_to_avoid": [
+    "delve into",
+    "game-changer",
+    "humbled and honored",
+    "thrilled to announce",
+    "in today's fast-paced digital world",
+    "synergy",
+    "supercharge",
+    "revolutionary"
+  ],
+  "privacy_boundaries": [
+    "Never cite personal supplier cell numbers or unannounced contract agreements.",
+    "Never reveal proprietary batch formulation ratios before patent filing.",
+    "Never name pilot enterprise partners without mutual press sign-off."
+  ],
+  "spicy_take": "Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.",
+  "last_updated": "2026-10-12T17:07:51.443883Z"
+}

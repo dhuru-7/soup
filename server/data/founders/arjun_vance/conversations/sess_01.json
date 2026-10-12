@@ -1,0 +1,14 @@
+[
+  {
+    "sender": "system",
+    "text": "Context loaded from founder memory assets for: Founder story: Redis memory leak \u2192 45s video teardown."
+  },
+  {
+    "sender": "founder",
+    "text": "Agent, let's execute on: 'Founder story: Redis memory leak \u2192 45s video teardown'. Make sure it's grounded in our verified evidence and avoids banned marketing fluff."
+  },
+  {
+    "sender": "agent",
+    "text": "On it. Pulling from your knowledge locker: Calibrated the $412 Redis memory leak incident into a high-proof technical post-mortem for engineering leads.\nDecisions established:\n- Included exact dollar cost ($412) and 12-line Lua solution\n- Attached terminal CPU flame graph\n- CTA targeted staff backend engineers and AI platform leads"
+  }
+]

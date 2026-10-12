@@ -1,10 +1,10 @@
 /**
  * Soup Backend API Client
- * Connects frontend views to the Flask/Python backend running on http://localhost:5000/api
+ * Connects frontend views to the Flask/Python backend running on http://localhost:5050/api
  * Falls back gracefully to local mock data if the backend server is temporarily offline.
  */
 
-const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:5000/api';
+const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:5050/api';
 
 /**
  * Health check
@@ -45,6 +45,103 @@ export async function fetchProfile(founderId = 'arjun_vance') {
     return await res.json();
   } catch (err) {
     console.warn(`Failed to fetch profile ${founderId} from backend:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * Onboard a founder and create the 7 agent memory assets
+ */
+export async function onboardFounder(onboardingData) {
+  try {
+    const res = await fetch(`${API_BASE}/onboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(onboardingData),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("Onboarding API call failed:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Fetch overview of all 7 memory assets
+ */
+export async function fetchFounderMemory(founderId = 'arjun_vance') {
+  try {
+    const res = await fetch(`${API_BASE}/founder/${founderId}/memory`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("Failed to fetch memory overview:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Fetch specific memory asset (e.g. 'knowledge_and_evidence.json', 'interests_and_stories.md')
+ */
+export async function fetchMemoryFile(founderId = 'arjun_vance', filename = 'knowledge_and_evidence.json') {
+  try {
+    const res = await fetch(`${API_BASE}/founder/${founderId}/file/${filename}`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (filename.endsWith('.json') || filename.endsWith('.jsonl')) {
+      return await res.json();
+    }
+    return await res.text();
+  } catch (err) {
+    console.warn(`Failed to fetch memory file ${filename}:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * Update memory asset and log to memory_changelog.jsonl
+ */
+export async function updateMemoryFile(founderId = 'arjun_vance', filename = 'knowledge_and_evidence.json', content, whatChanged = 'Update', why = 'Founder request') {
+  try {
+    const res = await fetch(`${API_BASE}/founder/${founderId}/file/${filename}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, what_changed: whatChanged, why, founder_approved: true }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn(`Failed to update memory file ${filename}:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * Fetch session index & conversation logs
+ */
+export async function fetchSessions(founderId = 'arjun_vance') {
+  try {
+    const res = await fetch(`${API_BASE}/founder/${founderId}/sessions`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("Failed to fetch sessions:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Fetch append-only memory changelog
+ */
+export async function fetchMemoryChangelog(founderId = 'arjun_vance') {
+  try {
+    const res = await fetch(`${API_BASE}/founder/${founderId}/changelog`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("Failed to fetch changelog:", err.message);
     return null;
   }
 }
@@ -143,7 +240,7 @@ export async function fetchMcpExport() {
           "soup-branding-engine": {
             command: "python",
             args: ["mcp-server/server.py"],
-            env: { "BRAND_ENGINE_API": "http://localhost:5000/api" }
+            env: { "BRAND_ENGINE_API": "http://localhost:5050/api" }
           }
         }
       }

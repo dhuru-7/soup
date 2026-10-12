@@ -1,75 +1,132 @@
 import os
 import json
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
+
+import memory_manager
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 app = Flask(__name__)
+# Enable CORS for all routes and origins
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
+
 def load_profile(founder_id: str):
-    if not os.path.exists(DATA_DIR):
-        return None
+    """
+    Loads unified founder profile.
+    Checks structured memory manager assets first, then falls back to legacy single JSON files.
+    """
+    clean_id = founder_id.strip().lower().replace(" ", "_")
     
-    # 1. Direct match (e.g. arjun_vance.json or founder_arjun.json)
-    for candidate in [f"{founder_id}.json", f"founder_{founder_id}.json"]:
-        file_path = os.path.join(DATA_DIR, candidate)
-        if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-                
-    # 2. Search inside all JSON files for matching founder_id
-    for fname in os.listdir(DATA_DIR):
-        if fname.endswith(".json"):
-            try:
-                with open(os.path.join(DATA_DIR, fname), "r", encoding="utf-8") as f:
-                    p = json.load(f)
-                    if p.get("founder_id") == founder_id:
-                        return p
-                    # Substring match (e.g. 'arjun' in 'arjun_vance')
-                    if founder_id in p.get("founder_id", "") or p.get("founder_id", "") in founder_id:
-                        return p
-            except Exception:
-                continue
+    # 1. Try unified profile compiled from the 7 memory assets
+    unified = memory_manager.compile_unified_profile(clean_id)
+    if unified:
+        return unified
+        
+    # Check alias / fuzzy match (e.g. 'arjun' -> 'arjun_vance', 'maya' -> 'maya_lin')
+    for fid in memory_manager.list_founder_ids():
+        if clean_id in fid or fid in clean_id:
+            unified = memory_manager.compile_unified_profile(fid)
+            if unified:
+                return unified
+
+    # 2. Check direct JSON file in DATA_DIR
+    if os.path.exists(DATA_DIR):
+        for candidate in [f"{clean_id}.json", f"founder_{clean_id}.json"]:
+            file_path = os.path.join(DATA_DIR, candidate)
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+
+        # 3. Search inside JSON files
+        for fname in os.listdir(DATA_DIR):
+            if fname.endswith(".json"):
+                try:
+                    with open(os.path.join(DATA_DIR, fname), "r", encoding="utf-8") as f:
+                        p = json.load(f)
+                        if p.get("founder_id") == clean_id or clean_id in str(p.get("founder_id", "")):
+                            return p
+                except Exception:
+                    continue
     return None
 
-def save_profile(founder_id: str, data: dict):
+
+def save_legacy_profile(founder_id: str, data: dict):
     os.makedirs(DATA_DIR, exist_ok=True)
     file_path = os.path.join(DATA_DIR, f"{founder_id}.json")
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+
+# =============================================================================
+# Core System Endpoints
+# =============================================================================
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({
         "status": "healthy",
-        "service": "Founder Personal Branding & Content Execution Engine",
-        "version": "1.0.0"
+        "service": "Soup Intelligence OS — Founder Branding Engine & Agent Memory",
+        "version": "2.0.0",
+        "memory_storage": "7-Asset Structured Local Agent Memory",
+        "port": 5050
     })
+
 
 @app.route("/api/profiles", methods=["GET"])
 def list_profiles():
+    """
+    Lists all available founders with summary identity cards.
+    """
     profiles = []
+    seen_ids = set()
+
+    # 1. Profiles from memory manager
+    for fid in memory_manager.list_founder_ids():
+        p = memory_manager.compile_unified_profile(fid)
+        if p and fid not in seen_ids:
+            seen_ids.add(fid)
+            identity = p.get("identity", {})
+            profiles.append({
+                "founder_id": fid,
+                "name": identity.get("name"),
+                "role": identity.get("role"),
+                "company_name": identity.get("company_name"),
+                "avatar": identity.get("avatar"),
+                "tagline": identity.get("tagline") or identity.get("mission"),
+                "industry": p.get("domain_radar", {}).get("industry"),
+                "archetype": p.get("voiceprint", {}).get("insead_archetype")
+            })
+
+    # 2. Add any legacy profiles if not already included
     if os.path.exists(DATA_DIR):
         for fname in os.listdir(DATA_DIR):
-            if fname.endswith(".json"):
-                with open(os.path.join(DATA_DIR, fname), "r", encoding="utf-8") as f:
-                    p = json.load(f)
-                    profiles.append({
-                        "founder_id": p.get("founder_id"),
-                        "name": p.get("identity", {}).get("name"),
-                        "role": p.get("identity", {}).get("role"),
-                        "company_name": p.get("identity", {}).get("company_name"),
-                        "avatar": p.get("identity", {}).get("avatar"),
-                        "tagline": p.get("identity", {}).get("tagline"),
-                        "industry": p.get("domain_radar", {}).get("industry"),
-                        "archetype": p.get("voiceprint", {}).get("insead_archetype")
-                    })
+            if fname.endswith(".json") and not fname.startswith("founder_"):
+                fid = fname.replace(".json", "")
+                if fid not in seen_ids:
+                    seen_ids.add(fid)
+                    try:
+                        with open(os.path.join(DATA_DIR, fname), "r", encoding="utf-8") as f:
+                            p = json.load(f)
+                            profiles.append({
+                                "founder_id": p.get("founder_id", fid),
+                                "name": p.get("identity", {}).get("name"),
+                                "role": p.get("identity", {}).get("role"),
+                                "company_name": p.get("identity", {}).get("company_name"),
+                                "avatar": p.get("identity", {}).get("avatar"),
+                                "tagline": p.get("identity", {}).get("tagline"),
+                                "industry": p.get("domain_radar", {}).get("industry"),
+                                "archetype": p.get("voiceprint", {}).get("insead_archetype")
+                            })
+                    except Exception:
+                        continue
+
     return jsonify({"profiles": profiles})
+
 
 @app.route("/api/profile/<founder_id>", methods=["GET"])
 def get_profile(founder_id):
@@ -78,49 +135,196 @@ def get_profile(founder_id):
         return jsonify({"error": f"Profile '{founder_id}' not found"}), 404
     return jsonify(profile)
 
+
+# =============================================================================
+# Onboarding & Memory Ingestion Pipeline
+# =============================================================================
+
 @app.route("/api/onboard", methods=["POST"])
 def onboard_founder():
+    """
+    Onboarding handler:
+    When onboarding happens, the details shared by the user create the user's profile
+    in the backend and database. The agent processes the given data and saves it in
+    the 7 structured local memory assets:
+    1. founder_profile.json
+    2. interests_and_stories.md
+    3. voice_and_preferences.json
+    4. active_direction.md
+    5. knowledge_and_evidence.json
+    6. session_index.json + conversation logs
+    7. memory_changelog.jsonl
+    """
     payload = request.get_json() or {}
-    founder_id = payload.get("founder_id") or f"founder_{payload.get('identity', {}).get('name', 'new').lower().replace(' ', '_')}"
     
-    # Run Voiceprint Calibration & Anti-Slop validation
-    voiceprint = payload.get("voiceprint", {})
-    archetype = voiceprint.get("insead_archetype", "The Magnet (Attractor)")
+    # Determine founder_id
+    founder_id = payload.get("founder_id")
+    if not founder_id:
+        name_val = payload.get("fullName") or payload.get("identity", {}).get("name", "new_founder")
+        founder_id = name_val.lower().strip().replace(" ", "_").replace("/", "_")
     
-    # Generate tailored 3 Content Pillars based on domain & archetype
-    industry = payload.get("domain_radar", {}).get("industry", "Technology")
-    spicy_take = voiceprint.get("spicy_take", "")
+    # Process given onboarding data and generate all 7 agent memory files
+    result = memory_manager.create_or_update_founder_memory(founder_id, payload)
     
-    pillars = [
-        {
-            "id": "pillar_1",
-            "name": f"Core Proof & {industry} Execution",
-            "ratio": 55,
-            "description": f"Real building-in-public metrics, architectural teardowns, and learnings from {payload.get('identity', {}).get('company_name', 'our team')}."
-        },
-        {
-            "id": "pillar_2",
-            "name": "Contrarian Industry Insights",
-            "ratio": 30,
-            "description": f"Challenging lazy industry orthodoxies. Centerpiece: '{spicy_take}'."
-        },
-        {
-            "id": "pillar_3",
-            "name": "Culture, Hiring & Vision",
-            "ratio": 15,
-            "description": "Founder vulnerability, operating philosophy, and recruiting high-agency peers."
-        }
-    ]
-    payload["content_pillars"] = pillars
-    payload["founder_id"] = founder_id
-    save_profile(founder_id, payload)
+    # Also compile the unified profile for immediate frontend render
+    unified_profile = memory_manager.compile_unified_profile(founder_id)
+    
+    # Save legacy JSON snapshot for backwards compatibility
+    if unified_profile:
+        save_legacy_profile(founder_id, unified_profile)
     
     return jsonify({
         "status": "success",
-        "message": "Founder onboarding complete and calibrated against INSEAD executive model.",
+        "message": "Founder onboarding successfully processed. Agent memory generated across 7 local assets.",
         "founder_id": founder_id,
-        "profile": payload
+        "files_created": result.get("files_created", []),
+        "directory": result.get("directory", ""),
+        "profile": unified_profile
+    }), 201
+
+
+# =============================================================================
+# Agent Memory & Knowledge Management Endpoints
+# =============================================================================
+
+@app.route("/api/founder/<founder_id>/memory", methods=["GET"])
+def get_founder_memory_overview(founder_id):
+    """
+    Returns an overview of all 7 memory assets with file existence, sizes, and timestamps.
+    """
+    overview = memory_manager.get_all_memory_assets(founder_id)
+    return jsonify({
+        "status": "success",
+        "memory_overview": overview
     })
+
+
+@app.route("/api/founder/<founder_id>/file/<filename>", methods=["GET"])
+def get_memory_file_endpoint(founder_id, filename):
+    """
+    Allows the agent or client to retrieve any of the 7 memory assets anytime:
+    - founder_profile.json
+    - interests_and_stories.md
+    - voice_and_preferences.json
+    - active_direction.md
+    - knowledge_and_evidence.json
+    - session_index.json
+    - memory_changelog.jsonl
+    """
+    content = memory_manager.get_memory_file(founder_id, filename)
+    if content is None:
+        return jsonify({"error": f"Memory file '{filename}' not found for founder '{founder_id}'"}), 404
+        
+    if filename.endswith(".json") or filename.endswith(".jsonl"):
+        return jsonify({
+            "status": "success",
+            "founder_id": founder_id,
+            "filename": filename,
+            "content": content
+        })
+    else:
+        # Markdown / text file
+        return Response(content, mimetype="text/markdown")
+
+
+@app.route("/api/founder/<founder_id>/file/<filename>", methods=["POST", "PUT"])
+def update_memory_file_endpoint(founder_id, filename):
+    """
+    Allows the agent or user to update any of the 7 memory files.
+    Automatically logs the mutation to memory_changelog.jsonl!
+    """
+    payload = request.get_json() or {}
+    content = payload.get("content")
+    if content is None:
+        return jsonify({"error": "Missing 'content' field in request body"}), 400
+        
+    what_changed = payload.get("what_changed", f"Updated {filename}")
+    why = payload.get("why", "Founder profile or preference adjustment")
+    founder_approved = payload.get("founder_approved", True)
+    
+    success = memory_manager.update_memory_file(
+        founder_id=founder_id,
+        filename=filename,
+        content=content,
+        what_changed=what_changed,
+        why=why,
+        founder_approved=founder_approved
+    )
+    
+    if not success:
+        return jsonify({"error": f"Failed to update '{filename}'"}), 500
+        
+    return jsonify({
+        "status": "success",
+        "message": f"Updated {filename} and registered entry in memory_changelog.jsonl",
+        "founder_id": founder_id,
+        "filename": filename
+    })
+
+
+@app.route("/api/founder/<founder_id>/sessions", methods=["GET"])
+def get_founder_sessions(founder_id):
+    """
+    Returns session_index.json (session titles, timestamps, summaries, decisions, log links).
+    This lets the agent continue previous work without reloading every past message each time.
+    """
+    sessions = memory_manager.get_memory_file(founder_id, "session_index.json")
+    if not sessions:
+        return jsonify({"error": f"No sessions found for '{founder_id}'"}), 404
+    return jsonify({
+        "status": "success",
+        "founder_id": founder_id,
+        "session_index": sessions
+    })
+
+
+@app.route("/api/founder/<founder_id>/session", methods=["POST"])
+def create_founder_session(founder_id):
+    """
+    Records a new conversation session: title, summary, decisions, and full message log.
+    Saves message log to conversations/<session_id>.json and updates session_index.json.
+    """
+    payload = request.get_json() or {}
+    title = payload.get("title", "New Founder Strategy Session")
+    summary = payload.get("summary", "Session summary")
+    decisions = payload.get("decisions", [])
+    messages = payload.get("messages", [])
+    
+    session_entry = memory_manager.add_session(
+        founder_id=founder_id,
+        title=title,
+        summary=summary,
+        decisions=decisions,
+        messages=messages
+    )
+    
+    return jsonify({
+        "status": "success",
+        "message": "Session recorded and indexed successfully.",
+        "session": session_entry
+    }), 201
+
+
+@app.route("/api/founder/<founder_id>/changelog", methods=["GET"])
+def get_founder_changelog(founder_id):
+    """
+    Returns the complete append-only history of meaningful changes from memory_changelog.jsonl:
+    what changed, when, why, and whether the founder approved it.
+    """
+    changelog = memory_manager.get_memory_file(founder_id, "memory_changelog.jsonl")
+    if changelog is None:
+        changelog = []
+    return jsonify({
+        "status": "success",
+        "founder_id": founder_id,
+        "total_changes": len(changelog),
+        "changelog": changelog
+    })
+
+
+# =============================================================================
+# Execution & Content Pipeline Endpoints
+# =============================================================================
 
 @app.route("/api/assets/process", methods=["POST"])
 def process_raw_asset():
@@ -135,30 +339,30 @@ def process_raw_asset():
     
     profile = load_profile(founder_id)
     name = profile.get("identity", {}).get("name", "Founder") if profile else "Founder"
-    archetype = profile.get("voiceprint", {}).get("insead_archetype", "The Magnet") if profile else "The Magnet"
+    company = profile.get("identity", {}).get("company_name", "Startup") if profile else "Startup"
+    spicy_take = profile.get("voiceprint", {}).get("spicy_take", "") if profile else ""
     
-    # Generate 3 distinct high-converting post variations with platform hooks & visual briefs
     angles = [
         {
             "angle_name": "The High-Proof Teardown",
             "platform": "LinkedIn",
-            "hook": f"Most founders hide what goes wrong behind closed doors. Here is the exact friction we hit today:\n\n\"{raw_content[:90]}...\"",
-            "body": f"Here is the breakdown:\n1. The unexpected breakdown.\n2. The immediate engineering/operational pivot.\n3. The exact lesson that saved our milestone.",
+            "hook": f"Most founders hide what goes wrong behind closed doors. Here is the exact friction we hit today at {company}:\n\n\"{raw_content[:90]}...\"",
+            "body": f"Here is the breakdown:\n1. The unexpected breakdown.\n2. The immediate operational pivot.\n3. The exact metric that saved our milestone.",
             "visual_direction": "Attach candid screen capture or whiteboard diagram showing the exact metric or architecture change.",
             "follow_up_action": "Engage in comments for 45 minutes; share the GitHub link or lab sheet with anyone who asks."
         },
         {
             "angle_name": "The Contrarian Take",
             "platform": "X (Twitter)",
-            "hook": f"Unpopular opinion: Conventional wisdom told us to do the opposite, but real data proved otherwise.\n\n{raw_content[:120]}",
-            "body": "Why 90% of people get this wrong: They optimize for short-term vanity over first-principles execution. Here is our benchmark.",
+            "hook": f"Unpopular opinion based on today's data:\n\n{raw_content[:120]}",
+            "body": f"Why 90% of teams over-engineer this: They optimize for vanity before validation. {spicy_take}",
             "visual_direction": "High-contrast 2-column comparison graphic (Old Way vs New Way).",
             "follow_up_action": "Retweet with additional context if debate sparks in comments."
         },
         {
             "angle_name": "The Vulnerable Founder Story",
             "platform": "LinkedIn & Substack",
-            "hook": f"This is what building a company actually looks like at 6 AM when nobody is watching.\n\n{raw_content[:80]}",
+            "hook": f"This is what building {company} actually looks like at 6 AM when nobody is watching.\n\n{raw_content[:80]}",
             "body": "Building in public isn't about bragging about wins. It's about taking full accountability for the hard trade-offs.",
             "visual_direction": "Authentic photo taken on a phone camera—no filters, no corporate staging.",
             "follow_up_action": "Directly message candidate applicants or prospective investors who engage with the post."
@@ -173,54 +377,44 @@ def process_raw_asset():
         "generated_angles": angles
     })
 
-@app.route("/api/analytics/observe", methods=["POST"])
-def observe_analytics():
-    """
-    Module 5 & Skill 5: Multi-Platform Analytics Observer & Feedback Loop
-    LangGraph-style adaptive checkpoint review comparing reach vs 3/6-month goals.
-    """
-    payload = request.get_json() or {}
-    founder_id = payload.get("founder_id", "arjun_vance")
-    profile = load_profile(founder_id)
-    
-    if not profile:
-        return jsonify({"error": "Profile not found"}), 404
-        
-    goals = profile.get("goals_tracking", {}).get("metrics", {})
-    north_star = profile.get("goals_tracking", {}).get("north_star", "Authority & Inbound Pipeline")
-    
-    # Calculate performance feedback & adaptive pivot recommendations
-    pivot_suggestions = [
-        {
-            "observation": "High-technical teardown posts drove 4x more inbound qualified DMs than general industry commentary.",
-            "recommendation": "Shift next week's content allocation to 70% technical proof-of-work teardowns.",
-            "impact_on_goal": "+35% velocity toward quarterly inbound hiring target."
-        },
-        {
-            "observation": "Posts with authentic terminal screenshots / candid warehouse photos gained 2.8x higher comment depth than text-only updates.",
-            "recommendation": "Enforce mandatory visual asset pairing on Monday and Thursday primary posts.",
-            "impact_on_goal": "Elevates community retention and candidate engagement."
-        }
-    ]
-    
-    return jsonify({
-        "status": "success",
-        "founder_id": founder_id,
-        "north_star": north_star,
-        "current_metrics": goals,
-        "strategic_pivot_review": pivot_suggestions
-    })
 
 @app.route("/api/calendar/<founder_id>", methods=["GET"])
 def get_calendar(founder_id):
     profile = load_profile(founder_id)
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
+        
     return jsonify({
         "status": "success",
         "founder_id": founder_id,
-        "weekly_calendar": profile.get("weekly_calendar", [])
+        "weekly_calendar": profile.get("weekly_calendar", [
+            {
+                "day": "Monday",
+                "platform": "LinkedIn",
+                "format": "High-Proof Post-Mortem",
+                "hook": "Most teams hide their production incidents behind vague status pages.",
+                "visual_direction": "Terminal flame graph or warehouse test sheet.",
+                "follow_up_action": "Engage with engineers in comments within 60 minutes."
+            },
+            {
+                "day": "Wednesday",
+                "platform": "LinkedIn",
+                "format": "Contrarian Category Wedge",
+                "hook": "Unpopular opinion: Conventional wisdom told us to do the opposite.",
+                "visual_direction": "2-column comparison table.",
+                "follow_up_action": "Follow up with inbounds."
+            },
+            {
+                "day": "Friday",
+                "platform": "X (Twitter)",
+                "format": "Raw Builder Log",
+                "hook": "Here is what we shipped this week and the exact tradeoff we made.",
+                "visual_direction": "Candid workstation photo or commit log.",
+                "follow_up_action": "Share RFC link."
+            }
+        ])
     })
+
 
 @app.route("/api/generate/draft", methods=["POST"])
 def generate_draft():
@@ -237,7 +431,7 @@ def generate_draft():
     name = profile.get("identity", {}).get("name", "Founder")
     company = profile.get("identity", {}).get("company_name", "Startup")
     archetype = profile.get("voiceprint", {}).get("insead_archetype", "The Builder")
-    turning_point = profile.get("identity", {}).get("origin_scar", "Debugging in production")
+    turning_point = profile.get("identity", {}).get("origin_scar", "Overcoming operational friction")
     spicy_take = profile.get("voiceprint", {}).get("spicy_take", "Keep it simple and direct.")
     
     sarvam_key = os.environ.get("SARVAM_API_KEY", "sk_f26yysgz_RnnhvjCJvFXNAOUq8F2E5ZxN")
@@ -248,7 +442,6 @@ def generate_draft():
         f"Write with concrete metrics, friction, and direct human conclusions. Format: Hook, Core Story, Actionable Takeaway, Visual Brief."
     )
     
-    # Try calling Sarvam 105B API
     try:
         import requests
         res = requests.post(
@@ -278,7 +471,6 @@ def generate_draft():
     except Exception as e:
         logging.warning(f"Sarvam API call fallback triggered: {e}")
         
-    # Calibrated fallback output
     fallback_draft = (
         f"Most founders hide what goes wrong behind closed doors. At {company}, we almost lost our main production pipeline.\n\n"
         f"The friction: {turning_point}.\n\n"
@@ -297,11 +489,9 @@ def generate_draft():
         "draft": fallback_draft
     })
 
+
 @app.route("/api/export/mcp", methods=["GET"])
 def export_mcp_config():
-    """
-    Returns the ready-to-paste MCP configuration for Claude Code, Antigravity, and Cursor.
-    """
     cwd = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     server_script = os.path.join(cwd, "mcp-server", "server.py")
     
@@ -311,7 +501,7 @@ def export_mcp_config():
                 "command": "python",
                 "args": [server_script],
                 "env": {
-                    "BRAND_ENGINE_API": "http://localhost:5000/api"
+                    "BRAND_ENGINE_API": "http://localhost:5050/api"
                 }
             }
         }
@@ -322,29 +512,8 @@ def export_mcp_config():
         "instructions": "Add this to your Claude Desktop config (claude_desktop_config.json) or Antigravity/Cursor MCP settings."
     })
 
-@app.route("/api/export/skill", methods=["GET"])
-def export_skill():
-    """
-    Returns the Antigravity / Claude Code installable SKILL.md definition.
-    """
-    skill_content = """---
-name: soup-founder-branding
-description: "Founder brand execution engine. Analyzes founder voiceprint, generates anti-slop technical posts, and syncs weekly calendar."
-version: 1.0.0
----
-
-# Soup Founder Branding Engine
-
-Provides founder-calibrated execution tools for high-proof personal branding.
-- Enforces strict Anti-AI filter (zero synthetic fluff or robotic platitudes).
-- Calibrated to INSEAD Executive Archetypes.
-- Connects directly to local Soup MCP server on port 5000.
-"""
-    return jsonify({
-        "status": "success",
-        "skill_name": "soup-founder-branding",
-        "content": skill_content
-    })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5050))
+    logging.info(f"Starting Soup Intelligence OS Backend on port {port}...")
+    app.run(host="0.0.0.0", port=port, debug=False)

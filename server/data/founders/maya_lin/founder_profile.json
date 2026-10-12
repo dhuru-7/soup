@@ -1,0 +1,63 @@
+{
+  "founder_id": "maya_lin",
+  "name": "Maya Lin",
+  "role": "Founder & CEO",
+  "company": "Solace Botanicals",
+  "product_description": "Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.",
+  "stage": "Bootstrapped to $65k MRR, raising $750k Angel Seed",
+  "expertise": [
+    "D2C & Retail Expansion",
+    "Supply Chain / Operations",
+    "Functional Beverage Science"
+  ],
+  "target_audience": [
+    "Conscious Consumers & Health Enthusiasts",
+    "Regional Retail Buyers (Whole Foods, Sprouts)",
+    "Consumer Angel Investors"
+  ],
+  "goals": {
+    "north_star": "Wholesale Placement & High-Trust Brand Equity",
+    "timeframe": "6 Months",
+    "metrics": {
+      "retail_inbounds": {
+        "current": 4,
+        "target": 20,
+        "unit": "Stockist Inquiries"
+      },
+      "community_advocates": {
+        "current": 340,
+        "target": 1000,
+        "unit": "Verified Advocates"
+      },
+      "speaking_invites": {
+        "current": 2,
+        "target": 6,
+        "unit": "CPG Panels/Keynotes"
+      },
+      "authority_score": {
+        "current": 82,
+        "target": 95,
+        "unit": "/100"
+      }
+    }
+  },
+  "preferred_platforms": [
+    "LinkedIn",
+    "Instagram / TikTok"
+  ],
+  "weekly_time_budget": "2 hours/week (15 min daily review)",
+  "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+  "unfair_advantage": "Former food scientist at General Mills who left after seeing how cost-cutting compromises consumer gut health.",
+  "identity": {
+    "name": "Maya Lin",
+    "role": "Founder & CEO",
+    "company_name": "Solace Botanicals",
+    "mission": "Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.",
+    "tagline": "Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.",
+    "stage": "Bootstrapped to $65k MRR, raising $750k Angel Seed",
+    "origin_scar": "14 commercial beverage co-packers told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers and gums. Refused to compromise.",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80"
+  },
+  "created_at": "2026-10-12T17:07:51.447935Z",
+  "last_updated": "2026-10-12T17:07:51.447935Z"
+}

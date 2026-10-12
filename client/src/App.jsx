@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import { PROFILES_DATA } from './data/profilesData';
+import { onboardFounder } from './api';
 
 function parseUrlState() {
   if (typeof window === 'undefined') {
@@ -97,6 +98,13 @@ export default function App() {
   }, [viewMode, activePage, currentProfileId, onboardingStep, syncUrl]);
 
   const handleOnboardingComplete = (onboardingState) => {
+    // Sync onboarding details with backend and persist in the 7 agent memory assets
+    try {
+      onboardFounder(onboardingState).catch(err => console.warn("Background onboard sync notice:", err));
+    } catch (err) {
+      console.warn("Onboard sync attempt:", err);
+    }
+
     // If completed as Maya Lin preset
     if (onboardingState.fullName === 'Maya Lin' || onboardingState.entityName === 'Solace Botanicals') {
       setCustomProfile(null);

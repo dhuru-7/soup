@@ -1,0 +1,41 @@
+{
+  "founder_id": "maya_lin",
+  "total_sessions": 3,
+  "last_active_session": "sess_01",
+  "sessions": [
+    {
+      "session_id": "sess_01",
+      "title": "Founder story: Why 14 co-packers turned us down \u2192 45s reel",
+      "timestamp": "2026-10-10T14:30:00Z",
+      "summary": "Synthesized co-packer rejection turning point into an authentic 45-second Instagram reel and LinkedIn post exposing formulation compromises.",
+      "decisions": [
+        "Framed conflict around refusing synthetic stabilizers and gums",
+        "Attached candid warehouse photo with handwritten lab log",
+        "Call to action directed toward conscious consumers and retail stockists"
+      ],
+      "link_to_full_log": "conversations/sess_01.json"
+    },
+    {
+      "session_id": "sess_02",
+      "title": "Research: The hidden reality of 'Natural Flavors' in retail drinks",
+      "timestamp": "2026-10-11T16:15:00Z",
+      "summary": "Analyzed FDA Title 21 labeling guidelines to prepare a high-authority educational carousel for clean wellness advocates.",
+      "decisions": [
+        "Avoided alarmism; focused on first-principles food chemistry",
+        "Emphasized whole adaptogen root extraction"
+      ],
+      "link_to_full_log": "conversations/sess_02.json"
+    },
+    {
+      "session_id": "sess_03",
+      "title": "Contrarian angle: Shelf-life preservatives vs real wellness",
+      "timestamp": "2026-10-12T09:45:00Z",
+      "summary": "Drafted category-defense argument analyzing why 2-year shelf life drinks sacrifice active adaptogen efficacy.",
+      "decisions": [
+        "Positioned gross margin sacrifice as a brand asset",
+        "Prepared follow-up direct messages for grocery buyers"
+      ],
+      "link_to_full_log": "conversations/sess_03.json"
+    }
+  ]
+}

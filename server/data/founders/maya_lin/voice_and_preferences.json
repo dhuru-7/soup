@@ -1,0 +1,55 @@
+{
+  "founder_id": "maya_lin",
+  "tone": "The Vulnerable Operator (Honest & Raw) - Direct, transparent, practitioner-level depth, zero synthetic buzzwords.",
+  "archetype": "The Vulnerable Operator (Honest & Raw)",
+  "writing_samples": [
+    "14 beverage manufacturing plants told me my formula was 'commercially impossible' unless I added artificial guar gum.\n\nHere is what happens when a founder refuses to poison their own product for higher profit margins:",
+    "Unpopular opinion: \"If a canned healthy drink has a 2-year shelf life at room temperature, you are drinking industrial preservatives, not wellness. Gross margin cuts are worth real ingredient integrity.\"\n\nWhy 90% of beverage brands get this wrong:"
+  ],
+  "preferred_formats": [
+    "Supply Chain / Manufacturing Expos\u00e9",
+    "Unfiltered Founder Diary",
+    "Ingredient Science Teardown"
+  ],
+  "format_breakdown": {
+    "text_posts": 45,
+    "short_videos_reels": 35,
+    "carousels_and_graphics": 20
+  },
+  "format_preferences": {
+    "prefers_text_posts": true,
+    "prefers_videos": true,
+    "prefers_carousels": true,
+    "notes": "Prefers raw candid assets (warehouse logs or terminal flame graphs) over corporate marketing graphics."
+  },
+  "vocabulary": {
+    "signature_terms": [
+      "adaptogenic extraction",
+      "zero artificial gums",
+      "cold-pressed botanical",
+      "gross margin integrity",
+      "clean shelf-stability"
+    ],
+    "voice_rules": [
+      "Archetype tone: The Vulnerable Operator (Honest & Raw).",
+      "Always include concrete proof: exact cost per can, exact batch numbers, or exact millisecond latency.",
+      "Zero synthetic AI boilerplate words (no 'in today's world', 'delve', or rocket emojis).",
+      "Keep sentence rhythm conversational, direct, and unpretentious."
+    ]
+  },
+  "phrases_to_avoid": [
+    "synergy",
+    "game-changer",
+    "humbled and honored",
+    "guilt-free indulgence",
+    "miracle cure",
+    "revolutionizing beverage"
+  ],
+  "privacy_boundaries": [
+    "Never cite personal supplier cell numbers or unannounced contract agreements.",
+    "Never reveal proprietary batch formulation ratios before patent filing.",
+    "Never name pilot enterprise partners without mutual press sign-off."
+  ],
+  "spicy_take": "If a canned healthy drink has a 2-year shelf life at room temperature, you are drinking industrial preservatives, not wellness. Gross margin cuts are worth real ingredient integrity.",
+  "last_updated": "2026-10-12T17:07:51.447935Z"
+}

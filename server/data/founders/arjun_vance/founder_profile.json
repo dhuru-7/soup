@@ -1,0 +1,68 @@
+{
+  "founder_id": "arjun_vance",
+  "name": "Arjun Vance",
+  "role": "Co-founder & CTO",
+  "company": "AgentScale",
+  "product_description": "Distributed observability and trace debugger for multi-agent LLM systems in production.",
+  "stage": "Seed ($1.8M raised, 14-person engineering team)",
+  "expertise": [
+    "Engineering / AI",
+    "Product Architecture",
+    "Distributed Systems"
+  ],
+  "target_audience": [
+    "Staff Backend Engineers & AI Leads",
+    "Enterprise Buyers & CTOs",
+    "Distributed Systems Architects"
+  ],
+  "goals": {
+    "north_star": "Technical Authority & Inbound Senior Engineering Hires",
+    "timeframe": "6 Months",
+    "metrics": {
+      "cto_inbounds": {
+        "current": 3,
+        "target": 15,
+        "unit": "Enterprise Inquiries"
+      },
+      "engineering_hires": {
+        "current": 2,
+        "target": 5,
+        "unit": "Staff Engineers in Pipeline"
+      },
+      "github_stars": {
+        "current": 1420,
+        "target": 3000,
+        "unit": "GitHub Stars"
+      },
+      "speaking_invites": {
+        "current": 1,
+        "target": 5,
+        "unit": "Technical Podcasts/Keynotes"
+      },
+      "authority_score": {
+        "current": 84,
+        "target": 95,
+        "unit": "/100"
+      }
+    }
+  },
+  "preferred_platforms": [
+    "LinkedIn",
+    "X (Twitter)"
+  ],
+  "weekly_time_budget": "2 hours/week (15 min daily review)",
+  "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+  "unfair_advantage": "Ex-Datadog distributed tracing architect. Wrote eBPF kernels for high-throughput stream processing.",
+  "identity": {
+    "name": "Arjun Vance",
+    "role": "Co-founder & CTO",
+    "company_name": "AgentScale",
+    "mission": "Distributed observability and trace debugger for multi-agent LLM systems in production.",
+    "tagline": "Distributed observability and trace debugger for multi-agent LLM systems in production.",
+    "stage": "Seed ($1.8M raised, 14-person engineering team)",
+    "origin_scar": "Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are completely blind to autonomous agent loops.",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
+  },
+  "created_at": "2026-10-12T17:07:51.443883Z",
+  "last_updated": "2026-10-12T17:07:51.443883Z"
+}
