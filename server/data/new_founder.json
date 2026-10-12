@@ -164,7 +164,7 @@
       "Unbatched scans across high-throughput distributed stores will inevitably fail at p99 scale.",
       "Engineers respect code diffs and flame graphs infinitely more than high-level thought leadership."
     ],
-    "last_updated": "2026-10-12T17:21:32.939511Z"
+    "last_updated": "2026-10-12T17:40:53.753509Z"
   },
   "session_index": {
     "founder_id": "new_founder",
