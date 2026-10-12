@@ -5,6 +5,8 @@ export default function Navigation({
   activePage, 
   setActivePage, 
   profile, 
+  currentProfileId,
+  onSwitchProfile,
   onRestartOnboarding,
   onOpenQuickCapture,
   currentUser,
@@ -16,6 +18,8 @@ export default function Navigation({
     { id: 'studio', label: 'Scrapbook', icon: 'collections_bookmark', desc: 'Content command center & board' },
     { id: 'you', label: 'Profile', icon: 'person', desc: 'Founder identity & memory' },
   ];
+
+  const activeId = currentProfileId || profile?.founder_id || 'arjun_vance';
 
   return (
     <>
@@ -71,22 +75,59 @@ export default function Navigation({
           </nav>
         </div>
 
-        {/* Bottom Section: Founder Profile */}
-        <div className="pt-4 border-t border-slate-200/80">
-          <div className="flex items-center gap-3 px-1 py-1">
-            <img 
-              src={profile.identity.avatar} 
-              alt={profile.identity.name} 
-              className="w-10 h-10 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-slate-900 truncate">
-                {profile.identity.name}
-              </span>
-              <span className="text-[11px] text-slate-500 truncate">
-                {profile.identity.role}
-              </span>
+        {/* Bottom Section: Founder Profile & Switcher */}
+        <div className="pt-3 border-t border-slate-200/80 flex flex-col gap-2.5">
+          {/* Quick Profile Switcher for Judges */}
+          <div className="flex items-center justify-between bg-slate-100 p-0.5 rounded-xl border border-slate-200/70 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => onSwitchProfile && onSwitchProfile('arjun_vance')}
+              className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-bold transition-all text-center ${
+                activeId === 'arjun_vance'
+                  ? 'bg-white text-slate-950 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Arjun (AI)
+            </button>
+            <button
+              type="button"
+              onClick={() => onSwitchProfile && onSwitchProfile('maya_lin')}
+              className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-bold transition-all text-center ${
+                activeId === 'maya_lin'
+                  ? 'bg-emerald-700 text-white shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Maya (D2C)
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img 
+                src={profile.identity.avatar} 
+                alt={profile.identity.name} 
+                className="w-9 h-9 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
+              />
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-bold text-slate-900 truncate">
+                  {profile.identity.name}
+                </span>
+                <span className="text-[10px] text-slate-500 truncate">
+                  {profile.identity.company_name}
+                </span>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={onRestartOnboarding}
+              title="Restart Intake Form"
+              className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-1 rounded-lg hover:bg-amber-50 shrink-0"
+            >
+              + Onboard
+            </button>
           </div>
         </div>
       </aside>
@@ -95,9 +136,27 @@ export default function Navigation({
           MOBILE TOP & BOTTOM BARS (< md screens)
          ========================================================================= */}
       <header className="md:hidden sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 h-14 flex items-center justify-between select-none">
-        <span className="font-heading text-xl font-black tracking-tight text-slate-950">
-          Soup
-        </span>
+        <div className="flex items-center gap-2.5">
+          <span className="font-heading text-xl font-black tracking-tight text-slate-950">
+            Soup
+          </span>
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-bold">
+            <button
+              type="button"
+              onClick={() => onSwitchProfile && onSwitchProfile('arjun_vance')}
+              className={`px-2 py-0.5 rounded ${activeId === 'arjun_vance' ? 'bg-white text-slate-950 shadow-2xs' : 'text-slate-500'}`}
+            >
+              Arjun
+            </button>
+            <button
+              type="button"
+              onClick={() => onSwitchProfile && onSwitchProfile('maya_lin')}
+              className={`px-2 py-0.5 rounded ${activeId === 'maya_lin' ? 'bg-emerald-700 text-white shadow-2xs' : 'text-slate-500'}`}
+            >
+              Maya
+            </button>
+          </div>
+        </div>
 
         <div className="flex items-center gap-2">
           <button

@@ -5,34 +5,35 @@ import { PROFILES_DATA } from './data/profilesData';
 
 function parseUrlState() {
   if (typeof window === 'undefined') {
-    return { viewMode: 'onboarding', activePage: 'overview', profileId: 'arjun_vance', step: 1 };
+    return { viewMode: 'dashboard', activePage: 'overview', profileId: 'arjun_vance', step: 1 };
   }
+  const rawPath = (window.location.pathname || '/').toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') || '/';
   const params = new URLSearchParams(window.location.search);
-  const pageParam = params.get('page');
   const profileParam = params.get('profile') || 'arjun_vance';
   const stepParam = parseInt(params.get('step') || '1', 10);
 
   const validProfileId = ['arjun_vance', 'maya_lin'].includes(profileParam) ? profileParam : 'arjun_vance';
   const validStep = stepParam >= 1 && stepParam <= 5 ? stepParam : 1;
 
-  // Aliases mapping: home -> overview, scrapbook -> studio, profile -> you
-  let resolvedPage = pageParam;
-  if (pageParam === 'home') resolvedPage = 'overview';
-  if (pageParam === 'scrapbook') resolvedPage = 'studio';
-  if (pageParam === 'profile') resolvedPage = 'you';
-
-  if (['overview', 'muse', 'studio', 'you'].includes(resolvedPage)) {
+  // 1. Check path-based routing (/home, /muse, /scrapbook, /profile, /onboarding)
+  if (rawPath === '/onboarding' || params.get('page') === 'onboarding') {
     return {
-      viewMode: 'dashboard',
-      activePage: resolvedPage,
+      viewMode: 'onboarding',
+      activePage: 'overview',
       profileId: validProfileId,
       step: validStep
     };
   }
 
+  let resolvedPage = 'overview';
+  if (rawPath === '/muse' || params.get('page') === 'muse') resolvedPage = 'muse';
+  else if (rawPath === '/scrapbook' || rawPath === '/studio' || params.get('page') === 'scrapbook' || params.get('page') === 'studio') resolvedPage = 'studio';
+  else if (rawPath === '/profile' || rawPath === '/you' || params.get('page') === 'profile' || params.get('page') === 'you') resolvedPage = 'you';
+  else if (rawPath === '/home' || rawPath === '/' || params.get('page') === 'home' || params.get('page') === 'overview') resolvedPage = 'overview';
+
   return {
-    viewMode: 'onboarding',
-    activePage: 'overview',
+    viewMode: 'dashboard',
+    activePage: resolvedPage,
     profileId: validProfileId,
     step: validStep
   };
@@ -50,21 +51,25 @@ export default function App() {
 
   const syncUrl = useCallback((newViewMode, newPage, newProfileId, newStep) => {
     if (typeof window === 'undefined' || !window.history.pushState) return;
-    const params = new URLSearchParams();
+
+    let path = '/home';
     if (newViewMode === 'onboarding') {
-      params.set('page', 'onboarding');
-      if (newStep > 1) params.set('step', newStep.toString());
+      path = '/onboarding';
     } else {
-      let urlPage = newPage;
-      if (newPage === 'overview') urlPage = 'home';
-      if (newPage === 'studio') urlPage = 'scrapbook';
-      if (newPage === 'you') urlPage = 'profile';
-      params.set('page', urlPage);
+      if (newPage === 'overview') path = '/home';
+      else if (newPage === 'muse') path = '/muse';
+      else if (newPage === 'studio') path = '/scrapbook';
+      else if (newPage === 'you') path = '/profile';
     }
-    if (newProfileId && newProfileId !== 'custom_founder') {
+
+    const params = new URLSearchParams();
+    if (newProfileId && newProfileId !== 'arjun_vance' && newProfileId !== 'custom_founder') {
       params.set('profile', newProfileId);
     }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const newUrl = `${path}${queryString}`;
+
     window.history.pushState(
       { viewMode: newViewMode, activePage: newPage, profileId: newProfileId, step: newStep },
       '',
@@ -72,7 +77,7 @@ export default function App() {
     );
   }, []);
 
-  // Sync on browser back/forward buttons
+  // Sync on browser back/forward buttons & normalize root URL to clean path
   useEffect(() => {
     const handlePopState = () => {
       const state = parseUrlState();
@@ -82,10 +87,36 @@ export default function App() {
       setOnboardingStep(state.step);
     };
     window.addEventListener('popstate', handlePopState);
+
+    // Initial URL cleanup if on root '/' or legacy query string
+    if (window.location.pathname === '/' || window.location.search.includes('page=')) {
+      syncUrl(viewMode, activePage, currentProfileId, onboardingStep);
+    }
+
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [viewMode, activePage, currentProfileId, onboardingStep, syncUrl]);
 
   const handleOnboardingComplete = (onboardingState) => {
+    // If completed as Maya Lin preset
+    if (onboardingState.fullName === 'Maya Lin' || onboardingState.entityName === 'Solace Botanicals') {
+      setCustomProfile(null);
+      setCurrentProfileId('maya_lin');
+      setViewMode('dashboard');
+      setActivePage('overview');
+      syncUrl('dashboard', 'overview', 'maya_lin', 1);
+      return;
+    }
+
+    // If completed as Arjun Vance preset
+    if (onboardingState.fullName === 'Arjun Vance' || onboardingState.entityName === 'AgentScale') {
+      setCustomProfile(null);
+      setCurrentProfileId('arjun_vance');
+      setViewMode('dashboard');
+      setActivePage('overview');
+      syncUrl('dashboard', 'overview', 'arjun_vance', 1);
+      return;
+    }
+
     const turningPt = onboardingState.whyStarted || onboardingState.turningPoint || onboardingState.originScar || '';
     const spicy = onboardingState.unpopularOpinion || onboardingState.spicyTake || '';
     const hobbiesList = (onboardingState.hobbies || []).join(', ');

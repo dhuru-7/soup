@@ -73,51 +73,123 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
     5: 'Real Assets & Publishing Platforms'
   };
 
-  // Form State with normalized default values matching pill literals
-  const [state, setState] = useState({
-    // Step 1: You, Role & Hobbies
-    fullName: initialProfile?.identity?.name || 'Arjun Vance',
-    role: 'Technical Architect / CTO',
-    expertise: ['Engineering / AI', 'Product Architecture'],
-    hobbies: ['Chess & Strategy', 'Specialty Coffee'],
+  const PRESET_PROFILES = {
+    arjun_vance: {
+      fullName: 'Arjun Vance',
+      role: 'Technical Architect / CTO',
+      expertise: ['Engineering / AI', 'Product Architecture'],
+      hobbies: ['Chess & Strategy', 'Specialty Coffee'],
+      entityName: 'AgentScale',
+      mission: 'Distributed observability and trace debugger for multi-agent LLM systems in production.',
+      whyStarted: 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are completely blind to autonomous agent loops.',
+      links: [
+        { id: 1, type: 'Website', url: 'https://agentscale.dev' },
+        { id: 2, type: 'X / Twitter', url: 'https://x.com/arjun_scale' },
+        { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/arjunvance' }
+      ],
+      unpopularOpinion: 'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.',
+      brandStyle: 'The Builder (Share the Work)',
+      audiences: ['Staff Backend Engineers & AI Leads', 'Enterprise Buyers & CTOs'],
+      customAudience: '',
+      annoyances: [
+        'Hollow AI wrapper marketing',
+        'Unverified latency benchmarks'
+      ],
+      bannedPhrases: [
+        'delve into',
+        'game-changer',
+        'thrilled to announce',
+        'humbled and honored',
+        'revolutionary',
+        'synergy'
+      ],
+      realAssets: [
+        'Terminal screenshots & logs',
+        'Whiteboard architecture sketches'
+      ],
+      platforms: ['LinkedIn', 'X / Twitter']
+    },
+    maya_lin: {
+      fullName: 'Maya Lin',
+      role: 'Founder & CEO',
+      expertise: ['D2C & Retail Expansion', 'Supply Chain / Operations'],
+      hobbies: ['Trail Running', 'Specialty Coffee'],
+      entityName: 'Solace Botanicals',
+      mission: 'Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.',
+      whyStarted: '14 commercial beverage co-packers told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers and gums. Refused to compromise.',
+      links: [
+        { id: 1, type: 'Website', url: 'https://solacebotanicals.com' },
+        { id: 2, type: 'Instagram', url: 'https://instagram.com/solacebotanicals' },
+        { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/mayalin-solace' }
+      ],
+      unpopularOpinion: 'If a canned healthy drink has a 2-year shelf life at room temperature, you are drinking industrial preservatives, not wellness. Gross margin cuts are worth real ingredient integrity.',
+      brandStyle: 'The Vulnerable Operator (Honest & Raw)',
+      audiences: ['Conscious Consumers & Health Enthusiasts', 'Other Founders & Operators'],
+      customAudience: 'Regional Retail Stockists (Whole Foods, Sprouts)',
+      annoyances: [
+        'Polished PR and greenwashing',
+        'Founders disconnected from supply chain'
+      ],
+      bannedPhrases: [
+        'synergy',
+        'game-changer',
+        'humbled and honored',
+        'guilt-free indulgence',
+        'miracle cure'
+      ],
+      realAssets: [
+        'Candid product & warehouse photos',
+        'Customer & retail unboxing reactions'
+      ],
+      platforms: ['LinkedIn', 'Instagram / TikTok']
+    },
+    blank: {
+      fullName: '',
+      role: '',
+      expertise: [],
+      hobbies: [],
+      entityName: '',
+      mission: '',
+      whyStarted: '',
+      links: [],
+      unpopularOpinion: '',
+      brandStyle: 'The Builder (Share the Work)',
+      audiences: [],
+      customAudience: '',
+      annoyances: [],
+      bannedPhrases: ['delve into', 'game-changer', 'humbled and honored'],
+      realAssets: [],
+      platforms: ['LinkedIn']
+    }
+  };
 
-    // Step 2: Company, Links & Why You Started
-    entityName: initialProfile?.identity?.company_name || 'AgentScale',
-    mission: initialProfile?.identity?.mission || 'Distributed observability and trace debugger for multi-agent LLM systems in production.',
-    whyStarted: initialProfile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are completely blind to autonomous agent loops.',
-    links: [
-      { id: 1, type: 'Website', url: 'https://agentscale.dev' },
-      { id: 2, type: 'X / Twitter', url: 'https://x.com/arjun_scale' },
-      { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/arjunvance' }
-    ],
+  const initialPreset = initialProfile?.founder_id === 'maya_lin' ? 'maya_lin' : 'arjun_vance';
+  const [activePreset, setActivePreset] = useState(initialPreset);
+  const [presetToast, setPresetToast] = useState('');
 
-    // Step 3: Unpopular Opinions & Brand Style
-    unpopularOpinion: initialProfile?.voiceprint?.spicy_take || 'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.',
-    brandStyle: 'The Builder (Share the Work)',
+  // Form State initialized from preset
+  const [state, setState] = useState(() => ({
+    ...PRESET_PROFILES[initialPreset],
+    ...(initialProfile?.identity?.name ? {
+      fullName: initialProfile.identity.name,
+      entityName: initialProfile.identity.company_name || PRESET_PROFILES[initialPreset].entityName,
+      mission: initialProfile.identity.mission || PRESET_PROFILES[initialPreset].mission,
+      whyStarted: initialProfile.identity.origin_scar || PRESET_PROFILES[initialPreset].whyStarted
+    } : {})
+  }));
 
-    // Step 4: Audience & Pet Peeves
-    audiences: ['Staff Backend Engineers & AI Leads', 'Enterprise Buyers & CTOs'],
-    customAudience: '',
-    annoyances: [
-      'Hollow AI wrapper marketing',
-      'Unverified latency benchmarks'
-    ],
-
-    // Step 5: Words to Avoid & Real Assets
-    bannedPhrases: [
-      'delve into',
-      'game-changer',
-      'thrilled to announce',
-      'humbled and honored',
-      'revolutionary',
-      'synergy'
-    ],
-    realAssets: [
-      'Terminal screenshots & logs',
-      'Whiteboard architecture sketches'
-    ],
-    platforms: ['LinkedIn', 'X / Twitter']
-  });
+  const handleSelectPreset = (presetKey) => {
+    setActivePreset(presetKey);
+    setState({ ...PRESET_PROFILES[presetKey] });
+    setPresetToast(
+      presetKey === 'maya_lin' 
+        ? 'Loaded Maya Lin: D2C Organic Founder' 
+        : presetKey === 'arjun_vance' 
+        ? 'Loaded Arjun Vance: AI Infra CTO' 
+        : 'Form cleared for custom entry'
+    );
+    setTimeout(() => setPresetToast(''), 3000);
+  };
 
   const goToStep = (step) => {
     if (onStepChange) {
@@ -238,17 +310,83 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
 
       <div className="relative z-10 w-full max-w-[820px] mx-auto flex flex-col justify-center my-auto">
         {!isInitializing ? (
-          <div className="w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 flex flex-col">
-            {/* Stable Header with 3s title wipe, 20% bigger font, no yellow dot, no 'Step X:' */}
-            <CardHeader 
-              currentStep={currentStep} 
-              totalSteps={totalSteps} 
-              stepTitle={stepTitles[currentStep]}
-            />
+          <>
+            {/* Top Demo Preset Switcher Bar for Hackathon Judges */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 mb-3 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-2xs">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-900 flex items-center gap-1">
+                  <span className="text-amber-500">⚡</span>
+                  <span>Demo Preset:</span>
+                </span>
+                {presetToast ? (
+                  <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-full animate-fade-in">
+                    {presetToast}
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-slate-500 hidden sm:inline">Pre-fill realistic founder details for judges</span>
+                )}
+              </div>
 
-            {/* Inner Step Content (Zero subheadings, zero icons before labels, clean pill options) */}
-            <div className="px-6 sm:px-9 py-6 sm:py-7">
-              <div key={currentStep} className="animate-step-content flex flex-col gap-5 sm:gap-6">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleSelectPreset('arjun_vance')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 ${
+                    activePreset === 'arjun_vance'
+                      ? 'bg-slate-950 text-white shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  <span>👨‍💻 Arjun Vance (AI Tech)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPreset('maya_lin')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 ${
+                    activePreset === 'maya_lin'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  <span>🌿 Maya Lin (D2C Organic)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPreset('blank')}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95 ${
+                    activePreset === 'blank'
+                      ? 'bg-slate-950 text-white font-bold'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <span>Clear</span>
+                </button>
+
+                <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
+
+                <button
+                  type="button"
+                  onClick={() => onComplete && onComplete(state)}
+                  className="px-3 py-1 rounded-full text-xs font-bold bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 shadow-2xs transition-all active:scale-95 flex items-center gap-1"
+                  title="Directly launch dashboard with this profile"
+                >
+                  <span>Launch Dashboard</span>
+                  <Icon name="arrow_forward" size={13} />
+                </button>
+              </div>
+            </div>
+
+            <div className="w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 flex flex-col">
+              {/* Stable Header with 3s title wipe, 20% bigger font, no yellow dot, no 'Step X:' */}
+              <CardHeader 
+                currentStep={currentStep} 
+                totalSteps={totalSteps} 
+                stepTitle={stepTitles[currentStep]}
+              />
+
+              {/* Inner Step Content (Zero subheadings, zero icons before labels, clean pill options) */}
+              <div className="px-6 sm:px-9 py-6 sm:py-7">
+                <div key={currentStep} className="animate-step-content flex flex-col gap-5 sm:gap-6">
 
                 {/* STEP 1: You, Your Role & Hobbies */}
                 {currentStep === 1 && (
@@ -823,7 +961,8 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                 )}
               </div>
             </div>
-          </div>
+            </div>
+          </>
         ) : (
           /* INITIALIZATION REVEAL MODAL */
           <div className="w-full max-w-md mx-auto frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 text-center flex flex-col items-center">
@@ -871,7 +1010,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                 }`}
               >
                 <span>Enter Command Center</span>
-                <ArrowRight size={15} />
+                <Icon name="arrow_forward" size={15} />
               </button>
             </div>
           </div>

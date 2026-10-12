@@ -8,61 +8,125 @@ export default function MuseView({
   onAddContentToStudio, 
   onNavigateToStudio 
 }) {
-  const [sessions, setSessions] = useState([
-    { id: 'sess-1', title: 'Founder story: Redis memory leak → 45s video', lastActive: 'Today', taskType: 'Story' },
-    { id: 'sess-2', title: 'Research: Why early founders struggle with agent eval', lastActive: 'Yesterday', taskType: 'Research' },
-    { id: 'sess-3', title: 'Contrarian angle: SQLite vs Vector DB benchmarks', lastActive: '3d ago', taskType: 'Draft' },
-  ]);
+  const isMaya = profile?.founder_id === 'maya_lin';
+
+  const getSeedData = () => {
+    if (isMaya) {
+      return {
+        sessions: [
+          { id: 'sess-1', title: 'Founder story: Why 14 co-packers turned us down → 45s reel', lastActive: 'Today', taskType: 'Story' },
+          { id: 'sess-2', title: 'Research: The hidden reality of "Natural Flavors" in retail drinks', lastActive: 'Yesterday', taskType: 'Research' },
+          { id: 'sess-3', title: 'Contrarian angle: Shelf-life preservatives vs real wellness', lastActive: '3d ago', taskType: 'Draft' },
+        ],
+        messages: [
+          {
+            id: 'msg-1',
+            sender: 'muse',
+            text: `I noticed that you selected founder stories as a core preference during onboarding.\n\nInstead of inventing a story, let's start with your real moment: what happened when you first realized this problem was worth solving?\n\nYour onboarding note: "14 commercial beverage co-packers told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers and gums. Refused to compromise."`,
+            timestamp: '10:14 AM'
+          },
+          {
+            id: 'msg-2',
+            sender: 'founder',
+            text: 'Turn this exact moment into a 45-second high-proof script for Instagram and LinkedIn.',
+            timestamp: '10:16 AM'
+          },
+          {
+            id: 'msg-3',
+            sender: 'muse',
+            text: `Here is a calibrated 45-second script anchored in your firsthand experience. It draws on your **The Vulnerable Operator** tone and avoids generic wellness cliches:`,
+            draftPayload: {
+              id: `muse-draft-maya-seed-1`,
+              title: `Why I started Solace Botanicals (The Co-Packer Rejection)`,
+              platform: 'Instagram & LinkedIn',
+              format: 'Short video reel & Post',
+              theme: 'Founder story · Supply chain truth',
+              day: 'Wednesday',
+              hook: `“Every beverage consultant told me I was insane to launch without sodium benzoate or artificial gums.\n\nHere’s what happened when 14 commercial co-packers refused to bottle Solace Botanicals without preservatives:”`,
+              script: `[0:00 - 0:10] Hook: "If a canned wellness drink can sit on a warm warehouse shelf for 24 months, ask yourself: is it really wellness?"\n\n[0:10 - 0:25] The Wall: "When I started Solace Botanicals, 14 co-packers told me clean organic adaptogens couldn't be canned at scale without industrial emulsifiers and synthetic shelf stabilizers."\n\n[0:25 - 0:38] The Breakthrough: "We spent 8 months formulating cold-fill pasteurization with real lion's mane and organic lemon balm. It cut our margins by 18%, but kept 100% of the active compounds intact."\n\n[0:38 - 0:45] CTA: "If you care about what actually goes into functional drinks, here is our full open-formula lab report:"`,
+              visualDirection: 'Unfiltered warehouse b-roll holding raw organic adaptogen batch with handwritten testing logs.',
+              sourceMaterial: 'Founder Onboarding DNA • Lab Batch #04 Quality Sheet',
+              citations: ['Solace Botanicals Lab Formulation Report #04', 'FDA Title 21 Natural Flavor Exemption']
+            },
+            timestamp: '10:17 AM'
+          }
+        ]
+      };
+    }
+
+    // Default: Arjun Vance (DeepTech AI)
+    return {
+      sessions: [
+        { id: 'sess-1', title: 'Founder story: Redis memory leak → 45s video', lastActive: 'Today', taskType: 'Story' },
+        { id: 'sess-2', title: 'Research: Why early founders struggle with agent eval', lastActive: 'Yesterday', taskType: 'Research' },
+        { id: 'sess-3', title: 'Contrarian angle: SQLite vs Vector DB benchmarks', lastActive: '3d ago', taskType: 'Draft' },
+      ],
+      messages: [
+        {
+          id: 'msg-1',
+          sender: 'muse',
+          text: `I noticed that you selected founder stories as a core preference during onboarding.\n\nInstead of inventing a story, let's start with your real moment: what happened when you first realized this problem was worth solving?\n\nYour onboarding note: "${profile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans.'}"`,
+          timestamp: '10:14 AM'
+        },
+        {
+          id: 'msg-2',
+          sender: 'founder',
+          text: 'Turn this exact moment into a 45-second high-proof script for LinkedIn and short video.',
+          timestamp: '10:16 AM'
+        },
+        {
+          id: 'msg-3',
+          sender: 'muse',
+          text: `Here is a calibrated 45-second script anchored in your firsthand experience. It draws on your **The Builder** tone and avoids generic motivational cliches:`,
+          draftPayload: {
+            id: `muse-draft-seed-1`,
+            title: `Why I started building ${profile?.identity?.company_name || 'AgentScale'} (The $412 Redis Leak)`,
+            platform: 'LinkedIn',
+            format: 'Short video & Text post',
+            theme: 'Founder story · Personal experience',
+            day: 'Wednesday',
+            hook: `“I didn't start building ${profile?.identity?.company_name || 'AgentScale'} because I had everything figured out.\n\nI started because we burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 agent sessions.”`,
+            script: `[0:00 - 0:10] Hook: "Most people think startups start with a pitch deck. Ours started at 2:15 AM with a PagerDuty alert that cost $400 an hour."\n\n[0:10 - 0:25] The Failure: "We discovered that standard APMs are completely blind to autonomous agent loops. They treat 5,000 recursive agent queries like a normal web request."\n\n[0:25 - 0:38] The Solution: "I spent 14 hours writing a 12-line proxy in Lua that batched scans deterministically. That 12-line fix became the core architecture of ${profile?.identity?.company_name || 'AgentScale'}."\n\n[0:38 - 0:45] CTA: "If you're running multi-agent fleets in production and dreading your AWS invoice, here's the open-source post-mortem:"`,
+            visualDirection: profile?.execution_capacity?.available_assets?.[0] || 'Dark-mode terminal flame graph screenshot before/after Lua script.',
+            sourceMaterial: 'Onboarding founder DNA • Production incident log',
+            citations: ['Founder Onboarding DNA', 'AgentScale Production Post-Mortem #01']
+          },
+          timestamp: '10:17 AM'
+        }
+      ]
+    };
+  };
+
+  const initialSeed = getSeedData();
+  const [sessions, setSessions] = useState(initialSeed.sessions);
   const [activeSessionId, setActiveSessionId] = useState('sess-1');
   const [sessionSearch, setSessionSearch] = useState('');
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [addedItemIds, setAddedItemIds] = useState([]);
   const [showContextDrawer, setShowContextDrawer] = useState(true);
+  const [messages, setMessages] = useState(initialSeed.messages);
 
   const messagesEndRef = useRef(null);
 
-  const founderName = profile?.identity?.name || 'Founder';
-  const companyName = profile?.identity?.company_name || 'AgentScale';
-  const whyStarted = profile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans.';
-  const spicyTake = profile?.voiceprint?.spicy_take || 'Vector databases are 90% marketing hype for small-scale apps.';
-  const hobbies = profile?.voiceprint?.hobbies || 'Chess & Coffee';
-  const archetype = profile?.voiceprint?.insead_archetype || 'The Builder';
+  const founderName = profile?.identity?.name || (isMaya ? 'Maya Lin' : 'Arjun Vance');
+  const companyName = profile?.identity?.company_name || (isMaya ? 'Solace Botanicals' : 'AgentScale');
+  const whyStarted = profile?.identity?.origin_scar || (isMaya 
+    ? '14 commercial beverage co-packers told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers and gums. Refused to compromise.'
+    : 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans.');
+  const spicyTake = profile?.voiceprint?.spicy_take || (isMaya
+    ? 'If a canned healthy drink has a 2-year shelf life at room temperature, you are drinking industrial preservatives, not wellness.'
+    : 'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.');
+  const hobbies = profile?.voiceprint?.hobbies || (isMaya ? 'Trail Running & Coffee' : 'Chess & Coffee');
+  const archetype = profile?.voiceprint?.insead_archetype || (isMaya ? 'The Vulnerable Operator' : 'The Builder');
 
-  // Seed conversation per session
-  const [messages, setMessages] = useState([
-    {
-      id: 'msg-1',
-      sender: 'muse',
-      text: `I noticed that you selected founder stories as a core preference during onboarding.\n\nInstead of inventing a story, let's start with your real moment: what happened when you first realized this problem was worth solving?\n\nYour onboarding note: "${whyStarted}"`,
-      timestamp: '10:14 AM'
-    },
-    {
-      id: 'msg-2',
-      sender: 'founder',
-      text: 'Turn this exact moment into a 45-second high-proof script for LinkedIn and short video.',
-      timestamp: '10:16 AM'
-    },
-    {
-      id: 'msg-3',
-      sender: 'muse',
-      text: `Here is a calibrated 45-second script anchored in your firsthand experience. It draws on your **${archetype}** tone and avoids generic motivational cliches:`,
-      draftPayload: {
-        id: `muse-draft-seed-1`,
-        title: `Why I started building ${companyName} (The $412 Redis Leak)`,
-        platform: 'LinkedIn',
-        format: 'Short video & Text post',
-        theme: 'Founder story · Personal experience',
-        day: 'Wednesday',
-        hook: `“I didn't start building ${companyName} because I had everything figured out.\n\nI started because we burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 agent sessions.”`,
-        script: `[0:00 - 0:10] Hook: "Most people think startups start with a pitch deck. Ours started at 2:15 AM with a PagerDuty alert that cost $400 an hour."\n\n[0:10 - 0:25] The Failure: "We discovered that standard APMs are completely blind to autonomous agent loops. They treat 5,000 recursive agent queries like a normal web request."\n\n[0:25 - 0:38] The Solution: "I spent 14 hours writing a 12-line proxy in Lua that batched scans deterministically. That 12-line fix became the core architecture of ${companyName}."\n\n[0:38 - 0:45] CTA: "If you're running multi-agent fleets in production and dreading your AWS invoice, here's the open-source post-mortem:"`,
-        visualDirection: profile?.execution_capacity?.available_assets?.[0] || 'Dark-mode terminal flame graph screenshot before/after Lua script.',
-        sourceMaterial: 'Onboarding founder DNA • Production incident log',
-        citations: ['Founder Onboarding DNA', 'AgentScale Production Post-Mortem #01']
-      },
-      timestamp: '10:17 AM'
-    }
-  ]);
+  // Re-seed conversation when founder profile switches
+  useEffect(() => {
+    const fresh = getSeedData();
+    setSessions(fresh.sessions);
+    setMessages(fresh.messages);
+    setActiveSessionId('sess-1');
+  }, [profile?.founder_id]);
 
   useEffect(() => {
     if (initialPrompt) {
@@ -375,8 +439,35 @@ export default function MuseView({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar */}
-            <div className="mt-4 pt-3 border-t border-slate-200/80">
+            {/* Dynamic Quick Prompt Suggestions */}
+            <div className="mt-3 pt-2.5 border-t border-slate-200/80">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-1 no-scrollbar">
+                <span className="text-[11px] font-bold text-slate-400 shrink-0 mr-1 flex items-center gap-1">
+                  <span>💡 Suggestions:</span>
+                </span>
+                {(isMaya ? [
+                  { label: "🌿 Co-packer rejection reel", prompt: "Draft a 45-second high-proof Instagram Reel about why 14 commercial co-packers turned down our zero-gum formula." },
+                  { label: "🔥 2-year shelf life take", prompt: "Write an unpopular opinion post for LinkedIn analyzing why 2-year room temperature shelf life in drinks means drinking industrial preservatives." },
+                  { label: "🛒 Whole Foods retail economics", prompt: "Break down the raw unit economics of retail slotting fees and pallet distribution for our next founder diary entry." },
+                  { label: "🧪 'Natural Flavors' expose", prompt: "Draft an educational post breaking down what the FDA legally allows beverage brands to hide under the 'Natural Flavors' label." }
+                ] : [
+                  { label: "👨‍💻 $412 Redis leak teardown", prompt: "Draft a high-proof technical post-mortem about our $412 Redis memory leak and the 12-line Lua fix that solved it." },
+                  { label: "🔥 SQLite vs Vector DBs take", prompt: "Draft a contrarian technical post explaining why SQLite with BM25 outperforms vector databases for 90% of early AI workloads." },
+                  { label: "⚡ eBPF trace proxy architecture", prompt: "Write an engineering architecture breakdown of our eBPF trace proxy and why traditional APMs miss recursive agent loops." },
+                  { label: "📊 Benchmark latency reality", prompt: "Draft an anti-AI-slop teardown comparing synthetic marketing benchmarks vs real-world P99 latency across LLM agent fleets." }
+                ]).map((qp, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSendPrompt(qp.prompt)}
+                    className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/90 hover:bg-amber-50 hover:text-amber-950 text-slate-700 border border-slate-200/80 shadow-2xs transition-all active:scale-95"
+                  >
+                    {qp.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input Bar Form */}
               <form 
                 onSubmit={e => {
                   e.preventDefault();
@@ -388,7 +479,9 @@ export default function MuseView({
                   type="text"
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
-                  placeholder="Ask Sarvam Muse to research, draft, explore stories, or critique..."
+                  placeholder={isMaya 
+                    ? "Ask Sarvam Muse to draft CPG reels, unpack retail economics, or challenge wellness cliches..."
+                    : "Ask Sarvam Muse to research, draft, explore stories, or critique..."}
                   className="flex-1 h-11 px-4 rounded-full frosted-input text-slate-900 text-xs sm:text-sm font-medium outline-none"
                 />
                 <button

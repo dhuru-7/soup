@@ -124,6 +124,8 @@ export default function Dashboard({
         activePage={activePage}
         setActivePage={setActivePage}
         profile={profile}
+        currentProfileId={currentProfileId}
+        onSwitchProfile={onSwitchProfile}
         onRestartOnboarding={onRestartOnboarding}
         onOpenQuickCapture={() => setIsQuickCaptureOpen(true)}
         currentUser={currentUser}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from './Icon';
 
 export default function OverviewView({ 
@@ -9,21 +9,42 @@ export default function OverviewView({
   onNavigateToYou,
   onOpenQuickCapture 
 }) {
-  const [platformFilter, setPlatformFilter] = useState('All'); // 'All' | 'LinkedIn' | 'X'
+  const isMaya = profile?.founder_id === 'maya_lin';
+  const secondaryPlatform = isMaya ? 'Instagram' : 'X';
+  const secondaryPlatformLabel = isMaya ? 'Instagram' : 'X (Twitter)';
+
+  const [platformFilter, setPlatformFilter] = useState('All'); // 'All' | 'LinkedIn' | secondaryPlatform
   const [timeFilter, setTimeFilter] = useState('Last 30d');
-  const [offlineWins, setOfflineWins] = useState([
+
+  const defaultWins = isMaya ? [
+    { id: 1, text: "Regional Northeast buyer at Whole Foods requested sample flight after seeing supply chain transparency video", date: "Yesterday", tag: "Wholesale Lead", source: "Instagram DM" },
+    { id: 2, text: "Keynote panel invitation: Modern Sustainable FMCG at Natural Products Expo East", date: "3 days ago", tag: "Speaking", source: "LinkedIn" },
+    { id: 3, text: "Angel investor in clean CPG reached out for Series Seed allocation via LinkedIn DM", date: "5 days ago", tag: "Investor Lead", source: "LinkedIn DM" }
+  ] : [
     { id: 1, text: "Invited as technical speaker on 'The Latency Podcast' (Episode #44)", date: "Yesterday", tag: "Speaking", source: "LinkedIn DM" },
     { id: 2, text: "2 Enterprise CTOs reached out for custom trace engine demo via LinkedIn DM", date: "3 days ago", tag: "Inbound Lead", source: "LinkedIn" },
     { id: 3, text: "Staff Tracing Architect at Datadog quote-tweeted SQLite benchmark thread", date: "5 days ago", tag: "Advocacy", source: "X (Twitter)" }
-  ]);
+  ];
+
+  const [offlineWins, setOfflineWins] = useState(defaultWins);
   const [showLogWinInput, setShowLogWinInput] = useState(false);
   const [newWinText, setNewWinText] = useState('');
 
+  // Sync wins and reset platform filter when profile changes
+  useEffect(() => {
+    setOfflineWins(defaultWins);
+    setPlatformFilter('All');
+  }, [profile?.founder_id]);
+
   const firstName = profile?.identity?.name?.split(' ')[0] || 'Founder';
-  const companyName = profile?.identity?.company_name || 'AgentScale';
-  const activePositioning = profile?.identity?.tagline || 'Building open-source observability for autonomous AI agent fleets.';
-  const archetypeName = profile?.voiceprint?.insead_archetype || 'The Builder';
-  const originScar = profile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans.';
+  const companyName = profile?.identity?.company_name || (isMaya ? 'Solace Botanicals' : 'AgentScale');
+  const activePositioning = profile?.identity?.tagline || (isMaya 
+    ? 'Crafting organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.' 
+    : 'Building open-source observability for autonomous AI agent fleets.');
+  const archetypeName = profile?.voiceprint?.insead_archetype || (isMaya ? 'The Vulnerable Operator' : 'The Builder');
+  const originScar = profile?.identity?.origin_scar || (isMaya 
+    ? '14 commercial beverage co-packers told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers and gums.' 
+    : 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans.');
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -48,6 +69,33 @@ export default function OverviewView({
 
   // Platform-specific metrics breakdown
   const getMetrics = () => {
+    if (isMaya) {
+      if (platformFilter === 'LinkedIn') {
+        return [
+          { label: 'LinkedIn Reach', value: '14.2k', change: '+22%', note: 'CPG founder & operator network', platform: 'LinkedIn' },
+          { label: 'Avg Engagement Rate', value: '4.5%', change: '+1.2%', note: 'High founder & investor debate', platform: 'LinkedIn' },
+          { label: 'Operator Comments', value: '68', change: '+42%', note: 'CPG founders & retail buyers', platform: 'LinkedIn' },
+          { label: 'Wholesale Inbounds', value: '2', change: '+100%', note: 'Whole Foods & regional co-op', platform: 'LinkedIn' }
+        ];
+      }
+      if (platformFilter === 'Instagram') {
+        return [
+          { label: 'Instagram Reach', value: '17.6k', change: '+31%', note: 'Organic video & story impressions', platform: 'Instagram' },
+          { label: 'Saves & Shares', value: '420', change: '+55%', note: 'Saved as clean label reference', platform: 'Instagram' },
+          { label: 'Consumer Inbound DMs', value: '89', change: '+34%', note: 'Where to buy in-store questions', platform: 'Instagram' },
+          { label: 'Store Locator Clicks', value: '512', change: '+44%', note: 'Direct foot-traffic navigation', platform: 'Instagram' }
+        ];
+      }
+      // 'All' (Maya)
+      return [
+        { label: 'Total Content Reach', value: '31.8k', change: '+26%', note: '14.2k LinkedIn · 17.6k Instagram', platform: 'Cross-platform' },
+        { label: 'Avg Engagement Rate', value: '5.2%', change: '+1.8%', note: '3.1x D2C beverage benchmark', platform: 'Cross-platform' },
+        { label: 'Retail & Angel Inbounds', value: '4', change: '+3 this week', note: 'Whole Foods, Sprouts, 2 Angels', platform: 'Cross-platform' },
+        { label: 'Community Advocates', value: '340', change: '+82', note: 'Clean ingredient champions', platform: 'Cross-platform' }
+      ];
+    }
+
+    // Arjun (DeepTech AI)
     if (platformFilter === 'LinkedIn') {
       return [
         { label: 'LinkedIn Reach', value: '18.4k', change: '+24%', note: 'Organic post impressions', platform: 'LinkedIn' },
@@ -64,7 +112,7 @@ export default function OverviewView({
         { label: 'GitHub Link Clicks', value: '314', change: '+22%', note: 'Direct traffic to repo', platform: 'X' }
       ];
     }
-    // 'All' (Aggregated)
+    // 'All' (Arjun)
     return [
       { label: 'Total Content Reach', value: '42.9k', change: '+18%', note: '18.4k LinkedIn · 24.5k X', platform: 'Cross-platform' },
       { label: 'Avg Engagement Rate', value: '4.6%', change: '+1.1%', note: 'High-proof technical tier', platform: 'Cross-platform' },
@@ -98,7 +146,7 @@ export default function OverviewView({
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
                   Your current strategy
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Active
                 </span>
@@ -167,20 +215,38 @@ export default function OverviewView({
                 </svg>
                 <span>LinkedIn</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setPlatformFilter('X')}
-                className={`px-3 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
-                  platformFilter === 'X'
-                    ? 'bg-slate-950 text-white font-bold shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-                <span>X (Twitter)</span>
-              </button>
+              
+              {isMaya ? (
+                <button
+                  type="button"
+                  onClick={() => setPlatformFilter('Instagram')}
+                  className={`px-3 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
+                    platformFilter === 'Instagram'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold shadow-2xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                  <span>Instagram</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPlatformFilter('X')}
+                  className={`px-3 py-1 rounded-full text-xs transition-all flex items-center gap-1.5 ${
+                    platformFilter === 'X'
+                      ? 'bg-slate-950 text-white font-bold shadow-2xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  <span>X (Twitter)</span>
+                </button>
+              )}
             </div>
 
             {/* Timeframe Dropdown */}
@@ -210,6 +276,8 @@ export default function OverviewView({
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                   stat.platform === 'LinkedIn' 
                     ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                    : stat.platform === 'Instagram'
+                    ? 'bg-pink-50 text-pink-700 border border-pink-200'
                     : stat.platform === 'X' 
                     ? 'bg-slate-100 text-slate-800 border border-slate-300' 
                     : 'bg-amber-50 text-amber-800 border border-amber-200'
@@ -217,6 +285,11 @@ export default function OverviewView({
                   {stat.platform === 'LinkedIn' && (
                     <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
                       <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+                    </svg>
+                  )}
+                  {stat.platform === 'Instagram' && (
+                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                     </svg>
                   )}
                   {stat.platform === 'X' && (
@@ -252,17 +325,19 @@ export default function OverviewView({
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 font-bold text-blue-700">
                   <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  LinkedIn 43% (18.4k)
+                  {isMaya ? 'LinkedIn 45% (14.2k)' : 'LinkedIn 43% (18.4k)'}
                 </span>
                 <span className="text-slate-300">|</span>
                 <span className="inline-flex items-center gap-1.5 font-bold text-slate-900">
-                  <span className="w-2 h-2 rounded-full bg-slate-950" />
-                  X / Twitter 57% (24.5k)
+                  <span className={`w-2 h-2 rounded-full ${isMaya ? 'bg-pink-600' : 'bg-slate-950'}`} />
+                  {isMaya ? 'Instagram 55% (17.6k)' : 'X / Twitter 57% (24.5k)'}
                 </span>
               </div>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">
-              High intent: LinkedIn DMs (2.1x higher inbound response)
+              {isMaya 
+                ? 'High intent: Instagram DMs leading to regional retail & co-op requests' 
+                : 'High intent: LinkedIn DMs (2.1x higher inbound response)'}
             </span>
           </div>
 
@@ -270,13 +345,13 @@ export default function OverviewView({
           <div className="w-full bg-slate-100 rounded-full h-2.5 flex overflow-hidden p-0.5 border border-slate-200/70">
             <div 
               className="bg-blue-600 h-full rounded-l-full transition-all duration-500" 
-              style={{ width: '43%' }} 
-              title="LinkedIn: 43% of total reach" 
+              style={{ width: isMaya ? '45%' : '43%' }} 
+              title={isMaya ? 'LinkedIn: 45% of total reach' : 'LinkedIn: 43% of total reach'} 
             />
             <div 
-              className="bg-slate-950 h-full rounded-r-full transition-all duration-500" 
-              style={{ width: '57%' }} 
-              title="X (Twitter): 57% of total reach" 
+              className={`${isMaya ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 'bg-slate-950'} h-full rounded-r-full transition-all duration-500`} 
+              style={{ width: isMaya ? '55%' : '57%' }} 
+              title={isMaya ? 'Instagram: 55% of total reach' : 'X (Twitter): 57% of total reach'} 
             />
           </div>
         </div>
@@ -298,81 +373,159 @@ export default function OverviewView({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          {/* Insight 1: LinkedIn Code Teardown Velocity */}
-          <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 uppercase tracking-wide">
-                  <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
-                  </svg>
-                  <span>LinkedIn Insight</span>
-                </span>
-                <span className="text-xs font-bold text-emerald-700">
-                  4.8% Engagement Rate
-                </span>
+          {/* Insight 1: Maya (Instagram Reel) or Arjun (LinkedIn Teardown) */}
+          {isMaya ? (
+            <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-pink-50 text-pink-800 border border-pink-200 uppercase tracking-wide">
+                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/>
+                    </svg>
+                    <span>Instagram Reel Insight</span>
+                  </span>
+                  <span className="text-xs font-bold text-emerald-700">
+                    5.8% Engagement Rate
+                  </span>
+                </div>
+                <h4 className="font-heading text-sm font-bold text-slate-900 mb-1">
+                  Exposing co-packer manufacturing rejections drove 5.8% organic engagement
+                </h4>
+                <p className="text-xs text-slate-600 leading-relaxed font-medium mb-2.5">
+                  Your video detailing why <strong>14 commercial co-packers refused to bottle without artificial gums</strong> drove 280+ DMs and 2 retail buyer inquiries. Showing raw unboxing of organic lion's mane bales proved formula authenticity.
+                </p>
+                <div className="px-3 py-1.5 rounded-lg bg-pink-50/70 border border-pink-100 flex items-center gap-2 text-[11px] text-pink-900 font-medium">
+                  <span className="font-bold">Signals:</span>
+                  <span>280+ consumer DMs · 2 retail buyer inquiries · 17.6k video impressions</span>
+                </div>
               </div>
-              <h4 className="font-heading text-sm font-bold text-slate-900 mb-1">
-                Incident post-mortems drive 3.8x deeper discussions than tips
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium mb-2.5">
-                Your post detailing the <strong>$412 Redis Memory Leak</strong> drove 94 comments from engineering leads. Attaching the raw terminal flame graph eliminated skepticism and directly generated 2 enterprise CTO inbound inquiries.
-              </p>
-              <div className="px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-100 flex items-center gap-2 text-[11px] text-blue-900 font-medium">
-                <span className="font-bold">Signals:</span>
-                <span>94 technical comments · 2 CTO conversations · 18.4k impressions</span>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-500 font-medium">Audience: Conscious Consumers & Retail Buyers</span>
+                <button
+                  type="button"
+                  onClick={() => onNavigateToMuse("Draft a new short video reel exposing the hidden additives in commercial canning")}
+                  className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
+                >
+                  <span>Draft next reel in Muse</span>
+                  <Icon name="arrow_forward" size={13} />
+                </button>
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-slate-500 font-medium">Audience: Staff Backend Engineers</span>
-              <button
-                type="button"
-                onClick={() => onNavigateToMuse("Draft a new high-proof technical post-mortem about our eBPF trace proxy")}
-                className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
-              >
-                <span>Draft next teardown in Muse</span>
-                <Icon name="arrow_forward" size={13} />
-              </button>
+          ) : (
+            <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 uppercase tracking-wide">
+                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+                    </svg>
+                    <span>LinkedIn Insight</span>
+                  </span>
+                  <span className="text-xs font-bold text-emerald-700">
+                    4.8% Engagement Rate
+                  </span>
+                </div>
+                <h4 className="font-heading text-sm font-bold text-slate-900 mb-1">
+                  Incident post-mortems drive 3.8x deeper discussions than tips
+                </h4>
+                <p className="text-xs text-slate-600 leading-relaxed font-medium mb-2.5">
+                  Your post detailing the <strong>$412 Redis Memory Leak</strong> drove 94 comments from engineering leads. Attaching the raw terminal flame graph eliminated skepticism and directly generated 2 enterprise CTO inbound inquiries.
+                </p>
+                <div className="px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-100 flex items-center gap-2 text-[11px] text-blue-900 font-medium">
+                  <span className="font-bold">Signals:</span>
+                  <span>94 technical comments · 2 CTO conversations · 18.4k impressions</span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-500 font-medium">Audience: Staff Backend Engineers</span>
+                <button
+                  type="button"
+                  onClick={() => onNavigateToMuse("Draft a new high-proof technical post-mortem about our eBPF trace proxy")}
+                  className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
+                >
+                  <span>Draft next teardown in Muse</span>
+                  <Icon name="arrow_forward" size={13} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Insight 2: X (Twitter) Contrarian Benchmark Discourse */}
-          <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-900 border border-slate-300 uppercase tracking-wide">
-                  <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                  <span>X (Twitter) Insight</span>
-                </span>
-                <span className="text-xs font-bold text-slate-900">
-                  35 Quotes · 182 Bookmarks
-                </span>
+          {/* Insight 2: Maya (LinkedIn FMCG debate) or Arjun (X Contrarian Benchmarks) */}
+          {isMaya ? (
+            <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-900 border border-blue-200 uppercase tracking-wide">
+                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+                    </svg>
+                    <span>LinkedIn Insight</span>
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">
+                    42 Reposts · 68 Comments
+                  </span>
+                </div>
+                <h4 className="font-heading text-sm font-bold text-slate-900 mb-1">
+                  Critiques of 2-year shelf-life preservatives spark intense FMCG debate
+                </h4>
+                <p className="text-xs text-slate-600 leading-relaxed font-medium mb-2.5">
+                  Your post analyzing the <strong>true cost of room-temperature stabilizers vs real adaptogen efficacy</strong> drove 68 comments and 42 reposts from clean wellness founders and retail stockists.
+                </p>
+                <div className="px-3 py-1.5 rounded-lg bg-slate-100/70 border border-slate-200 flex items-center gap-2 text-[11px] text-slate-800 font-medium">
+                  <span className="font-bold">Signals:</span>
+                  <span>42 reposts · 68 operator comments · 14.2k impressions</span>
+                </div>
               </div>
-              <h4 className="font-heading text-sm font-bold text-slate-900 mb-1">
-                Contrarian benchmarks trigger high developer quote-tweet velocity
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium mb-2.5">
-                Your thread on <strong>"SQLite beats Vector DBs for 90% of apps"</strong> was quoted by senior distributed systems engineers. Multiple readers pushed back on concurrent write locks, creating an open opportunity for a follow-up RFC benchmark.
-              </p>
-              <div className="px-3 py-1.5 rounded-lg bg-slate-100/70 border border-slate-200 flex items-center gap-2 text-[11px] text-slate-800 font-medium">
-                <span className="font-bold">Signals:</span>
-                <span>35 quote-tweets · 182 code bookmarks · 314 GitHub repo clicks</span>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-500 font-medium">Trend: High FMCG operator sharing</span>
+                <button
+                  type="button"
+                  onClick={() => onNavigateToStudio()}
+                  className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
+                >
+                  <span>Open in Scrapbook</span>
+                  <Icon name="arrow_forward" size={13} />
+                </button>
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-slate-500 font-medium">Trend: Benchmark reference retention</span>
-              <button
-                type="button"
-                onClick={() => onNavigateToStudio()}
-                className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
-              >
-                <span>Open in Scrapbook</span>
-                <Icon name="arrow_forward" size={13} />
-              </button>
+          ) : (
+            <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-900 border border-slate-300 uppercase tracking-wide">
+                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>X (Twitter) Insight</span>
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">
+                    35 Quotes · 182 Bookmarks
+                  </span>
+                </div>
+                <h4 className="font-heading text-sm font-bold text-slate-900 mb-1">
+                  Contrarian benchmarks trigger high developer quote-tweet velocity
+                </h4>
+                <p className="text-xs text-slate-600 leading-relaxed font-medium mb-2.5">
+                  Your thread on <strong>"SQLite beats Vector DBs for 90% of apps"</strong> was quoted by senior distributed systems engineers. Multiple readers pushed back on concurrent write locks, creating an open opportunity for a follow-up RFC benchmark.
+                </p>
+                <div className="px-3 py-1.5 rounded-lg bg-slate-100/70 border border-slate-200 flex items-center gap-2 text-[11px] text-slate-800 font-medium">
+                  <span className="font-bold">Signals:</span>
+                  <span>35 quote-tweets · 182 code bookmarks · 314 GitHub repo clicks</span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-500 font-medium">Trend: Benchmark reference retention</span>
+                <button
+                  type="button"
+                  onClick={() => onNavigateToStudio()}
+                  className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
+                >
+                  <span>Open in Scrapbook</span>
+                  <Icon name="arrow_forward" size={13} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Insight 3: Format Performance Breakdown */}
           <div className="frosted-glass bg-white/80 rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-3">
@@ -386,40 +539,58 @@ export default function OverviewView({
                 </span>
               </div>
               <h4 className="font-heading text-sm font-bold text-slate-900 mb-2">
-                What drives technical authority across formats
+                {isMaya ? 'What drives consumer trust & retail inbounds' : 'What drives technical authority across formats'}
               </h4>
               <div className="flex flex-col gap-2">
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-900 font-bold">1. Incident Post-Mortems</span>
-                    <span className="text-emerald-700 font-bold">5.4% avg engagement</span>
+                    <span className="text-slate-900 font-bold">
+                      {isMaya ? '1. Supply Chain & Lab Exposés' : '1. Incident Post-Mortems'}
+                    </span>
+                    <span className="text-emerald-700 font-bold">
+                      {isMaya ? '5.8% avg engagement' : '5.4% avg engagement'}
+                    </span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '90%' }} />
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '92%' }} />
                   </div>
-                  <span className="text-[10px] text-slate-500 font-medium">Highest driver of inbound CTO direct messages</span>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {isMaya ? 'Highest driver of wholesale stockist & angel inquiries' : 'Highest driver of inbound CTO direct messages'}
+                  </span>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-900 font-bold">2. Contrarian Takes</span>
-                    <span className="text-amber-800 font-bold">4.1% avg engagement</span>
+                    <span className="text-slate-900 font-bold">
+                      {isMaya ? '2. Contrarian Ingredient Takes' : '2. Contrarian Takes'}
+                    </span>
+                    <span className="text-amber-800 font-bold">
+                      {isMaya ? '4.6% avg engagement' : '4.1% avg engagement'}
+                    </span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-amber-500 h-full rounded-full" style={{ width: '68%' }} />
+                    <div className="bg-amber-500 h-full rounded-full" style={{ width: '70%' }} />
                   </div>
-                  <span className="text-[10px] text-slate-500 font-medium">Highest driver of reposts & architectural debates</span>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {isMaya ? 'Highest driver of organic shares & customer saves' : 'Highest driver of reposts & architectural debates'}
+                  </span>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-900 font-bold">3. Founder Journey</span>
-                    <span className="text-slate-700 font-bold">2.9% avg engagement</span>
+                    <span className="text-slate-900 font-bold">
+                      {isMaya ? '3. Founder Journey & Batch Testing' : '3. Founder Journey'}
+                    </span>
+                    <span className="text-slate-700 font-bold">
+                      {isMaya ? '3.8% avg engagement' : '2.9% avg engagement'}
+                    </span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-slate-500 h-full rounded-full" style={{ width: '48%' }} />
+                    <div className="bg-slate-500 h-full rounded-full" style={{ width: '52%' }} />
                   </div>
-                  <span className="text-[10px] text-slate-500 font-medium">Highest driver of engineering talent recruitment</span>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {isMaya ? 'Highest driver of brand advocacy & repeats' : 'Highest driver of engineering talent recruitment'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -440,16 +611,20 @@ export default function OverviewView({
                 Optimal distribution cadence by platform
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium mb-3">
-                Your LinkedIn audience engages heaviest between <strong>8:00 AM – 9:00 AM EST</strong> on Tuesdays and Thursdays. Posting before the morning engineering standup yields 68% of total engagement within the first 90 minutes.
+                {isMaya 
+                  ? 'Your Instagram audience engages heaviest between 12:00 PM – 1:30 PM EST on Wednesdays and Fridays. LinkedIn operators engage heaviest at 8:30 AM EST.' 
+                  : 'Your LinkedIn audience engages heaviest between 8:00 AM – 9:00 AM EST on Tuesdays and Thursdays. Posting before morning standups yields 68% velocity.'}
               </p>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1.5 text-xs">
                 <div className="flex items-center justify-between font-medium text-slate-800">
                   <span>⏱️ Next recommended window:</span>
-                  <span className="font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">Thursday 8:15 AM EST</span>
+                  <span className="font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">
+                    {isMaya ? 'Wednesday 12:15 PM EST' : 'Thursday 8:15 AM EST'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span>Primary target: LinkedIn Post</span>
-                  <span>Standup reading buffer: 45 mins</span>
+                  <span>{isMaya ? 'Primary target: Instagram Reel' : 'Primary target: LinkedIn Post'}</span>
+                  <span>Peak attention window: 45 mins</span>
                 </div>
               </div>
             </div>
