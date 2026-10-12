@@ -34,6 +34,84 @@ export default function StudioView({
 
   const calendarDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+  // Render official brand icon without platform name text
+  const renderPlatformIcons = (platformStr) => {
+    if (!platformStr) return null;
+    const lower = platformStr.toLowerCase();
+    const hasLinkedIn = lower.includes('linkedin');
+    const hasX = lower.includes('x') || lower.includes('twitter');
+    const hasInstagram = lower.includes('instagram') || lower.includes('insta');
+    const hasYouTube = lower.includes('youtube');
+
+    const icons = [];
+
+    if (hasLinkedIn) {
+      icons.push(
+        <span 
+          key="linkedin"
+          className="w-5.5 h-5.5 rounded-lg bg-[#0A66C2]/10 border border-[#0A66C2]/20 flex items-center justify-center text-[#0A66C2] shadow-2xs shrink-0"
+          title="LinkedIn"
+        >
+          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+          </svg>
+        </span>
+      );
+    }
+
+    if (hasX) {
+      icons.push(
+        <span 
+          key="x"
+          className="w-5.5 h-5.5 rounded-lg bg-slate-950/10 border border-slate-950/20 flex items-center justify-center text-slate-950 shadow-2xs shrink-0"
+          title="X / Twitter"
+        >
+          <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </span>
+      );
+    }
+
+    if (hasInstagram) {
+      icons.push(
+        <span 
+          key="instagram"
+          className="w-5.5 h-5.5 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-[#E4405F] shadow-2xs shrink-0"
+          title="Instagram"
+        >
+          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </span>
+      );
+    }
+
+    if (hasYouTube) {
+      icons.push(
+        <span 
+          key="youtube"
+          className="w-5.5 h-5.5 rounded-lg bg-red-600/10 border border-red-600/20 flex items-center justify-center text-[#FF0000] shadow-2xs shrink-0"
+          title="YouTube"
+        >
+          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </span>
+      );
+    }
+
+    if (icons.length === 0) {
+      icons.push(
+        <span key="generic" className="w-5.5 h-5.5 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 text-[10px] font-bold shrink-0">
+          {platformStr.slice(0, 2).toUpperCase()}
+        </span>
+      );
+    }
+
+    return <div className="flex items-center gap-1 shrink-0">{icons}</div>;
+  };
+
   const handleMoveStage = (e, item, newStage) => {
     e.stopPropagation();
     onUpdateContentItem({
@@ -208,11 +286,9 @@ export default function StudioView({
                         className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:border-amber-300 hover:shadow-xs cursor-pointer flex flex-col justify-between gap-3 transition-all active:scale-[0.99] group"
                       >
                         <div>
-                          {/* Tags: Platform, Format, Calendar Day (Single time) */}
-                          <div className="flex items-center gap-1.5 flex-wrap mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
-                              {item.platform}
-                            </span>
+                          {/* Tags: Platform icon in official color (no text), Format, Calendar Day (Single time) */}
+                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                            {renderPlatformIcons(item.platform)}
                             <span className="text-[11px] text-slate-400 font-medium">
                               {item.format}
                             </span>
@@ -317,8 +393,8 @@ export default function StudioView({
                           className="p-3 rounded-2xl bg-white border border-amber-200/90 text-left cursor-pointer hover:border-amber-400 hover:shadow-xs transition-all flex flex-col justify-between gap-2.5 group shadow-2xs"
                         >
                           <div>
-                            <div className="flex items-center justify-between text-[9px] font-bold text-amber-900 mb-1.5">
-                              <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200/70">{item.platform}</span>
+                            <div className="flex items-center justify-between mb-1.5">
+                              {renderPlatformIcons(item.platform)}
                               <div className="flex items-center gap-1.5">
                                 <span className="uppercase text-[9px] text-slate-400 font-semibold">{item.stage}</span>
                                 <button
