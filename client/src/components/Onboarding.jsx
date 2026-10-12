@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, Sparkles, X, Plus, ChevronDown } from 'lucide-react';
+import Icon from './Icon';
 
 function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
   const [isWiping, setIsWiping] = useState(true);
@@ -37,7 +37,7 @@ function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
       {/* Hairline Progress Track along bottom edge of card header */}
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-200/50 overflow-hidden">
         <div 
-          className="h-full bg-[#FAD02C] transition-all duration-700 ease-out" 
+          className="h-full bg-[#FEEC98] transition-all duration-700 ease-out" 
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -216,7 +216,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
   };
 
   return (
-    <div className="onboarding-root relative min-h-screen flex flex-col items-center justify-center px-4 py-6 sm:py-8 overflow-x-hidden selection:bg-[#FAD02C] selection:text-slate-900">
+    <div className="onboarding-root relative min-h-screen flex flex-col items-center justify-center px-4 py-6 sm:py-8 overflow-x-hidden selection:bg-[#FEEC98] selection:text-slate-900">
       {/* Ambient Canary & Daylight Blurs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center">
         <div 
@@ -287,7 +287,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => setState({ ...state, role: r })}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -323,7 +323,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => toggleArrayItem('expertise', exp)}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -361,7 +361,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => toggleArrayItem('hobbies', h)}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -385,15 +385,15 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                           .map(customH => (
                             <span
                               key={customH}
-                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#FAD02C] border border-[#EAB308] text-slate-950 shadow-xs"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#FEEC98] border border-[#F4D05F] text-slate-950 shadow-xs"
                             >
                               <span>{customH}</span>
                               <button
                                 type="button"
                                 onClick={() => toggleArrayItem('hobbies', customH)}
-                                className="text-slate-950/70 hover:text-slate-950"
+                                className="text-slate-950/70 hover:text-slate-950 flex items-center"
                               >
-                                <X size={13} />
+                                <Icon name="close" size={13} />
                               </button>
                             </span>
                           ))}
@@ -481,7 +481,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                                 className="w-4 h-4 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                                 title="Remove link"
                               >
-                                <X size={12} />
+                                <Icon name="close" size={13} />
                               </button>
                             </span>
                           );
@@ -497,7 +497,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                           }`}
                         >
-                          <Plus size={14} />
+                          <Icon name="add" size={14} />
                           <span>Add link...</span>
                         </button>
                       </div>
@@ -520,7 +520,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               <option value="YouTube">YouTube</option>
                               <option value="Other">Other</option>
                             </select>
-                            <ChevronDown size={14} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Icon name="expand_more" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
                           </div>
 
                           {/* URL Input */}
@@ -626,7 +626,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => setState({ ...state, brandStyle: arch })}
                               className={`px-5 py-3 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -665,7 +665,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => toggleArrayItem('audiences', aud)}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -701,7 +701,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => toggleArrayItem('annoyances', annoyance)}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -742,7 +742,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => toggleArrayItem('realAssets', asset)}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -768,7 +768,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               onClick={() => toggleArrayItem('platforms', plat)}
                               className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
                                 isSelected 
-                                  ? 'bg-[#FAD02C] border-[#EAB308] text-slate-950 font-semibold shadow-xs' 
+                                  ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
@@ -793,7 +793,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                     onClick={() => goToStep(currentStep - 1)}
                     className="h-10 px-5 rounded-full bg-white hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition-all border border-slate-200 shadow-2xs text-xs font-semibold active:scale-95"
                   >
-                    <ArrowLeft size={15} />
+                    <Icon name="arrow_back" size={16} />
                     <span>Back</span>
                   </button>
                 ) : (
@@ -806,19 +806,19 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                   <button
                     type="button"
                     onClick={() => goToStep(currentStep + 1)}
-                    className="h-10 px-6 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
+                    className="h-10 px-6 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
                   >
                     <span>Continue</span>
-                    <ArrowRight size={15} className="stroke-[2.5]" />
+                    <Icon name="arrow_forward" size={16} />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={startInitialization}
-                    className="h-10 px-6 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
+                    className="h-10 px-6 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
                   >
                     <span>Complete Intake</span>
-                    <Sparkles size={15} className="stroke-[2.5]" />
+                    <Icon name="check_circle" size={16} />
                   </button>
                 )}
               </div>
@@ -830,14 +830,14 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
             <CardHeader currentStep={5} totalSteps={totalSteps} stepTitle="Calibrating Soup Intelligence..." />
             <div className="p-8 md:p-10 w-full flex flex-col items-center">
               <div className="w-20 h-20 relative mb-5 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-[#FAD02C]/30 blur-xl animate-ping" />
+                <div className="absolute inset-0 rounded-full bg-[#FFCC00]/30 blur-xl animate-ping" />
                 <div className="w-16 h-16 rounded-full bg-white border border-slate-200/80 shadow-apple-card flex items-center justify-center relative">
-                  <Sparkles className="w-7 h-7 text-[#FAD02C] animate-pulse" />
+                  <Icon name="smart_toy" size={28} className="text-amber-500" />
                 </div>
               </div>
 
               <span className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#FAD02C]" />
+                <span className="w-2 h-2 rounded-full bg-[#FEEC98]" />
                 Intelligence Calibrated
               </span>
 
@@ -852,7 +852,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
               <div className="w-full flex flex-col gap-2 mb-6">
                 <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
                   <div 
-                    className="h-full bg-[#FAD02C] transition-all duration-500 ease-out" 
+                    className="h-full bg-[#FEEC98] transition-all duration-500 ease-out" 
                     style={{ width: `${initProgress}%` }}
                   />
                 </div>

@@ -1,15 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import { PROFILES_DATA } from './data/profilesData';
 
+function parseUrlState() {
+  if (typeof window === 'undefined') {
+    return { viewMode: 'onboarding', activePage: 'overview', profileId: 'arjun_vance', step: 1 };
+  }
+  const params = new URLSearchParams(window.location.search);
+  const pageParam = params.get('page');
+  const profileParam = params.get('profile') || 'arjun_vance';
+  const stepParam = parseInt(params.get('step') || '1', 10);
+
+  const validProfileId = ['arjun_vance', 'maya_lin'].includes(profileParam) ? profileParam : 'arjun_vance';
+  const validStep = stepParam >= 1 && stepParam <= 5 ? stepParam : 1;
+
+  // Aliases mapping: home -> overview, scrapbook -> studio, profile -> you
+  let resolvedPage = pageParam;
+  if (pageParam === 'home') resolvedPage = 'overview';
+  if (pageParam === 'scrapbook') resolvedPage = 'studio';
+  if (pageParam === 'profile') resolvedPage = 'you';
+
+  if (['overview', 'muse', 'studio', 'you'].includes(resolvedPage)) {
+    return {
+      viewMode: 'dashboard',
+      activePage: resolvedPage,
+      profileId: validProfileId,
+      step: validStep
+    };
+  }
+
+  return {
+    viewMode: 'onboarding',
+    activePage: 'overview',
+    profileId: validProfileId,
+    step: validStep
+  };
+}
+
 export default function App() {
-  const [viewMode, setViewMode] = useState('onboarding'); // 'onboarding' | 'dashboard'
-  const [currentProfileId, setCurrentProfileId] = useState('arjun_vance');
+  const [initialState] = useState(() => parseUrlState());
+  const [viewMode, setViewMode] = useState(initialState.viewMode); // 'onboarding' | 'dashboard'
+  const [activePage, setActivePage] = useState(initialState.activePage); // 'overview' | 'muse' | 'studio' | 'you'
+  const [currentProfileId, setCurrentProfileId] = useState(initialState.profileId);
   const [customProfile, setCustomProfile] = useState(null);
-  const [onboardingStep, setOnboardingStep] = useState(1);
+  const [onboardingStep, setOnboardingStep] = useState(initialState.step);
 
   const activeProfile = customProfile || PROFILES_DATA[currentProfileId] || PROFILES_DATA['arjun_vance'];
+
+  const syncUrl = useCallback((newViewMode, newPage, newProfileId, newStep) => {
+    if (typeof window === 'undefined' || !window.history.pushState) return;
+    const params = new URLSearchParams();
+    if (newViewMode === 'onboarding') {
+      params.set('page', 'onboarding');
+      if (newStep > 1) params.set('step', newStep.toString());
+    } else {
+      let urlPage = newPage;
+      if (newPage === 'overview') urlPage = 'home';
+      if (newPage === 'studio') urlPage = 'scrapbook';
+      if (newPage === 'you') urlPage = 'profile';
+      params.set('page', urlPage);
+    }
+    if (newProfileId && newProfileId !== 'custom_founder') {
+      params.set('profile', newProfileId);
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState(
+      { viewMode: newViewMode, activePage: newPage, profileId: newProfileId, step: newStep },
+      '',
+      newUrl
+    );
+  }, []);
+
+  // Sync on browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const state = parseUrlState();
+      setViewMode(state.viewMode);
+      setActivePage(state.activePage);
+      setCurrentProfileId(state.profileId);
+      setOnboardingStep(state.step);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleOnboardingComplete = (onboardingState) => {
     const turningPt = onboardingState.whyStarted || onboardingState.turningPoint || onboardingState.originScar || '';
@@ -26,7 +100,7 @@ export default function App() {
         name: onboardingState.fullName,
         role: onboardingState.role,
         company_name: onboardingState.entityName,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
         tagline: onboardingState.mission,
         mission: onboardingState.mission,
         origin_scar: turningPt,
@@ -117,32 +191,51 @@ export default function App() {
 
     setCustomProfile(dynamicProfile);
     setViewMode('dashboard');
+    setActivePage('overview');
+    syncUrl('dashboard', 'overview', 'custom_founder', 1);
   };
 
   const handleSwitchProfile = (profileId) => {
     setCustomProfile(null);
     setCurrentProfileId(profileId);
+    syncUrl(viewMode, activePage, profileId, onboardingStep);
+  };
+
+  const handlePageChange = (newPageId) => {
+    setActivePage(newPageId);
+    setViewMode('dashboard');
+    syncUrl('dashboard', newPageId, currentProfileId, onboardingStep);
+  };
+
+  const handleStepChange = (newStep) => {
+    setOnboardingStep(newStep);
+    syncUrl('onboarding', activePage, currentProfileId, newStep);
+  };
+
+  const handleRestartOnboarding = () => {
+    setOnboardingStep(1);
+    setViewMode('onboarding');
+    syncUrl('onboarding', 'overview', currentProfileId, 1);
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#FAD02C] selection:text-slate-950 flex flex-col justify-center">
-      <main className="flex-1 flex flex-col justify-center">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#FEEC98] selection:text-slate-950 flex flex-col">
+      <main className={`flex-1 flex flex-col ${viewMode === 'onboarding' ? 'justify-center' : ''}`}>
         {viewMode === 'onboarding' ? (
           <Onboarding 
             initialProfile={activeProfile} 
             currentStep={onboardingStep}
-            onStepChange={setOnboardingStep}
+            onStepChange={handleStepChange}
             onComplete={handleOnboardingComplete} 
           />
         ) : (
           <Dashboard 
             profile={activeProfile}
             currentProfileId={currentProfileId}
+            activePage={activePage}
+            onPageChange={handlePageChange}
             onSwitchProfile={handleSwitchProfile}
-            onRestartOnboarding={() => {
-              setOnboardingStep(1);
-              setViewMode('onboarding');
-            }}
+            onRestartOnboarding={handleRestartOnboarding}
           />
         )}
       </main>

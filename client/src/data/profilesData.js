@@ -5,10 +5,11 @@ export const PROFILES_DATA = {
       name: "Arjun Vance",
       role: "Co-founder & CTO",
       company_name: "AgentScale",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
       tagline: "Building open-source observability for autonomous AI agent fleets.",
       mission: "Making autonomous multi-agent systems debuggable, deterministic, and cost-effective in production.",
       stage: "Seed ($1.8M raised, 14-person engineering team)",
+      origin_scar: "Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans during our first enterprise launch.",
       unfair_advantage: "Ex-Datadog distributed tracing architect. Wrote eBPF kernels for high-throughput stream processing."
     },
     domain_radar: {
@@ -105,6 +106,7 @@ export const PROFILES_DATA = {
       tagline: "Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.",
       mission: "Fixing the broken commercial beverage industry by replacing synthetic stabilizers with regenerative plant adaptogens.",
       stage: "Bootstrapped to $65k MRR, raising $750k Angel Seed",
+      origin_scar: "14 beverage manufacturing plants told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers.",
       unfair_advantage: "Former food scientist at General Mills who left after seeing how cost-cutting compromises consumer gut health."
     },
     domain_radar: {
