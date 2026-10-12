@@ -65,24 +65,12 @@ export default function StudioView({
   return (
     <div className="max-w-[1320px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6 animate-fade-in font-sans">
       
-      {/* Studio Header: Subheading removed per request */}
+      {/* Studio Header: Clean title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
         <div>
           <h1 className="font-heading text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">
             Scrapbook
           </h1>
-        </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {/* Primary CTA button: canary gold */}
-          <button
-            type="button"
-            onClick={onOpenQuickCapture}
-            className="px-4 py-2 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 text-xs font-bold shadow-2xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-          >
-            <Icon name="add" size={16} />
-            <span>Capture note</span>
-          </button>
         </div>
       </div>
 
