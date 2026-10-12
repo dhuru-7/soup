@@ -185,6 +185,7 @@ export default function Dashboard({
             agentMemory={agentMemory}
             onAddMemoryNote={handleAddMemoryNote}
             onDeleteMemoryNote={handleDeleteMemoryNote}
+            onRestartOnboarding={onRestartOnboarding}
           />
         )}
       </main>

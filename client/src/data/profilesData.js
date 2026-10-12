@@ -22,6 +22,29 @@ export const PROFILES_DATA = {
       ],
       competitors_watched: ["LangSmith", "Arize AI", "Braintrust Data"]
     },
+    expertise: [
+      "Distributed Systems Architecture",
+      "APM & Observability Pipelines",
+      "High-Throughput eBPF Tracing",
+      "Stream Processing at Scale"
+    ],
+    hobbies: [
+      "Trail Running & Ultrarunning",
+      "Specialty Coffee Brewing",
+      "Mechanical Keyboards",
+      "Chess & Endgame Strategy"
+    ],
+    links: [
+      { id: 'lnk-1', type: 'Website', url: 'https://agentscale.dev' },
+      { id: 'lnk-2', type: 'LinkedIn', url: 'https://linkedin.com/in/arjunvance' },
+      { id: 'lnk-3', type: 'X', url: 'https://x.com/arjunvance' },
+      { id: 'lnk-4', type: 'GitHub', url: 'https://github.com/agentscale' }
+    ],
+    real_assets: [
+      "Production flame graphs & p99 CPU trace profiles",
+      "Internal distributed system architecture RFCs & diffs",
+      "Cold benchmark datasets (SQLite vs Vector DBs)"
+    ],
     channels: {
       primary: "X (Twitter)",
       secondary: "LinkedIn"
@@ -119,9 +142,31 @@ export const PROFILES_DATA = {
       ],
       competitors_watched: ["Olipop", "Poppi", "Recess"]
     },
+    expertise: [
+      "Beverage Science & Formulation",
+      "Organic Adaptogen Extraction",
+      "Clean Supply Chain & Cold-Fill",
+      "Retail Grocery Pitching (Whole Foods, Sprouts)"
+    ],
+    hobbies: [
+      "Wild Plant & Herbal Foraging",
+      "Studio Ceramics & Pottery",
+      "Marathon Distance Running",
+      "Fermentation & Wild Sourdough"
+    ],
+    links: [
+      { id: 'lnk-1', type: 'Website', url: 'https://solacebotanicals.com' },
+      { id: 'lnk-2', type: 'Instagram', url: 'https://instagram.com/solacebotanicals' },
+      { id: 'lnk-3', type: 'LinkedIn', url: 'https://linkedin.com/in/mayalin' }
+    ],
+    real_assets: [
+      "Raw laboratory formulation batch logs",
+      "Warehouse pallet shipping clipboards & inventory sheets",
+      "Open-formula certificates of analysis"
+    ],
     channels: {
       primary: "LinkedIn",
-      secondary: "Instagram / TikTok"
+      secondary: "Instagram"
     },
     voiceprint: {
       insead_archetype: "The Megaphone (Category Champion)",

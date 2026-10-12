@@ -188,6 +188,10 @@ export default function App() {
         audience_taboos: annoyancesList,
         competitors_watched: ['Market Incumbents', 'Legacy Tools']
       },
+      expertise: onboardingState.expertise || [],
+      hobbies: onboardingState.hobbies || [],
+      links: onboardingState.links || [],
+      real_assets: realAssetsList,
       channels: {
         primary: onboardingState.platforms?.[0] || 'LinkedIn',
         secondary: onboardingState.platforms?.[1] || 'X (Twitter)'
