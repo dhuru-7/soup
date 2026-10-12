@@ -69,14 +69,6 @@ export default function YouView({
   const stage = profile?.identity?.stage || 'Active Scaling';
   const archetype = profile?.voiceprint?.insead_archetype || profile?.brandStyle || 'The Builder';
 
-  // Background story
-  const story = profile?.identity?.origin_scar || profile?.whyStarted || profile?.why_started || 
-    'Real operational friction encountered while building in production that proved existing solutions fail at scale.';
-
-  // Perspective / Point of View
-  const perspective = profile?.voiceprint?.spicy_take || profile?.unpopularOpinion || profile?.unpopular_opinion || 
-    'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.';
-
   // Strengths & Expertise
   const expertise = profile?.expertise || (
     profile?.identity?.unfair_advantage?.includes('Distributed') 
@@ -106,7 +98,7 @@ export default function YouView({
     profile?.channels?.secondary || 'X (Twitter)'
   ].filter(Boolean);
 
-  // Provided links
+  // Provided links (shown only once in the primary top card)
   const links = profile?.links || [
     { id: 'lnk-1', type: 'Website', url: `https://${company.toLowerCase().replace(/\s+/g, '')}.com` },
     { id: 'lnk-2', type: 'LinkedIn', url: `https://linkedin.com/in/${name.toLowerCase().replace(/\s+/g, '')}` },
@@ -159,7 +151,7 @@ export default function YouView({
           )}
         </div>
 
-        {/* Provided Public Links */}
+        {/* Provided Public Links (Clean light pills) */}
         {links.length > 0 && (
           <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-slate-400 mr-1">Links:</span>
@@ -169,7 +161,7 @@ export default function YouView({
                 href={lnk.url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 text-xs font-semibold text-slate-800 hover:text-slate-950 shadow-2xs transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 text-xs font-semibold text-slate-800 hover:text-slate-950 shadow-2xs transition-all active:scale-95"
               >
                 <PlatformIcon type={lnk.type} size={13} className="text-slate-700" />
                 <span>{lnk.type}</span>
@@ -180,36 +172,7 @@ export default function YouView({
         )}
       </div>
 
-      {/* 2. Core Profile Details (Simple, human information cards) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Background & Story */}
-        <div className="frosted-glass bg-white/80 rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-apple-card flex flex-col justify-between gap-4">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-              Background & Story
-            </span>
-            <p className="font-heading text-sm sm:text-base font-bold text-slate-900 leading-relaxed">
-              "{story}"
-            </p>
-          </div>
-        </div>
-
-        {/* Point of View / Perspective */}
-        <div className="frosted-glass bg-white/80 rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-apple-card flex flex-col justify-between gap-4">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-              Point of View
-            </span>
-            <p className="font-heading text-sm sm:text-base font-bold text-slate-900 leading-relaxed">
-              "{perspective}"
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 3. Expertise & Passions */}
+      {/* 2. Expertise & Passions (Consistent light Apple-style pills) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Areas of Expertise */}
@@ -222,7 +185,7 @@ export default function YouView({
               {expertise.map((item, i) => (
                 <span 
                   key={i} 
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-2xs"
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/60 text-slate-800 text-xs font-semibold border border-slate-200/80 shadow-2xs transition-colors"
                 >
                   {item}
                 </span>
@@ -241,7 +204,7 @@ export default function YouView({
               {hobbies.map((item, i) => (
                 <span 
                   key={i} 
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-800 text-xs font-semibold border border-slate-200/80"
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/60 text-slate-800 text-xs font-semibold border border-slate-200/80 shadow-2xs transition-colors"
                 >
                   {item}
                 </span>
@@ -252,7 +215,7 @@ export default function YouView({
 
       </div>
 
-      {/* 4. Audience & Publishing Channels */}
+      {/* 3. Target Audience & Publishing Channels (Consistent light Apple-style pills) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Target Audience */}
@@ -265,7 +228,7 @@ export default function YouView({
               {targetAudience.map((aud, i) => (
                 <span 
                   key={i} 
-                  className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-900 text-xs font-bold border border-blue-200/70"
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/60 text-slate-800 text-xs font-semibold border border-slate-200/80 shadow-2xs transition-colors"
                 >
                   {aud}
                 </span>
@@ -284,9 +247,9 @@ export default function YouView({
               {distributionChannels.map((plat, i) => (
                 <div 
                   key={i} 
-                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 shadow-2xs"
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/60 text-slate-800 border border-slate-200/80 text-xs font-semibold shadow-2xs transition-colors"
                 >
-                  <PlatformIcon type={plat} size={14} className="text-slate-800" />
+                  <PlatformIcon type={plat} size={14} className="text-slate-700" />
                   <span>{plat}</span>
                 </div>
               ))}
@@ -296,7 +259,7 @@ export default function YouView({
 
       </div>
 
-      {/* 5. Export Profile Data */}
+      {/* 4. Export Profile Data */}
       <div className="flex justify-end pt-2">
         <button
           type="button"
