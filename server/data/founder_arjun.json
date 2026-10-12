@@ -1,0 +1,156 @@
+{
+  "founder_id": "arjun_vance",
+  "identity": {
+    "name": "Arjun Vance",
+    "role": "Co-founder & CTO",
+    "company_name": "AgentScale",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    "tagline": "Building open-source observability for autonomous AI agent fleets.",
+    "mission": "Making autonomous multi-agent systems debuggable, deterministic, and cost-effective in production.",
+    "stage": "Seed ($1.8M raised, 14-person engineering team)",
+    "unfair_advantage": "Ex-Datadog distributed tracing architect. Wrote eBPF kernels for high-throughput stream processing."
+  },
+  "domain_radar": {
+    "industry": "AI Infrastructure & Developer Tools",
+    "target_audience": ["Staff Backend Engineers", "AI Platform Architects", "Technical CTOs"],
+    "audience_taboos": [
+      "Hype without code or benchmarks",
+      "Vague marketing buzzwords like 'revolutionary AI'",
+      "Ignoring p99 latency spikes and token costs"
+    ],
+    "competitors_watched": ["LangSmith", "Arize AI", "Braintrust Data"],
+    "white_space_topics": [
+      "Why vector databases are overkill for 90% of RAG use cases",
+      "How unbatched LLM tool calls crash production Redis instances",
+      "Why deterministic state machines beat pure prompt chaining every single time"
+    ]
+  },
+  "channels": {
+    "primary": "X (Twitter)",
+    "secondary": "LinkedIn",
+    "handles": {
+      "x": "@arjun_scale",
+      "linkedin": "linkedin.com/in/arjun-vance-scale",
+      "github": "github.com/agentscale/core"
+    },
+    "baseline_followers": {
+      "x": 3420,
+      "linkedin": 1850
+    }
+  },
+  "voiceprint": {
+    "insead_archetype": "The Magnet (Attractor)",
+    "tone_profile": {
+      "technical_depth": 9,
+      "contrarian_level": 8,
+      "candidness": 9,
+      "formality": 2
+    },
+    "banned_phrases": [
+      "delve into",
+      "game-changer",
+      "humbled and honored",
+      "thrilled to announce",
+      "in today's fast-paced digital world",
+      "synergy",
+      "paradigm shift",
+      "supercharge"
+    ],
+    "voice_rules": [
+      "Always include concrete numbers (latency in ms, dollars spent, memory in MB).",
+      "Share the actual bug post-mortem before sharing the solution.",
+      "Short, high-velocity sentence cadence. Code snippets and flame graphs speak louder than paragraphs."
+    ],
+    "spicy_take": "Most AI startups don't have a model problem; they have an uninstrumented distributed state catastrophe."
+  },
+  "content_pillars": [
+    {
+      "id": "pillar_1",
+      "name": "Production Post-Mortems & Deep-Dive Engineering",
+      "ratio": 60,
+      "description": "Real architectural bugs, latency optimizations, and memory leak root causes from the AgentScale engine."
+    },
+    {
+      "id": "pillar_2",
+      "name": "Contrarian AI Infrastructure Realities",
+      "ratio": 25,
+      "description": "Debunking AI marketing hype with cold benchmarks (SQLite vs Vector DBs, deterministic state vs prompt magic)."
+    },
+    {
+      "id": "pillar_3",
+      "name": "Building in Public & High-Bar Engineering Culture",
+      "ratio": 15,
+      "description": "Hiring standards for founding engineers, internal RFC culture, and open-source release notes."
+    }
+  ],
+  "weekly_calendar": [
+    {
+      "day": "Monday",
+      "platform": "LinkedIn & X",
+      "pillar_id": "pillar_1",
+      "format": "Technical Teardown",
+      "hook": "We accidentally burned $412 in 14 hours on AWS because of a single unbatched Redis scan across 50,000 agent sessions.\n\nHere is the post-mortem and the 12-line Lua script that fixed it.",
+      "draft_structure": {
+        "hook": "Specific dollar cost + time window + precise architectural cause.",
+        "friction": "How an innocent loop in an agent session manager triggered exponential redis latency at p99.",
+        "data_proof": "Flame graph showed 82% CPU time stuck on KEYS instead of SCAN.",
+        "takeaway": "Never use client-side loops for multi-key deletes; push execution to Redis via atomic Lua scripts.",
+        "discussion": "Are you running redis cluster or single node for your agent memory stores?"
+      },
+      "visual_direction": "Screenshot of terminal CPU flame graph before/after Lua script optimization with dark background.",
+      "follow_up_action": "Drop the public GitHub Gist link in the 1st comment; reply to engineers asking about Redis cluster compatibility within 45 mins.",
+      "status": "Ready to Publish"
+    },
+    {
+      "day": "Wednesday",
+      "platform": "X (Twitter)",
+      "pillar_id": "pillar_2",
+      "format": "Contrarian Benchmark",
+      "hook": "Hot take backed by benchmarks: 90% of AI startups using Pinecone or Weaviate would get 4x faster p99 latency and save $800/mo using SQLite with FTS5.\n\nHere is the side-by-side benchmark data on 100k agent memory lookups:",
+      "draft_structure": {
+        "hook": "Contrarian assertion + quantified upside (4x latency, $800 savings).",
+        "friction": "Why vector embeddings add latency overhead when exact keyword + metadata filtering is what the agent actually needed.",
+        "data_proof": "Benchmark chart: 12ms p99 on SQLite vs 58ms on managed vector cloud.",
+        "takeaway": "Don't introduce distributed infrastructure until embedded primitives fail your SLA."
+      },
+      "visual_direction": "Clean ASCII benchmark table or terminal plot comparing latency and memory consumption.",
+      "follow_up_action": "Quote-retweet any AI researchers who disagree with the benchmark repo.",
+      "status": "Scheduled"
+    },
+    {
+      "day": "Friday",
+      "platform": "LinkedIn",
+      "pillar_id": "pillar_3",
+      "format": "Hiring & Engineering RFC",
+      "hook": "We just rejected a candidate who solved our LeetCode hard problem in 15 minutes.\n\nInstead, we gave the offer to an engineer who spent 45 minutes asking why our distributed queue was designed that way in the first place.\n\nHere is how we interview founding engineers at AgentScale:",
+      "draft_structure": {
+        "hook": "Counter-intuitive hiring decision.",
+        "friction": "Why algorithmic puzzle-solving has zero correlation with debugging distributed systems under production load.",
+        "takeaway": "Curiosity and system instincts > memorized patterns. We care about how you reason about failure modes.",
+        "call_to_action": "If you enjoy breaking distributed state machines, our DM is open for founding infra roles."
+      },
+      "visual_direction": "Photo of handwritten whiteboard system architecture diagram from the office interview room.",
+      "follow_up_action": "DM candidates who like or comment on the post with a direct calendar link for an informal intro chat.",
+      "status": "Draft"
+    }
+  ],
+  "raw_assets_history": [
+    {
+      "id": "asset_01",
+      "type": "terminal_log_and_voice_memo",
+      "raw_input": "Voice memo while walking home: 'Dude, our eBPF probe just caught a 400ms stall in the asyncio event loop because someone called a synchronous file read inside an agent tool. Fixed with aioboto3. Should post about this.'",
+      "processed_angle": "Turned into high-authority async Python postmortem with 3 hook variations.",
+      "timestamp": "2 days ago"
+    }
+  ],
+  "goals_tracking": {
+    "timeframe": "6 Months",
+    "north_star": "Inbound Senior Engineering Hires & GitHub Traction",
+    "metrics": {
+      "inbound_engineer_dms": { "current": 9, "target": 20, "unit": "DMs" },
+      "github_stars": { "current": 1420, "target": 3000, "unit": "Stars" },
+      "podcast_speaking_invites": { "current": 3, "target": 8, "unit": "Invites" },
+      "authority_score": { "current": 84, "target": 95, "unit": "/100" }
+    }
+  }
+}

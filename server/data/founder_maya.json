@@ -1,0 +1,155 @@
+{
+  "founder_id": "maya_lin",
+  "identity": {
+    "name": "Maya Lin",
+    "role": "Founder & CEO",
+    "company_name": "Solace Botanicals",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+    "tagline": "Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.",
+    "mission": "Fixing the broken commercial beverage industry by replacing synthetic stabilizers with regenerative plant adaptogens.",
+    "stage": "Bootstrapped to $65k MRR, raising $750k Angel Seed",
+    "unfair_advantage": "Former food scientist at General Mills who left after seeing how cost-cutting compromises consumer gut health."
+  },
+  "domain_radar": {
+    "industry": "D2C Functional Beverage & Clean Food",
+    "target_audience": ["Conscious Health Consumers", "Regional Retail Buyers (Whole Foods, Sprouts)", "Consumer Angel Investors"],
+    "audience_taboos": [
+      "Hidden artificial sweeteners disguised as 'natural flavors'",
+      "Polished corporate PR greenwashing",
+      "Founders who don't know where their ingredients are grown"
+    ],
+    "competitors_watched": ["Olipop", "Poppi", "Recess"],
+    "white_space_topics": [
+      "Why 'Natural Flavors' on beverage cans is a legal loophole for 100+ synthetic chemicals",
+      "The brutal math of co-packer minimum order quantities (MOQs) that bankrupt early beverage founders",
+      "Why clean ingredients settle to the bottom of the can—and why you should celebrate sediment"
+    ]
+  },
+  "channels": {
+    "primary": "LinkedIn",
+    "secondary": "Instagram / TikTok",
+    "handles": {
+      "linkedin": "linkedin.com/in/mayalin-solace",
+      "instagram": "@solacebotanicals",
+      "tiktok": "@mayalinfounder"
+    },
+    "baseline_followers": {
+      "linkedin": 4120,
+      "instagram": 12800
+    }
+  },
+  "voiceprint": {
+    "insead_archetype": "The Megaphone (Category Champion)",
+    "tone_profile": {
+      "technical_depth": 4,
+      "contrarian_level": 7,
+      "candidness": 9,
+      "formality": 4
+    },
+    "banned_phrases": [
+      "synergy",
+      "game-changing wellness",
+      "humbled and honored",
+      "miracle cure",
+      "guilt-free indulgence",
+      "revolutionizing beverage"
+    ],
+    "voice_rules": [
+      "Talk like a candid food scientist who cares about people's families.",
+      "Show the warehouse mess, the lab rejections, and the exact cost breakdowns per can.",
+      "Never preach or sound elite; educate with empathy and transparency."
+    ],
+    "spicy_take": "If a healthy canned drink has a 2-year shelf life at room temperature, you are drinking preservatives, not nutrition."
+  },
+  "content_pillars": [
+    {
+      "id": "pillar_1",
+      "name": "Supply Chain & Food Industry Truths",
+      "ratio": 50,
+      "description": "Exposing the hidden shortcuts beverage giants take with maltodextrin, artificial gums, and natural flavor labeling."
+    },
+    {
+      "id": "pillar_2",
+      "name": "The Raw Founder Diary (Bootstrapped to Shelves)",
+      "ratio": 30,
+      "description": "The unglamorous reality of inventory financing, pallet shipping, co-packer rejections, and retail negotiations."
+    },
+    {
+      "id": "pillar_3",
+      "name": "Clean Living Science & Adaptogen Education",
+      "ratio": 20,
+      "description": "Actionable science on cortisol regulation, lion's mane efficacy, and sleep cycles without wellness fluff."
+    }
+  ],
+  "weekly_calendar": [
+    {
+      "day": "Tuesday",
+      "platform": "LinkedIn",
+      "pillar_id": "pillar_1",
+      "format": "Industry Exposé / Supply Chain Truth",
+      "hook": "14 beverage manufacturing plants told me my formula was 'commercially impossible' unless I added artificial guar gum and industrial foaming agents.\n\nHere is what happens when a founder refuses to poison their own product for higher profit margins:",
+      "draft_structure": {
+        "hook": "Number of manufacturing rejections + uncompromising founder stance.",
+        "friction": "Why industrial co-packers push gums: it lets high-speed canning machines run 20% faster without clogging.",
+        "data_proof": "Comparison sheet: $0.14 margin sacrifice per can to keep the ingredients 100% whole plant extract.",
+        "takeaway": "Consumers can taste honesty. When we launched batch 001 without gums, we sold out in 48 hours.",
+        "discussion": "What ingredient label trick frustrates you most when shopping for clean groceries?"
+      },
+      "visual_direction": "Unfiltered candid photo of Maya on the warehouse floor holding a prototype can next to laboratory lab test sheets.",
+      "follow_up_action": "Reply to grocery buyers in comments; send direct samples to any boutique store owners who chime in.",
+      "status": "Ready to Publish"
+    },
+    {
+      "day": "Thursday",
+      "platform": "LinkedIn & Instagram",
+      "pillar_id": "pillar_2",
+      "format": "Raw Founder Diary & Unit Economics",
+      "hook": "Most people think getting into retail is a victory lap.\n\nIn reality, getting our first 12 Whole Foods placements almost bankrupted us.\n\nHere is the raw unit economics of consumer packaged goods that nobody warns you about:",
+      "draft_structure": {
+        "hook": "Counter-intuitive truth about retail prestige vs cash flow reality.",
+        "friction": "Slotting fees, distributor margin cuts (30%), payment terms on net-60 days.",
+        "data_proof": "Line-item breakdown: Manufacturing ($0.92), Shipping ($0.38), Retailer cut ($1.20), Founder gross ($0.50).",
+        "takeaway": "Retail gives you authority, but your direct community gives you survival cashflow.",
+        "discussion": "Fellow consumer founders: what was your biggest surprise when scaling retail distribution?"
+      },
+      "visual_direction": "Photo of handwritten pallet inventory clipboard and shipping boxes in the cold storage warehouse.",
+      "follow_up_action": "Tag angel investors who focus on consumer goods; engage with other D2C brand founders.",
+      "status": "Scheduled"
+    },
+    {
+      "day": "Sunday",
+      "platform": "LinkedIn",
+      "pillar_id": "pillar_3",
+      "format": "Science Education & Category Defense",
+      "hook": "Next time you pick up a 'healthy sparkling water', look at the ingredients list.\n\nIf it says 'Natural Flavors', here is what the FDA legally allows the beverage brand to hide from you:",
+      "draft_structure": {
+        "hook": "Direct educational consumer callout.",
+        "friction": "Why 'natural flavors' can contain up to 100 synthetic solvents including propylene glycol.",
+        "takeaway": "Demand transparency. Clean ingredients should specify the exact botanical extract, not a proprietary umbrella term.",
+        "call_to_action": "Drop your favorite afternoon drink in the comments and I'll tell you what's actually inside it."
+      },
+      "visual_direction": "Macro close-up photo comparing pure organic ashwagandha root vs industrial synthetic powder in petri dishes.",
+      "follow_up_action": "Engage for 60 minutes answering every single comment with real scientific ingredient breakdowns.",
+      "status": "Draft"
+    }
+  ],
+  "raw_assets_history": [
+    {
+      "id": "asset_02",
+      "type": "warehouse_photo_and_note",
+      "raw_input": "Quick voice note at 6am: 'Just spent the night unboxing 4,000 cans because the labeling machine had a 2mm misalignment. My hands are freezing. But we can't ship flawed cans to our first boutique stores.'",
+      "processed_angle": "Turned into high-vulnerability LinkedIn founder post celebrating obsessive quality control.",
+      "timestamp": "3 days ago"
+    }
+  ],
+  "goals_tracking": {
+    "timeframe": "6 Months",
+    "north_star": "Retail Distribution & Angel Financing",
+    "metrics": {
+      "retail_store_placements": { "current": 18, "target": 50, "unit": "Stores" },
+      "angel_investor_inquiries": { "current": 4, "target": 12, "unit": "Calls" },
+      "consumer_waitlist_signups": { "current": 2340, "target": 5000, "unit": "Subscribers" },
+      "authority_score": { "current": 79, "target": 92, "unit": "/100" }
+    }
+  }
+}
