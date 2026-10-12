@@ -37,13 +37,13 @@ Founders hate long, tedious 50-field forms. The onboarding must be **frictionles
 ---
 
 ### Pillar 3: Tone Archetype & Anti-AI Calibration ("The Voiceprint")
-*Why we need it: Hard-filters AI cliches and calibrates the INSEAD Executive Brand model.*
+*Why we need it: Calibrates the INSEAD Executive Brand model and enforces automated anti-AI cliches.*
 - **INSEAD Strategic Archetype**:
   1. **The Magnet (Attractor)**: Builds in public, shares real numbers, bugs, post-mortems, draws inbound talent & users.
   2. **The Megaphone (Broadcaster)**: Champions a new philosophy, challenges industry status quo, bold paradigm shifts.
   3. **The Pragmatic Operator**: Deep teardowns, tactical frameworks, no fluff, actionable systems.
-- **Anti-AI Banned Words / Habits ("Negative Lexicon")**:
-  - Words the founder refuses to say (e.g., *"delve"*, *"game-changing"*, *"excited to announce"*, *"synergy"*).
+- **Automated Anti-AI Negative Lexicon (System Guardrail)**:
+  - Automatically filtered in engine without asking founder to fill out a word quiz (blocks *"delve into"*, *"game-changer"*, *"thrilled to announce"*, *"humbled and honored"*, *"synergy"*, etc.).
 
 ---
 
