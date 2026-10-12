@@ -1,6 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import Icon from './Icon';
 
+/**
+ * High-signal SVG platform icons for public links & channels
+ */
+function PlatformIcon({ type = '', size = 14, className = '' }) {
+  const norm = (type || '').toLowerCase();
+
+  if (norm.includes('linkedin')) {
+    return (
+      <svg className={`shrink-0 fill-current ${className}`} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0 0-3.06 1.53 1.53 0 0 0 0 3.06m1.4 9.74V9.93H5.06v8.57h2.8z"/>
+      </svg>
+    );
+  }
+
+  if (norm === 'x' || norm.includes('twitter')) {
+    return (
+      <svg className={`shrink-0 fill-current ${className}`} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+    );
+  }
+
+  if (norm.includes('instagram')) {
+    return (
+      <svg className={`shrink-0 fill-current ${className}`} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+      </svg>
+    );
+  }
+
+  if (norm.includes('website') || norm.includes('globe') || norm.includes('web') || norm.includes('site')) {
+    return (
+      <svg className={`shrink-0 stroke-current fill-none ${className}`} width={size} height={size} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes('youtube')) {
+    return (
+      <svg className={`shrink-0 fill-current ${className}`} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    );
+  }
+
+  if (norm.includes('github')) {
+    return (
+      <svg className={`shrink-0 fill-current ${className}`} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+      </svg>
+    );
+  }
+
+  if (norm.includes('substack') || norm.includes('newsletter')) {
+    return (
+      <svg className={`shrink-0 fill-current ${className}`} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={`shrink-0 stroke-current fill-none ${className}`} width={size} height={size} viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
 function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
   const [isWiping, setIsWiping] = useState(true);
 
@@ -34,10 +106,10 @@ function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
         )}
       </div>
 
-      {/* Hairline Progress Track along bottom edge of card header */}
+      {/* Hairline Progress Track matching continue button color (#FFCC00) */}
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-200/50 overflow-hidden">
         <div 
-          className="h-full bg-[#FEEC98] transition-all duration-700 ease-out" 
+          className="h-full bg-[#FFCC00] transition-all duration-700 ease-out" 
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -49,8 +121,6 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
   const totalSteps = 5;
   const [isInitializing, setIsInitializing] = useState(false);
   const [initProgress, setInitProgress] = useState(0);
-  const [initStageText, setInitStageText] = useState('Vectorizing founder persona & origins...');
-  const [initComplete, setInitComplete] = useState(false);
 
   // Other hobby input state
   const [showOtherHobby, setShowOtherHobby] = useState(false);
@@ -73,123 +143,25 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
     5: 'Real Assets & Publishing Platforms'
   };
 
-  const PRESET_PROFILES = {
-    arjun_vance: {
-      fullName: 'Arjun Vance',
-      role: 'Technical Architect / CTO',
-      expertise: ['Engineering / AI', 'Product Architecture'],
-      hobbies: ['Chess & Strategy', 'Specialty Coffee'],
-      entityName: 'AgentScale',
-      mission: 'Distributed observability and trace debugger for multi-agent LLM systems in production.',
-      whyStarted: 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are completely blind to autonomous agent loops.',
-      links: [
-        { id: 1, type: 'Website', url: 'https://agentscale.dev' },
-        { id: 2, type: 'X / Twitter', url: 'https://x.com/arjun_scale' },
-        { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/arjunvance' }
-      ],
-      unpopularOpinion: 'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.',
-      brandStyle: 'The Builder (Share the Work)',
-      audiences: ['Staff Backend Engineers & AI Leads', 'Enterprise Buyers & CTOs'],
-      customAudience: '',
-      annoyances: [
-        'Hollow AI wrapper marketing',
-        'Unverified latency benchmarks'
-      ],
-      bannedPhrases: [
-        'delve into',
-        'game-changer',
-        'thrilled to announce',
-        'humbled and honored',
-        'revolutionary',
-        'synergy'
-      ],
-      realAssets: [
-        'Terminal screenshots & logs',
-        'Whiteboard architecture sketches'
-      ],
-      platforms: ['LinkedIn', 'X / Twitter']
-    },
-    maya_lin: {
-      fullName: 'Maya Lin',
-      role: 'Founder & CEO',
-      expertise: ['D2C & Retail Expansion', 'Supply Chain / Operations'],
-      hobbies: ['Trail Running', 'Specialty Coffee'],
-      entityName: 'Solace Botanicals',
-      mission: 'Organic adaptogenic sparkling elixirs with 0g sugar and zero artificial gums.',
-      whyStarted: '14 commercial beverage co-packers told me clean organic sparkling formulas were commercially impossible without synthetic stabilizers and gums. Refused to compromise.',
-      links: [
-        { id: 1, type: 'Website', url: 'https://solacebotanicals.com' },
-        { id: 2, type: 'Instagram', url: 'https://instagram.com/solacebotanicals' },
-        { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/mayalin-solace' }
-      ],
-      unpopularOpinion: 'If a canned healthy drink has a 2-year shelf life at room temperature, you are drinking industrial preservatives, not wellness. Gross margin cuts are worth real ingredient integrity.',
-      brandStyle: 'The Vulnerable Operator (Honest & Raw)',
-      audiences: ['Conscious Consumers & Health Enthusiasts', 'Other Founders & Operators'],
-      customAudience: 'Regional Retail Stockists (Whole Foods, Sprouts)',
-      annoyances: [
-        'Polished PR and greenwashing',
-        'Founders disconnected from supply chain'
-      ],
-      bannedPhrases: [
-        'synergy',
-        'game-changer',
-        'humbled and honored',
-        'guilt-free indulgence',
-        'miracle cure'
-      ],
-      realAssets: [
-        'Candid product & warehouse photos',
-        'Customer & retail unboxing reactions'
-      ],
-      platforms: ['LinkedIn', 'Instagram / TikTok']
-    },
-    blank: {
-      fullName: '',
-      role: '',
-      expertise: [],
-      hobbies: [],
-      entityName: '',
-      mission: '',
-      whyStarted: '',
-      links: [],
-      unpopularOpinion: '',
-      brandStyle: 'The Builder (Share the Work)',
-      audiences: [],
-      customAudience: '',
-      annoyances: [],
-      bannedPhrases: ['delve into', 'game-changer', 'humbled and honored'],
-      realAssets: [],
-      platforms: ['LinkedIn']
-    }
-  };
-
-  const initialPreset = initialProfile?.founder_id === 'maya_lin' ? 'maya_lin' : 'arjun_vance';
-  const [activePreset, setActivePreset] = useState(initialPreset);
-  const [presetToast, setPresetToast] = useState('');
-
-  // Form State initialized from preset
+  // Clean Form State: strictly ensure NO option is pre-filled
   const [state, setState] = useState(() => ({
-    ...PRESET_PROFILES[initialPreset],
-    ...(initialProfile?.identity?.name ? {
-      fullName: initialProfile.identity.name,
-      entityName: initialProfile.identity.company_name || PRESET_PROFILES[initialPreset].entityName,
-      mission: initialProfile.identity.mission || PRESET_PROFILES[initialPreset].mission,
-      whyStarted: initialProfile.identity.origin_scar || PRESET_PROFILES[initialPreset].whyStarted
-    } : {})
+    fullName: '',
+    role: '',
+    expertise: [],
+    hobbies: [],
+    entityName: '',
+    mission: '',
+    whyStarted: '',
+    links: [],
+    unpopularOpinion: '',
+    brandStyle: '',
+    audiences: [],
+    customAudience: '',
+    annoyances: [],
+    bannedPhrases: [],
+    realAssets: [],
+    platforms: []
   }));
-
-  const handleSelectPreset = (presetKey) => {
-    setActivePreset(presetKey);
-    setState({ ...PRESET_PROFILES[presetKey] });
-    setPresetToast(
-      presetKey === 'maya_lin' 
-        ? 'Loaded Maya Lin: D2C Organic Founder' 
-        : presetKey === 'arjun_vance' 
-        ? 'Loaded Arjun Vance: AI Infra CTO' 
-        : 'Form cleared for custom entry'
-    );
-    setTimeout(() => setPresetToast(''), 3000);
-  };
 
   const goToStep = (step) => {
     if (onStepChange) {
@@ -267,24 +239,29 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
 
   const startInitialization = () => {
     setIsInitializing(true);
-    const stages = [
-      { p: 25, label: "Vectorizing founder persona & origins..." },
-      { p: 55, label: "Weaving personal hobbies & analogies into tone..." },
-      { p: 85, label: "Calibrating 3 content pillars & anti-AI filters..." },
-      { p: 100, label: "Ready. Soup agent online." }
-    ];
+    setInitProgress(0);
 
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < stages.length) {
-        setInitProgress(stages[i].p);
-        setInitStageText(stages[i].label);
-        i++;
+    const totalDuration = 1200; // 1.2s smooth fill from one end to another
+    const startTime = performance.now();
+
+    const animateProgress = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(Math.round((elapsed / totalDuration) * 100), 100);
+      setInitProgress(progress);
+
+      if (progress < 100) {
+        requestAnimationFrame(animateProgress);
       } else {
-        clearInterval(interval);
-        setInitComplete(true);
+        // When it fills, directly transition to homepage
+        setTimeout(() => {
+          if (onComplete) {
+            onComplete(state);
+          }
+        }, 120);
       }
-    }, 550);
+    };
+
+    requestAnimationFrame(animateProgress);
   };
 
   return (
@@ -311,71 +288,6 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
       <div className="relative z-10 w-full max-w-[820px] mx-auto flex flex-col justify-center my-auto">
         {!isInitializing ? (
           <>
-            {/* Top Demo Preset Switcher Bar for Hackathon Judges */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-2.5 mb-3 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-2xs">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900 flex items-center gap-1">
-                  <span className="text-amber-500">⚡</span>
-                  <span>Demo Preset:</span>
-                </span>
-                {presetToast ? (
-                  <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-full animate-fade-in">
-                    {presetToast}
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-slate-500 hidden sm:inline">Pre-fill realistic founder details for judges</span>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleSelectPreset('arjun_vance')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 ${
-                    activePreset === 'arjun_vance'
-                      ? 'bg-slate-950 text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  <span>👨‍💻 Arjun Vance (AI Tech)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelectPreset('maya_lin')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 ${
-                    activePreset === 'maya_lin'
-                      ? 'bg-emerald-700 text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  <span>🌿 Maya Lin (D2C Organic)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelectPreset('blank')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all active:scale-95 ${
-                    activePreset === 'blank'
-                      ? 'bg-slate-950 text-white font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <span>Clear</span>
-                </button>
-
-                <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
-
-                <button
-                  type="button"
-                  onClick={() => onComplete && onComplete(state)}
-                  className="px-3 py-1 rounded-full text-xs font-bold bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 shadow-2xs transition-all active:scale-95 flex items-center gap-1"
-                  title="Directly launch dashboard with this profile"
-                >
-                  <span>Launch Dashboard</span>
-                  <Icon name="arrow_forward" size={13} />
-                </button>
-              </div>
-            </div>
-
             <div className="w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 flex flex-col">
               {/* Stable Header with 3s title wipe, 20% bigger font, no yellow dot, no 'Step X:' */}
               <CardHeader 
@@ -609,7 +521,8 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               key={lnk.id}
                               className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-semibold bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-slate-300 transition-all"
                             >
-                              <span className="text-amber-600 font-bold">{lnk.type}:</span>
+                              <PlatformIcon type={lnk.type} size={14} className="text-slate-700 shrink-0" />
+                              <span className="text-slate-900 font-bold">{lnk.type}:</span>
                               <span className="text-slate-600 truncate max-w-[140px] sm:max-w-[200px] font-medium" title={lnk.url}>
                                 {displayUrl}
                               </span>
@@ -651,8 +564,9 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                               className="w-full sm:w-auto h-10 pl-4 pr-9 rounded-full bg-white border border-slate-200 text-slate-800 text-xs sm:text-sm font-semibold outline-none appearance-none cursor-pointer hover:border-slate-300 focus:border-amber-400 focus:ring-2 focus:ring-amber-200/60 shadow-2xs transition-all"
                             >
                               <option value="Website">Website</option>
-                              <option value="X / Twitter">X / Twitter</option>
                               <option value="LinkedIn">LinkedIn</option>
+                              <option value="X">X</option>
+                              <option value="Instagram">Instagram</option>
                               <option value="GitHub">GitHub</option>
                               <option value="Substack">Substack</option>
                               <option value="YouTube">YouTube</option>
@@ -669,9 +583,12 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                             onChange={e => setNewLinkUrl(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleSaveNewLink())}
                             placeholder={`e.g. ${
-                              newLinkType === 'X / Twitter' ? 'x.com/username' :
+                              newLinkType === 'X' ? 'x.com/username' :
                               newLinkType === 'LinkedIn' ? 'linkedin.com/in/username' :
+                              newLinkType === 'Instagram' ? 'instagram.com/username' :
                               newLinkType === 'GitHub' ? 'github.com/username' :
+                              newLinkType === 'Substack' ? 'yourpublication.substack.com' :
+                              newLinkType === 'YouTube' ? 'youtube.com/@channel' :
                               'https://yoursite.com'
                             }`}
                             className="flex-1 h-10 px-4 rounded-full frosted-input text-slate-900 text-xs sm:text-sm outline-none"
@@ -865,26 +782,27 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                       </div>
                       <div className="flex flex-wrap gap-2 sm:gap-2.5">
                         {[
-                          'Terminal screenshots & logs',
-                          'Whiteboard architecture sketches',
-                          'Raw voice notes & brain dumps',
-                          'Candid workstation / lab photos',
-                          'Redacted Slack wins & receipts',
-                          'Loom / informal selfie video clips'
-                        ].map(asset => {
-                          const isSelected = state.realAssets.includes(asset);
+                          { label: 'Terminal screenshots & logs', icon: 'terminal' },
+                          { label: 'Whiteboard architecture sketches', icon: 'draw' },
+                          { label: 'Raw voice notes & brain dumps', icon: 'mic' },
+                          { label: 'Candid workstation / lab photos', icon: 'photo_camera' },
+                          { label: 'Redacted Slack wins & receipts', icon: 'chat' },
+                          { label: 'Loom / informal selfie video clips', icon: 'videocam' }
+                        ].map(({ label, icon }) => {
+                          const isSelected = state.realAssets.includes(label);
                           return (
                             <button
-                              key={asset}
+                              key={label}
                               type="button"
-                              onClick={() => toggleArrayItem('realAssets', asset)}
-                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                              onClick={() => toggleArrayItem('realAssets', label)}
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] flex items-center gap-2 ${
                                 isSelected 
                                   ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
-                              {asset}
+                              <Icon name={icon} size={15} className={isSelected ? 'text-slate-950' : 'text-slate-500'} />
+                              <span>{label}</span>
                             </button>
                           );
                         })}
@@ -897,20 +815,21 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                         Where do you want to publish?
                       </label>
                       <div className="flex flex-wrap gap-2 sm:gap-2.5">
-                        {['LinkedIn', 'X / Twitter', 'Substack / Newsletter', 'YouTube'].map(plat => {
+                        {['LinkedIn', 'X', 'Instagram', 'Substack / Newsletter', 'YouTube'].map(plat => {
                           const isSelected = state.platforms.includes(plat);
                           return (
                             <button
                               key={plat}
                               type="button"
                               onClick={() => toggleArrayItem('platforms', plat)}
-                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] ${
+                              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 select-none active:scale-[0.96] flex items-center gap-2 ${
                                 isSelected 
                                   ? 'bg-[#FEEC98] border-[#F4D05F] text-slate-950 font-semibold shadow-xs' 
                                   : 'bg-white/85 border-slate-200/90 text-slate-700 hover:border-slate-300 hover:text-slate-900'
                               }`}
                             >
-                              {plat}
+                              <PlatformIcon type={plat} size={14} className={isSelected ? 'text-slate-950' : 'text-slate-600'} />
+                              <span>{plat}</span>
                             </button>
                           );
                         })}
@@ -953,10 +872,9 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
                   <button
                     type="button"
                     onClick={startInitialization}
-                    className="h-10 px-6 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
+                    className="h-10 px-6 rounded-full bg-[#FFCC00] hover:bg-[#E5B800] text-slate-950 flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
                   >
                     <span>Complete Intake</span>
-                    <Icon name="check_circle" size={16} />
                   </button>
                 )}
               </div>
@@ -964,54 +882,20 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
             </div>
           </>
         ) : (
-          /* INITIALIZATION REVEAL MODAL */
-          <div className="w-full max-w-md mx-auto frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 text-center flex flex-col items-center">
-            <CardHeader currentStep={5} totalSteps={totalSteps} stepTitle="Calibrating Soup Intelligence..." />
-            <div className="p-8 md:p-10 w-full flex flex-col items-center">
-              <div className="w-20 h-20 relative mb-5 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-[#FFCC00]/30 blur-xl animate-ping" />
-                <div className="w-16 h-16 rounded-full bg-white border border-slate-200/80 shadow-apple-card flex items-center justify-center relative">
-                  <Icon name="smart_toy" size={28} className="text-amber-500" />
-                </div>
-              </div>
+          /* Sleek Minimalist Transition: heading + smooth loading line */
+          <div className="w-full max-w-[500px] mx-auto frosted-glass rounded-3xl shadow-apple-card border border-slate-200/80 p-8 sm:p-12 flex flex-col items-center justify-center text-center animate-fade-in">
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-slate-900 tracking-tight mb-2">
+              Getting everything ready for you...
+            </h3>
+            <p className="text-xs text-slate-500 font-normal mb-6">
+              Calibrating your brand voiceprint and weekly content engine.
+            </p>
 
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#FEEC98]" />
-                Intelligence Calibrated
-              </span>
-
-              <h2 className="font-heading text-xl font-bold text-slate-900 tracking-tight mb-2">
-                Setting up your Command Center...
-              </h2>
-              <p className="text-slate-500 font-normal text-xs mb-6 leading-relaxed">
-                Weaving your turning point, unpopular takes, and personal analogies into a sustainable weekly content calendar.
-              </p>
-
-              {/* Progress bar */}
-              <div className="w-full flex flex-col gap-2 mb-6">
-                <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
-                  <div 
-                    className="h-full bg-[#FEEC98] transition-all duration-500 ease-out" 
-                    style={{ width: `${initProgress}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                  <span className="truncate pr-2">{initStageText}</span>
-                  <span>{initProgress}%</span>
-                </div>
-              </div>
-
-              <button 
-                type="button"
-                disabled={!initComplete}
-                onClick={() => onComplete && onComplete(state)}
-                className={`w-full h-11 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-apple-subtle flex items-center justify-center gap-2 ${
-                  initComplete ? 'active:scale-[0.98]' : 'opacity-40 pointer-events-none'
-                }`}
-              >
-                <span>Enter Command Center</span>
-                <Icon name="arrow_forward" size={15} />
-              </button>
+            <div className="w-full h-2 sm:h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/70 shadow-inner">
+              <div 
+                className="h-full bg-[#FFCC00] rounded-full transition-all duration-75 ease-linear shadow-xs" 
+                style={{ width: `${initProgress}%` }}
+              />
             </div>
           </div>
         )}
