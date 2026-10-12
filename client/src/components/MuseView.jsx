@@ -45,6 +45,13 @@ export default function MuseView({
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [activeTool, setActiveTool] = useState(null);
   
+  // Derived multi-line status: switches from single-line capsule to multi-line card instantly
+  const isMultiLine = Boolean(
+    activeNote || 
+    attachedFiles.length > 0 || 
+    (inputText && (inputText.includes('\n') || inputText.length > 70))
+  );
+  
   // Menu states for '+' button
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
   const [isToolsSubmenuOpen, setIsToolsSubmenuOpen] = useState(false);
@@ -97,12 +104,17 @@ export default function MuseView({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, streamingText]);
 
-  // Auto-resize textarea dynamically
+  // Auto-resize textarea dynamically according to content
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollH = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(Math.max(scrollH, 38), 240)}px`;
+      if (isMultiLine) {
+        textareaRef.current.style.height = 'auto';
+        const scrollH = textareaRef.current.scrollHeight;
+        const targetH = Math.min(Math.max(scrollH, 44), 220);
+        textareaRef.current.style.height = `${targetH}px`;
+      } else {
+        textareaRef.current.style.height = '26px';
+      }
     }
   };
 
@@ -110,9 +122,16 @@ export default function MuseView({
     setInputText(e.target.value);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   useEffect(() => {
     adjustTextareaHeight();
-  }, [inputText]);
+  }, [inputText, activeNote, attachedFiles]);
 
   // Handle file uploads
   const handleFileSelect = (e) => {
@@ -140,6 +159,9 @@ export default function MuseView({
     }
     setMessages([]);
     setInputText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '26px';
+    }
     setStreamingText('');
     setStreamingMeta(null);
     setIsTyping(false);
@@ -189,6 +211,9 @@ export default function MuseView({
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInputText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '26px';
+    }
     setAttachedFiles([]);
     setActiveTool(null);
     setIsPlusMenuOpen(false);
@@ -336,13 +361,6 @@ export default function MuseView({
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   const handleSelectTool = (toolId) => {
     setActiveTool(toolId);
     setIsPlusMenuOpen(false);
@@ -434,9 +452,9 @@ export default function MuseView({
         {messages.length === 0 && !streamingText && !isTyping ? (
           <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 max-w-3xl mx-auto w-full -mt-10">
             
-            {/* Clean heading without star or subtitle */}
+            {/* Clean heading: What's on the agenda today? */}
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight text-center mb-6">
-              What are we building today?
+              What’s on the agenda today?
             </h1>
 
             {/* The Centered Type Box */}
@@ -662,15 +680,117 @@ export default function MuseView({
   );
 
   /**
-   * Helper to render the Type Box Component
+   * Helper to render the upward Popover for '+' button
+   */
+  function renderPlusPopover() {
+    return (
+      <div className="absolute left-0 bottom-full mb-2 w-48 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
+        {/* 1. Add files */}
+        <button
+          type="button"
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+          className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+        >
+          <Icon name="attach_file" size={16} className="text-slate-500" />
+          <span>Add files</span>
+        </button>
+
+        {/* 2. Tools (hover or click reveals submenu) */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsToolsSubmenuOpen(true)}
+        >
+          <button
+            type="button"
+            onClick={() => setIsToolsSubmenuOpen(prev => !prev)}
+            className={`w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center justify-between transition-colors cursor-pointer ${
+              isToolsSubmenuOpen ? 'bg-slate-100/80 text-slate-900' : ''
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Icon name="tune" size={16} className="text-slate-500" />
+              <span>Tools</span>
+            </div>
+            <Icon name="chevron_right" size={16} className="text-slate-400" />
+          </button>
+
+          {/* Tools Submenu Flyout (anchored bottom-0 so it opens UPWARDS) */}
+          {isToolsSubmenuOpen && (
+            <div 
+              className="absolute left-full bottom-0 ml-1.5 w-52 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in"
+              onMouseLeave={() => setIsToolsSubmenuOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => handleSelectTool('update')}
+                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+              >
+                <Icon name="refresh" size={15} className="text-indigo-600" />
+                <div>
+                  <div className="font-semibold text-slate-900">New update</div>
+                  <div className="text-[10px] text-slate-400 leading-tight">Update 3-day / 7-day files</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectTool('brainstorm')}
+                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+              >
+                <Icon name="lightbulb" size={15} className="text-amber-500" />
+                <div>
+                  <div className="font-semibold text-slate-900">Brainstorm</div>
+                  <div className="text-[10px] text-slate-400 leading-tight">Angles & founder war stories</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectTool('research')}
+                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+              >
+                <Icon name="explore" size={15} className="text-cyan-600" />
+                <div>
+                  <div className="font-semibold text-slate-900">Research</div>
+                  <div className="text-[10px] text-slate-400 leading-tight">Trends & domain algorithms</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectTool('plan')}
+                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+              >
+                <Icon name="calendar_today" size={15} className="text-emerald-600" />
+                <div>
+                  <div className="font-semibold text-slate-900">Plan</div>
+                  <div className="text-[10px] text-slate-400 leading-tight">Multi-day sprint schedules</div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /**
+   * Helper to render the Type Box Component (ChatGPT style compact default capsule + dynamic auto-expand)
    */
   function renderInputBox() {
     return (
-      <div className="relative w-full rounded-3xl bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all flex flex-col p-3.5 sm:p-4">
-        
+      <div 
+        className={`relative w-full bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all duration-200 flex flex-col ${
+          isMultiLine 
+            ? 'rounded-[24px] p-3 sm:p-3.5 gap-2.5' 
+            : 'rounded-full px-3 py-1.5 min-h-[48px] sm:min-h-[50px] justify-center'
+        }`}
+      >
         {/* Linked Active Board Note Chip if present */}
         {activeNote && (
-          <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-amber-50/90 border border-amber-200/80 mb-2.5 text-xs animate-fade-in shadow-2xs">
+          <div className="flex items-center justify-between gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-xs animate-fade-in shadow-2xs">
             <div className="flex items-center gap-2 min-w-0">
               <Icon name="description" size={14} className="text-amber-700 shrink-0" />
               <span className="font-semibold text-amber-950 truncate">Editing note: "{activeNote.title}"</span>
@@ -738,33 +858,9 @@ export default function MuseView({
           </div>
         )}
 
-        {/* Textarea: Dynamic auto-expanding height, sleek single-line when empty */}
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          value={inputText}
-          onChange={handleTextareaChange}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            activeNote
-              ? `Ask Muse to refine or transfer "${activeNote.title}"...`
-              : activeTool 
-                ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
-                : "Ask Muse, tell to update strategy files, or draft a post..."
-          }
-          className="w-full min-h-[38px] max-h-48 py-1 px-1 bg-transparent text-[15px] text-slate-900 placeholder:text-slate-400 font-sans leading-normal resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0"
-          style={{ 
-            outline: 'none', 
-            border: 'none', 
-            boxShadow: 'none',
-            WebkitTapHighlightColor: 'transparent'
-          }}
-        />
-
         {/* Chips for Active Tool & Attached Files */}
         {(activeTool || attachedFiles.length > 0) && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-2 pb-1 border-t border-slate-100/90 mb-1">
-            {/* Active Tool Chip */}
+          <div className="flex flex-wrap items-center gap-1.5 pb-0.5">
             {activeTool && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEEC98] text-slate-900 text-xs font-semibold">
                 <Icon name={TOOL_SKILLS[activeTool]?.icon === 'RefreshCw' ? 'refresh' : TOOL_SKILLS[activeTool]?.icon === 'Sparkles' ? 'auto_awesome' : TOOL_SKILLS[activeTool]?.icon === 'Compass' ? 'explore' : 'calendar_today'} size={13} />
@@ -779,7 +875,6 @@ export default function MuseView({
               </span>
             )}
 
-            {/* Attached Files Chips */}
             {attachedFiles.map((file, idx) => (
               <span key={idx} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
                 <Icon name="attach_file" size={13} className="text-slate-500" />
@@ -796,147 +891,118 @@ export default function MuseView({
           </div>
         )}
 
-        {/* Bottom Toolbar: '+' Button & Tools on Left · Send Button on Right */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100/90 mt-1">
+        {/* The Main Input Line or Multi-line Stack */}
+        <div className={`w-full flex ${isMultiLine ? 'flex-col gap-2' : 'items-center gap-2'}`}>
           
-          {/* '+' Button with Popover Menu (Opens UPWARDS) */}
-          <div className="relative" ref={plusMenuRef}>
+          {/* In Single-line mode: '+' button is placed inline on the left */}
+          {!isMultiLine && (
+            <div className="relative shrink-0" ref={plusMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPlusMenuOpen(prev => !prev);
+                  setIsToolsSubmenuOpen(false);
+                }}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                  isPlusMenuOpen 
+                    ? 'bg-slate-900 text-white shadow-xs' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
+                }`}
+                title="Add files or tools"
+              >
+                <Icon name="add" size={18} />
+              </button>
+
+              {/* Upward popover */}
+              {isPlusMenuOpen && renderPlusPopover()}
+            </div>
+          )}
+
+          {/* Auto-grow Textarea - stays mounted uninterrupted */}
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            value={inputText}
+            onChange={handleTextareaChange}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              activeNote
+                ? `Ask Muse to refine "${activeNote.title}"...`
+                : activeTool 
+                  ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
+                  : "Ask Muse, or type instructions..."
+            }
+            className={`bg-transparent text-[15px] text-slate-900 placeholder:text-slate-400 font-sans resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0 ${
+              isMultiLine 
+                ? 'w-full min-h-[44px] max-h-52 py-1 px-1 leading-relaxed overflow-y-auto' 
+                : 'flex-1 min-h-[26px] py-1 px-1.5 leading-normal overflow-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+            }`}
+            style={{ 
+              outline: 'none', 
+              border: 'none', 
+              boxShadow: 'none',
+              WebkitTapHighlightColor: 'transparent'
+            }}
+          />
+
+          {/* In Single-line mode: Send button inline on right */}
+          {!isMultiLine && (
             <button
               type="button"
-              onClick={() => {
-                setIsPlusMenuOpen(prev => !prev);
-                setIsToolsSubmenuOpen(false);
-              }}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
-                isPlusMenuOpen 
-                  ? 'bg-slate-900 text-white shadow-xs' 
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
+              onClick={handleSendMessage}
+              disabled={!inputText.trim() && attachedFiles.length === 0}
+              className={`w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all shrink-0 ${
+                inputText.trim() || attachedFiles.length > 0
+                  ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95 cursor-pointer'
+                  : 'bg-slate-100 text-slate-300 cursor-not-allowed'
               }`}
-              title="Add files or tools"
+              title="Send message"
             >
-              <Icon name="add" size={18} />
+              <Icon name="arrow_upward" size={17} />
             </button>
+          )}
 
-            {/* Floating Popover: Opens UPWARDS (bottom-full mb-2) */}
-            {isPlusMenuOpen && (
-              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
-                
-                {/* 1. Add files */}
+          {/* In Multi-line mode: Bottom action bar with '+' on left and Send on right */}
+          {isMultiLine && (
+            <div className="flex items-center justify-between pt-1">
+              <div className="relative shrink-0" ref={plusMenuRef}>
                 <button
                   type="button"
                   onClick={() => {
-                    fileInputRef.current?.click();
+                    setIsPlusMenuOpen(prev => !prev);
+                    setIsToolsSubmenuOpen(false);
                   }}
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                    isPlusMenuOpen 
+                      ? 'bg-slate-900 text-white shadow-xs' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
+                  }`}
+                  title="Add files or tools"
                 >
-                  <Icon name="attach_file" size={16} className="text-slate-500" />
-                  <span>Add files</span>
+                  <Icon name="add" size={18} />
                 </button>
 
-                {/* 2. Tools (hover or click reveals submenu) */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setIsToolsSubmenuOpen(true)}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setIsToolsSubmenuOpen(prev => !prev)}
-                    className={`w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center justify-between transition-colors cursor-pointer ${
-                      isToolsSubmenuOpen ? 'bg-slate-100/80 text-slate-900' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon name="tune" size={16} className="text-slate-500" />
-                      <span>Tools</span>
-                    </div>
-                    <Icon name="chevron_right" size={16} className="text-slate-400" />
-                  </button>
-
-                  {/* Tools Submenu Flyout (anchored bottom-0 so it opens UPWARDS) */}
-                  {isToolsSubmenuOpen && (
-                    <div 
-                      className="absolute left-full bottom-0 ml-1.5 w-52 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in"
-                      onMouseLeave={() => setIsToolsSubmenuOpen(false)}
-                    >
-                      
-                      {/* Tool: New update */}
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTool('update')}
-                        className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Icon name="refresh" size={15} className="text-indigo-600" />
-                        <div>
-                          <div className="font-semibold text-slate-900">New update</div>
-                          <div className="text-[10px] text-slate-400 leading-tight">Update 3-day / 7-day files</div>
-                        </div>
-                      </button>
-
-                      {/* Tool: Brainstorm */}
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTool('brainstorm')}
-                        className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Icon name="lightbulb" size={15} className="text-amber-500" />
-                        <div>
-                          <div className="font-semibold text-slate-900">Brainstorm</div>
-                          <div className="text-[10px] text-slate-400 leading-tight">Angles & founder war stories</div>
-                        </div>
-                      </button>
-
-                      {/* Tool: Research */}
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTool('research')}
-                        className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Icon name="explore" size={15} className="text-cyan-600" />
-                        <div>
-                          <div className="font-semibold text-slate-900">Research</div>
-                          <div className="text-[10px] text-slate-400 leading-tight">Trends & domain algorithms</div>
-                        </div>
-                      </button>
-
-                      {/* Tool: Plan */}
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTool('plan')}
-                        className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Icon name="calendar_today" size={15} className="text-emerald-600" />
-                        <div>
-                          <div className="font-semibold text-slate-900">Plan</div>
-                          <div className="text-[10px] text-slate-400 leading-tight">Multi-day sprint schedules</div>
-                        </div>
-                      </button>
-
-                    </div>
-                  )}
-
-                </div>
-
+                {/* Upward popover */}
+                {isPlusMenuOpen && renderPlusPopover()}
               </div>
-            )}
-          </div>
 
-          {/* Send Button */}
-          <button
-            type="button"
-            onClick={handleSendMessage}
-            disabled={!inputText.trim() && attachedFiles.length === 0}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-              inputText.trim() || attachedFiles.length > 0
-                ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95 cursor-pointer'
-                : 'bg-slate-100 text-slate-300 cursor-not-allowed'
-            }`}
-            title="Send message"
-          >
-            <Icon name="arrow_upward" size={18} />
-          </button>
+              <button
+                type="button"
+                onClick={handleSendMessage}
+                disabled={!inputText.trim() && attachedFiles.length === 0}
+                className={`w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all shrink-0 ${
+                  inputText.trim() || attachedFiles.length > 0
+                    ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95 cursor-pointer'
+                    : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                }`}
+                title="Send message"
+              >
+                <Icon name="arrow_upward" size={17} />
+              </button>
+            </div>
+          )}
 
         </div>
-
       </div>
     );
   }
