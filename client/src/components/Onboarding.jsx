@@ -1,18 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, Check, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, X, Plus, ShieldAlert, Camera, Terminal, FileText, Zap, Globe, Link2, Heart } from 'lucide-react';
 
-function CardHeader({ currentStep, totalSteps = 6 }) {
+function CardHeader({ currentStep, totalSteps = 5, stepTitle }) {
+  const [isWiping, setIsWiping] = useState(true);
+
+  // When step changes, wipe header to step title for 3 seconds, then transition back to 'Soup'
+  useEffect(() => {
+    setIsWiping(true);
+    const timer = setTimeout(() => {
+      setIsWiping(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [currentStep]);
+
   const circumference = 56.548;
   const strokeOffset = circumference - (currentStep / totalSteps) * circumference;
   const progressPercent = Math.round((currentStep / totalSteps) * 100);
 
   return (
-    <div className="w-full bg-white/70 backdrop-blur-md px-6 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between border-b border-slate-200/80 relative select-none">
-      {/* Brand */}
-      <div className="flex items-center gap-2">
-        <span className="font-heading text-[15px] font-bold text-slate-900 tracking-tight">
-          Soup
-        </span>
+    <div className="w-full bg-white/75 backdrop-blur-md px-6 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between border-b border-slate-200/80 relative select-none">
+      {/* Brand area that wipes to Step Title for 3 seconds, then wipes back to Soup */}
+      <div className="h-7 flex items-center overflow-hidden">
+        {isWiping ? (
+          <div key={`title-${currentStep}`} className="animate-header-wipe flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#FAD02C] animate-pulse" />
+            <span className="font-heading text-sm sm:text-[15px] font-bold text-slate-900 tracking-tight">
+              {stepTitle}
+            </span>
+          </div>
+        ) : (
+          <div key="soup-brand" className="animate-header-wipe flex items-center gap-2">
+            <span className="font-heading text-[16px] font-bold text-slate-900 tracking-tight">
+              Soup
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Step Counter & Circular Ring */}
@@ -39,7 +61,7 @@ function CardHeader({ currentStep, totalSteps = 6 }) {
         </div>
       </div>
 
-      {/* Hairline Progress Track along the bottom edge of the card header */}
+      {/* Hairline Progress Track along bottom edge of card header */}
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-200/50 overflow-hidden">
         <div 
           className="h-full bg-[#FAD02C] transition-all duration-700 ease-out" 
@@ -51,38 +73,72 @@ function CardHeader({ currentStep, totalSteps = 6 }) {
 }
 
 export default function Onboarding({ onComplete, initialProfile, currentStep = 1, onStepChange }) {
-  const totalSteps = 6;
+  const totalSteps = 5;
   const [isInitializing, setIsInitializing] = useState(false);
   const [initProgress, setInitProgress] = useState(0);
-  const [initStageText, setInitStageText] = useState('Indexing vocabulary...');
+  const [initStageText, setInitStageText] = useState('Vectorizing founder persona & turning point...');
   const [initComplete, setInitComplete] = useState(false);
+  const [customBannedInput, setCustomBannedInput] = useState('');
+  const [customHobbyInput, setCustomHobbyInput] = useState('');
 
   // Mouse ambient spotlight
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+  const stepTitles = {
+    1: 'Step 1: Your Role, Background & Hobbies',
+    2: 'Step 2: Company, Links & The Turning Point',
+    3: 'Step 3: Unpopular Opinions & Brand Style',
+    4: 'Step 4: Who You’re Building For & Pet Peeves',
+    5: 'Step 5: Words You Hate & Real Things to Share'
+  };
+
   // Form State
   const [state, setState] = useState({
-    fullName: initialProfile?.identity?.name || 'Elena Rostova',
-    role: 'founder',
-    entityName: initialProfile?.identity?.company_name || 'Prism Dynamics',
-    url: 'https://prismdynamics.io',
-    mission: initialProfile?.identity?.mission || 'We build high-throughput telemetry pipelines for edge robotics and autonomous systems.',
-    stage: 'mvp',
-    personalRole: initialProfile?.identity?.role || 'CEO & System Architect leading product engineering.',
-    expertise: ['product', 'ai'],
-    audience: initialProfile?.domain_radar?.target_audience?.join(', ') || 'Technical founders and VP Engineering teams in robotics.',
-    problems: 'Eliminating latency bottlenecks and synchronization drops under peak loads.',
-    segment: 'Industrial automation and warehouse robotics',
-    clarity: 'sharp',
-    goal: 'Build a reputation as a builder',
-    horizon: '3 months',
-    commitment: '3–5 hours',
-    platforms: ['X / Twitter', 'LinkedIn'],
-    topics: ['My founder journey', 'Technology and innovation'],
-    stories: ['How I started', 'Lessons from experience', 'Behind the scenes'],
-    outcomes: ['Build in public', 'Industry insights'],
-    formats: ['Text posts', 'Carousels'],
-    tones: ['Analytical', 'Direct']
+    // Step 1: You, Your Role & Hobbies
+    fullName: initialProfile?.identity?.name || 'Arjun Vance',
+    role: initialProfile?.identity?.role || 'Technical Architect / CTO',
+    expertise: initialProfile?.identity?.expertise || ['Engineering / AI', 'Product Architecture'],
+    hobbies: ['Chess & Strategy', 'Marathon running', 'Specialty Coffee'],
+
+    // Step 2: Company, Links & Turning Point
+    entityName: initialProfile?.identity?.company_name || 'AgentScale',
+    mission: initialProfile?.identity?.mission || 'Distributed observability and trace debugger for multi-agent LLM systems in production.',
+    turningPoint: initialProfile?.identity?.origin_scar || 'Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are blind to agent loops.',
+    links: [
+      { id: 1, type: 'Website', url: 'https://agentscale.dev' },
+      { id: 2, type: 'X / Twitter', url: 'https://x.com/arjun_scale' },
+      { id: 3, type: 'LinkedIn', url: 'https://linkedin.com/in/arjunvance' }
+    ],
+
+    // Step 3: Unpopular Opinions & Brand Persona
+    unpopularOpinion: initialProfile?.voiceprint?.spicy_take || 'Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.',
+    brandStyle: initialProfile?.voiceprint?.insead_archetype || 'The Builder (Share the Work)',
+
+    // Step 4: Who You’re Building For & Pet Peeves
+    audience: Array.isArray(initialProfile?.domain_radar?.target_audience) 
+      ? initialProfile.domain_radar.target_audience[0] 
+      : 'Staff Backend Engineers & AI Platform Leads',
+    annoyances: initialProfile?.domain_radar?.audience_taboos || [
+      'Hollow AI wrapper marketing',
+      'Unverified latency benchmarks',
+      'Over-engineered bloatware'
+    ],
+
+    // Step 5: Words You Hate & Real Things to Share
+    bannedPhrases: initialProfile?.voiceprint?.banned_phrases || [
+      'delve into',
+      'game-changer',
+      'thrilled to announce',
+      'humbled and honored',
+      'revolutionary',
+      'synergy'
+    ],
+    realAssets: initialProfile?.execution_capacity?.available_assets || [
+      'Terminal screenshots & trace logs',
+      'Whiteboard architecture sketches',
+      'Raw voice notes & unscripted brain dumps'
+    ],
+    platforms: initialProfile?.execution_capacity?.channels || ['LinkedIn', 'X / Twitter']
   });
 
   const goToStep = (step) => {
@@ -103,26 +159,9 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Enter key navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        if (e.target.tagName.toLowerCase() === 'textarea') return;
-        e.preventDefault();
-        if (currentStep < totalSteps) {
-          goToStep(currentStep + 1);
-        } else if (currentStep === totalSteps && !isInitializing) {
-          startInitialization();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStep, isInitializing]);
-
   const toggleArrayItem = (key, item, max = null) => {
     setState(prev => {
-      const list = [...prev[key]];
+      const list = [...(prev[key] || [])];
       const index = list.indexOf(item);
       if (index > -1) {
         list.splice(index, 1);
@@ -136,12 +175,59 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
     });
   };
 
+  // Dynamic link handlers
+  const handleLinkChange = (id, field, value) => {
+    setState(prev => ({
+      ...prev,
+      links: prev.links.map(lnk => lnk.id === id ? { ...lnk, [field]: value } : lnk)
+    }));
+  };
+
+  const addLinkRow = () => {
+    setState(prev => ({
+      ...prev,
+      links: [...prev.links, { id: Date.now(), type: 'Website', url: '' }]
+    }));
+  };
+
+  const removeLinkRow = (id) => {
+    if (state.links.length <= 1) return;
+    setState(prev => ({
+      ...prev,
+      links: prev.links.filter(lnk => lnk.id !== id)
+    }));
+  };
+
+  const addCustomBanned = () => {
+    if (!customBannedInput.trim()) return;
+    const token = customBannedInput.trim().toLowerCase();
+    if (!state.bannedPhrases.includes(token)) {
+      setState(prev => ({
+        ...prev,
+        bannedPhrases: [...prev.bannedPhrases, token]
+      }));
+    }
+    setCustomBannedInput('');
+  };
+
+  const addCustomHobby = () => {
+    if (!customHobbyInput.trim()) return;
+    const val = customHobbyInput.trim();
+    if (!state.hobbies.includes(val)) {
+      setState(prev => ({
+        ...prev,
+        hobbies: [...prev.hobbies, val]
+      }));
+    }
+    setCustomHobbyInput('');
+  };
+
   const startInitialization = () => {
     setIsInitializing(true);
     const stages = [
-      { p: 25, label: "Vectorizing founder profile & presence..." },
-      { p: 55, label: "Synthesizing audience positioning..." },
-      { p: 85, label: "Calibrating tone signature & platform rules..." },
+      { p: 25, label: "Vectorizing founder persona & turning point..." },
+      { p: 55, label: "Weaving personal hobbies & analogies into tone..." },
+      { p: 85, label: "Calibrating 3 content pillars & anti-AI filters..." },
       { p: 100, label: "Ready. Soup agent online." }
     ];
 
@@ -159,7 +245,7 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
   };
 
   return (
-    <div className="onboarding-root relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-x-hidden selection:bg-[#FAD02C] selection:text-slate-900">
+    <div className="onboarding-root relative min-h-screen flex flex-col items-center justify-center px-4 py-6 sm:py-8 overflow-x-hidden selection:bg-[#FAD02C] selection:text-slate-900">
       {/* Ambient Canary & Daylight Blurs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden flex items-center justify-center">
         <div 
@@ -179,737 +265,630 @@ export default function Onboarding({ onComplete, initialProfile, currentStep = 1
         />
       </div>
 
-      <div className="relative z-10 w-full max-w-[1080px] mx-auto flex flex-col justify-center my-auto">
-        {/* Dynamic Content Viewport Keyed by currentStep for smooth fade-in */}
-        <div key={currentStep} className="animate-fade-in relative w-full flex-1 flex flex-col justify-center">
-          {/* STEP 1: Let's start with you */}
-          {currentStep === 1 && !isInitializing && (
-            <section className="step-panel w-full">
-              <div className="max-w-2xl mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80">
-                <CardHeader currentStep={1} totalSteps={totalSteps} />
-                
-                <div className="p-7 sm:p-9 md:p-10">
-                  <h1 className="font-heading text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-2">Let’s start with you</h1>
-                  <p className="text-slate-600 text-sm mb-6 sm:mb-8 leading-relaxed">Tell us who is behind the helm to calibrate voice and tone parameters.</p>
-                  
-                  <div className="flex flex-col gap-6">
+      <div className="relative z-10 w-full max-w-[820px] mx-auto flex flex-col justify-center my-auto">
+        {!isInitializing ? (
+          <div className="w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 flex flex-col">
+            {/* Stable Header with 3s title wipe */}
+            <CardHeader 
+              currentStep={currentStep} 
+              totalSteps={totalSteps} 
+              stepTitle={stepTitles[currentStep]}
+            />
+
+            {/* Inner Step Content (No headings or subheadings inside, starts straight with fields) */}
+            <div className="px-6 sm:px-9 py-6 sm:py-7">
+              <div key={currentStep} className="animate-step-content flex flex-col gap-6">
+
+                {/* STEP 1: You, Your Role & Hobbies */}
+                {currentStep === 1 && (
+                  <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-800" htmlFor="input-fullname">
-                        Full Name <span className="text-amber-500">*</span>
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="input-fullname">
+                        Your Full Name <span className="text-amber-500">*</span>
                       </label>
                       <input 
                         id="input-fullname"
                         type="text"
                         value={state.fullName}
                         onChange={e => setState({ ...state, fullName: e.target.value })}
-                        className="w-full h-13 px-4 py-3 rounded-2xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-base"
-                        placeholder="e.g. Elena Rostova"
+                        className="w-full h-11 px-4 rounded-xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-sm"
+                        placeholder="e.g. Arjun Vance"
                       />
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-slate-800">What best describes your role? <span className="text-amber-500">*</span></label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        What best describes your role? <span className="text-amber-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {[
-                          { id: 'founder', label: 'Founder / Co-founder' },
-                          { id: 'builder', label: 'Independent builder' },
-                          { id: 'consultant', label: 'Consultant / Advisor' },
-                          { id: 'creator', label: 'Creator / Author' },
-                          { id: 'operator', label: 'Executive / Other' },
-                        ].map(r => (
-                          <button
-                            key={r.id}
-                            type="button"
-                            onClick={() => setState({ ...state, role: r.id })}
-                            className={`selection-card p-4 rounded-2xl bg-white/70 border border-slate-200/80 flex flex-col gap-1.5 text-left transition-colors ${
-                              state.role === r.id ? 'active' : ''
-                            }`}
-                          >
-                            <span className="text-sm font-bold text-slate-900">{r.label}</span>
-                          </button>
-                        ))}
+                          'Founder / Co-founder',
+                          'Technical Architect / CTO',
+                          'Independent Builder',
+                          'Consultant / Advisor',
+                          'Executive / Operator'
+                        ].map(r => {
+                          const isSelected = state.role === r;
+                          return (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => setState({ ...state, role: r })}
+                              className={`selection-chip p-3 rounded-xl text-left border text-xs sm:text-xs font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              {r}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                        <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 font-mono shadow-xs">↵ Enter</span>
-                        <span>to advance</span>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Your core background & strengths
+                        </label>
+                        <span className="text-[11px] text-slate-400">Multi-select</span>
                       </div>
-                      <button 
-                        type="button"
-                        onClick={() => goToStep(2)}
-                        className="w-12 h-12 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center justify-center transition-colors shadow-apple-btn active:scale-95"
-                      >
-                        <ArrowRight size={20} className="stroke-[2.5]" />
-                      </button>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          'Engineering / AI',
+                          'Product Architecture',
+                          'Supply Chain / Ops',
+                          'Growth & Marketing',
+                          'Fundraising & Capital',
+                          'Design & Polish',
+                          'Culture & Hiring'
+                        ].map(exp => {
+                          const isSelected = state.expertise.includes(exp);
+                          return (
+                            <button
+                              key={exp}
+                              type="button"
+                              onClick={() => toggleArrayItem('expertise', exp)}
+                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              {exp}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Hobbies & Passions (Powers the Human Metaphor Engine) */}
+                    <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <Heart size={13} className="text-amber-500 fill-amber-500" />
+                          <span>What do you nerd out on outside of work?</span>
+                        </label>
+                        <span className="text-[11px] text-slate-400 font-normal">Personal Analogies</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Pick a few hobbies. Soup weaves these real-life analogies into your posts so you sound human, relatable, and authentic.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {[
+                          'Chess & Strategy',
+                          'Marathon running',
+                          'Specialty Coffee',
+                          'Sci-Fi & Cyberpunk',
+                          'Mechanical Keyboards',
+                          'Electronic Music',
+                          'Photography',
+                          'Philosophy / Books'
+                        ].map(h => {
+                          const isSelected = state.hobbies.includes(h);
+                          return (
+                            <button
+                              key={h}
+                              type="button"
+                              onClick={() => toggleArrayItem('hobbies', h)}
+                              className={`selection-chip px-3 py-1.5 rounded-xl text-xs border font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              {h}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="text"
+                          value={customHobbyInput}
+                          onChange={e => setCustomHobbyInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomHobby())}
+                          className="flex-1 h-9 px-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs"
+                          placeholder="Add another hobby or obsession (e.g. Sailing, Cycling, Gaming)..."
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomHobby}
+                          className="h-9 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center gap-1"
+                        >
+                          <Plus size={13} />
+                          <span>Add</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </section>
-          )}
+                )}
 
-          {/* STEP 2: Entity & Online Presence */}
-          {currentStep === 2 && !isInitializing && (
-            <section className="step-panel w-full">
-              <div className="max-w-2xl mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80">
-                <CardHeader currentStep={2} totalSteps={totalSteps} />
-
-                <div className="p-7 sm:p-9 md:p-10">
-                  <h2 className="font-heading text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-2">Entity & Online Presence</h2>
-                  <p className="text-slate-600 text-[15px] mb-6 sm:mb-8 leading-relaxed">Anchor your AI assistant to your public ecosystem or venture footprint.</p>
-
-                  <div className="flex flex-col gap-6">
+                {/* STEP 2: Company, Links & Turning Point */}
+                {currentStep === 2 && (
+                  <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-800" htmlFor="input-entity-name">
-                        Company, product, or project name <span className="text-amber-500">*</span>
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="input-entity-name">
+                        Company or Project Name <span className="text-amber-500">*</span>
                       </label>
                       <input 
                         id="input-entity-name"
                         type="text"
                         value={state.entityName}
                         onChange={e => setState({ ...state, entityName: e.target.value })}
-                        className="w-full h-13 px-4 py-3 rounded-2xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-base"
-                        placeholder="e.g. Prism Dynamics"
+                        className="w-full h-11 px-4 rounded-xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-sm"
+                        placeholder="e.g. AgentScale"
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
+                    {/* Dynamic Multiple Links */}
+                    <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-semibold text-slate-800" htmlFor="input-url">Website or public profile URL</label>
-                        <span className="text-xs font-semibold text-slate-400">Optional</span>
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <Link2 size={13} className="text-slate-500" />
+                          <span>Public Links & Social Footprint</span>
+                        </label>
+                        <button 
+                          type="button"
+                          onClick={addLinkRow}
+                          className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 transition-colors"
+                        >
+                          <Plus size={13} />
+                          <span>Add another link</span>
+                        </button>
                       </div>
-                      <input 
-                        id="input-url"
-                        type="url"
-                        value={state.url}
-                        onChange={e => setState({ ...state, url: e.target.value })}
-                        className="w-full h-13 px-4 py-3 rounded-2xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-base"
-                        placeholder="https://prismdynamics.io or linkedin.com/in/elena"
-                      />
-                      <p className="text-slate-500 text-xs mt-2 bg-slate-50/80 p-3 rounded-2xl border border-slate-200/50 leading-relaxed">
-                        A company website, LinkedIn profile, or another public page helps the agent research your existing positioning. You can skip this.
-                      </p>
+                      <div className="flex flex-col gap-2">
+                        {state.links.map(lnk => (
+                          <div key={lnk.id} className="flex items-center gap-2">
+                            <select
+                              value={lnk.type}
+                              onChange={e => handleLinkChange(lnk.id, 'type', e.target.value)}
+                              className="h-10 px-3 rounded-xl bg-white/90 border border-slate-200 text-slate-700 text-xs font-semibold outline-none shrink-0"
+                            >
+                              <option value="Website">Website</option>
+                              <option value="X / Twitter">X / Twitter</option>
+                              <option value="LinkedIn">LinkedIn</option>
+                              <option value="GitHub">GitHub</option>
+                              <option value="Substack">Substack</option>
+                              <option value="YouTube">YouTube</option>
+                              <option value="Other">Other</option>
+                            </select>
+                            <input 
+                              type="url"
+                              value={lnk.url}
+                              onChange={e => handleLinkChange(lnk.id, 'url', e.target.value)}
+                              className="flex-1 h-10 px-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs"
+                              placeholder={`URL for ${lnk.type}...`}
+                            />
+                            {state.links.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeLinkRow(lnk.id)}
+                                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-400 flex items-center justify-center transition-colors shrink-0"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                      <button 
-                        type="button" 
-                        onClick={() => goToStep(1)}
-                        className="w-12 h-12 rounded-full bg-white hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-colors border border-slate-200/80 shadow-xs"
-                      >
-                        <ArrowLeft size={18} />
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => goToStep(3)}
-                        className="w-12 h-12 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center justify-center transition-colors shadow-apple-btn active:scale-95"
-                      >
-                        <ArrowRight size={20} className="stroke-[2.5]" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* STEP 3: Understand your work */}
-          {currentStep === 3 && !isInitializing && (
-            <section className="step-panel w-full">
-              <div className="max-w-3xl mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80">
-                <CardHeader currentStep={3} totalSteps={totalSteps} />
-
-                <div className="p-7 sm:p-9 md:p-10 max-h-[780px] overflow-y-auto">
-                  <h2 className="font-heading text-3xl font-bold text-slate-900 tracking-tight mb-1">Understand your work</h2>
-                  <p className="text-slate-600 text-sm mb-6 leading-relaxed">Tell us enough to identify your domain, experience, and useful areas of expertise.</p>
-
-                  <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-800" htmlFor="text-work-mission">
-                        What does your company or project do? <span className="text-amber-500">*</span>
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-mission">
+                        What does your company do? (In 1 simple sentence) <span className="text-amber-500">*</span>
                       </label>
                       <textarea 
-                        id="text-work-mission"
+                        id="text-mission"
                         rows={2}
                         value={state.mission}
                         onChange={e => setState({ ...state, mission: e.target.value })}
-                        className="w-full p-3.5 rounded-2xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-sm leading-relaxed"
+                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs leading-relaxed"
+                        placeholder="e.g. Distributed observability and trace debugger for multi-agent LLM systems in production."
                       />
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-slate-800">What stage are you at? <span className="text-amber-500">*</span></label>
-                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                        {[
-                          { id: 'idea', label: 'Idea / validating' },
-                          { id: 'mvp', label: 'MVP / first version' },
-                          { id: 'early', label: 'Early traction' },
-                          { id: 'scaling', label: 'Growing / scaling' },
-                          { id: 'established', label: 'Established' }
-                        ].map(s => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => setState({ ...state, stage: s.id })}
-                            className={`selection-card p-3 rounded-2xl bg-white/70 border border-slate-200/80 text-center transition-colors ${
-                              state.stage === s.id ? 'active' : ''
-                            }`}
-                          >
-                            <span className="text-xs font-semibold text-slate-900">{s.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-800" htmlFor="text-personal-role">
-                        What is your personal role in the business? <span className="text-amber-500">*</span>
-                      </label>
-                      <textarea 
-                        id="text-personal-role"
-                        rows={2}
-                        value={state.personalRole}
-                        onChange={e => setState({ ...state, personalRole: e.target.value })}
-                        className="w-full p-3.5 rounded-2xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-sm leading-relaxed"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-semibold text-slate-800">Where do you have useful expertise?</label>
-                        <span className="text-xs font-semibold text-slate-400">Multi-select</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        {[
-                          { id: 'product', label: 'Product building' },
-                          { id: 'ai', label: 'Engineering / AI' },
-                          { id: 'growth', label: 'Sales & growth' },
-                          { id: 'brand', label: 'Marketing / brand' },
-                          { id: 'fundraising', label: 'Fundraising' },
-                          { id: 'hiring', label: 'Leadership / hiring' },
-                          { id: 'industry', label: 'Industry expertise' },
-                          { id: 'operations', label: 'Operations' }
-                        ].map(exp => (
-                          <button
-                            key={exp.id}
-                            type="button"
-                            onClick={() => toggleArrayItem('expertise', exp.id)}
-                            className={`selection-card px-3.5 py-2.5 rounded-2xl bg-white/70 border border-slate-200/80 flex items-center justify-center text-center transition-colors ${
-                              state.expertise.includes(exp.id) ? 'active' : ''
-                            }`}
-                          >
-                            <span className="text-xs font-semibold text-slate-800">{exp.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                      <button 
-                        type="button" 
-                        onClick={() => goToStep(2)}
-                        className="w-12 h-12 rounded-full bg-white hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-colors border border-slate-200/80 shadow-xs"
-                      >
-                        <ArrowLeft size={18} />
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => goToStep(4)}
-                        className="w-12 h-12 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center justify-center transition-colors shadow-apple-btn active:scale-95"
-                      >
-                        <ArrowRight size={20} className="stroke-[2.5]" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* STEP 4: Your positioning starts with your audience */}
-          {currentStep === 4 && !isInitializing && (
-            <section className="step-panel w-full">
-              <div className="max-w-3xl mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80">
-                <CardHeader currentStep={4} totalSteps={totalSteps} />
-
-                <div className="p-7 sm:p-9 md:p-10 max-h-[780px] overflow-y-auto">
-                  <h2 className="font-heading text-3xl font-bold text-slate-900 tracking-tight mb-1">Your positioning starts with your audience</h2>
-                  <p className="text-slate-600 text-sm mb-6 leading-relaxed">Be specific about the people you want to help, not just the industry you work in.</p>
-
-                  <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-800" htmlFor="text-audience">
-                        1. Who is your target audience? <span className="text-amber-500">*</span>
-                      </label>
-                      <textarea 
-                        id="text-audience"
-                        rows={2}
-                        value={state.audience}
-                        onChange={e => setState({ ...state, audience: e.target.value })}
-                        className="w-full p-3.5 rounded-2xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-sm leading-relaxed"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-slate-800" htmlFor="text-problems">
-                        2. What problems can you help them solve? <span className="text-amber-500">*</span>
-                      </label>
-                      <textarea 
-                        id="text-problems"
-                        rows={2}
-                        value={state.problems}
-                        onChange={e => setState({ ...state, problems: e.target.value })}
-                        className="w-full p-3.5 rounded-2xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-sm leading-relaxed"
-                      />
-                    </div>
-
+                    {/* The Turning Point */}
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-semibold text-slate-800" htmlFor="input-segment">3. Which specific segment should you prioritize?</label>
-                        <span className="text-xs font-semibold text-slate-400">Optional</span>
-                      </div>
-                      <input 
-                        id="input-segment"
-                        type="text"
-                        value={state.segment}
-                        onChange={e => setState({ ...state, segment: e.target.value })}
-                        className="w-full h-12 px-4 rounded-2xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-sm"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-slate-800">4. How clearly defined is your audience today?</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        {[
-                          { id: 'sharp', label: 'I know exactly who I want to reach' },
-                          { id: 'hypothesis', label: 'I have a hypothesis to test' },
-                          { id: 'exploring', label: "I'm still figuring it out" }
-                        ].map(c => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => setState({ ...state, clarity: c.id })}
-                            className={`selection-card p-3.5 rounded-2xl bg-white/70 border border-slate-200/80 text-left transition-colors ${
-                              state.clarity === c.id ? 'active' : ''
-                            }`}
-                          >
-                            <span className="text-xs font-bold text-slate-900 block">{c.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                      <button 
-                        type="button" 
-                        onClick={() => goToStep(3)}
-                        className="w-12 h-12 rounded-full bg-white hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-colors border border-slate-200/80 shadow-xs"
-                      >
-                        <ArrowLeft size={18} />
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => goToStep(5)}
-                        className="w-12 h-12 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center justify-center transition-colors shadow-apple-btn active:scale-95"
-                      >
-                        <ArrowRight size={20} className="stroke-[2.5]" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* STEP 5: What do you want to achieve? */}
-          {currentStep === 5 && !isInitializing && (
-            <section className="step-panel w-full">
-              <div className="max-w-5xl mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80">
-                <CardHeader currentStep={5} totalSteps={totalSteps} />
-
-                <div className="p-6 sm:p-8 md:p-10 max-h-[780px] overflow-y-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <div className="lg:col-span-8 flex flex-col gap-6">
-                      <div>
-                        <h2 className="font-heading text-3xl font-bold text-slate-900 tracking-tight mb-1">What do you want to achieve?</h2>
-                        <p className="text-slate-600 text-sm mb-6">Choose one primary goal. One clear priority makes the initial strategy more focused.</p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-800">1. Primary goal? <span className="text-amber-500">*</span></label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                          {[
-                            { id: 'Build personal authority', desc: 'Earn recognized industry weight' },
-                            { id: 'Generate inbound leads', desc: 'Attract qualified buyers' },
-                            { id: 'Attract investors or partners', desc: 'Signal shipping velocity' },
-                            { id: 'Get speaking opportunities', desc: 'Keynotes & podcast invites' },
-                            { id: 'Grow a relevant community', desc: 'Nurture advocates and peers' },
-                            { id: 'Increase company/product visibility', desc: 'Amplify overall market awareness' },
-                            { id: 'Build a reputation as a builder', desc: 'Show ship speed & architecture' }
-                          ].map(g => (
-                            <button
-                              key={g.id}
-                              type="button"
-                              onClick={() => setState({ ...state, goal: g.id })}
-                              className={`selection-card p-3.5 rounded-2xl bg-white/70 border border-slate-200/80 text-left transition-colors ${
-                                state.goal === g.id ? 'active' : ''
-                              }`}
-                            >
-                              <div className="text-xs font-bold text-slate-900">{g.id}</div>
-                              <div className="text-[11px] text-slate-500">{g.desc}</div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-800">2. Planning horizon? <span className="text-amber-500">*</span></label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                          {['3 months', '6 months'].map(h => (
-                            <button
-                              key={h}
-                              type="button"
-                              onClick={() => setState({ ...state, horizon: h })}
-                              className={`selection-card p-3 rounded-2xl bg-white/70 border border-slate-200/80 text-left transition-colors ${
-                                state.horizon === h ? 'active' : ''
-                              }`}
-                            >
-                              <span className="text-xs font-bold text-slate-900">{h}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-800">3. Platforms to use? <span className="text-amber-500">*</span></label>
-                        <div className="flex flex-wrap gap-2">
-                          {['X / Twitter', 'LinkedIn', 'YouTube', 'Substack / Newsletter', 'Instagram / TikTok', 'Podcasts'].map(p => (
-                            <button
-                              key={p}
-                              type="button"
-                              onClick={() => toggleArrayItem('platforms', p)}
-                              className={`selection-card px-3.5 py-2 rounded-2xl bg-white/70 border border-slate-200/80 text-xs font-bold transition-colors ${
-                                state.platforms.includes(p) ? 'active' : 'text-slate-700'
-                              }`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-800">4. Weekly time commitment? <span className="text-amber-500">*</span></label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {['1–2 hours', '3–5 hours', '6–10 hours', '10+ hours'].map(hrs => (
-                            <button
-                              key={hrs}
-                              type="button"
-                              onClick={() => setState({ ...state, commitment: hrs })}
-                              className={`selection-card py-2.5 px-3 rounded-2xl bg-white/70 border border-slate-200/80 text-center text-xs font-bold transition-colors ${
-                                state.commitment === hrs ? 'active' : 'text-slate-800'
-                              }`}
-                            >
-                              {hrs}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                        <button 
-                          type="button" 
-                          onClick={() => goToStep(4)}
-                          className="w-12 h-12 rounded-full bg-white hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-colors border border-slate-200/80 shadow-xs"
-                        >
-                          <ArrowLeft size={18} />
-                        </button>
-                        <button 
-                          type="button" 
-                          onClick={() => goToStep(6)}
-                          className="w-12 h-12 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center justify-center transition-colors shadow-apple-btn active:scale-95"
-                        >
-                          <ArrowRight size={20} className="stroke-[2.5]" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Right Summary Live Box */}
-                    <div className="lg:col-span-4 bg-white/80 border border-slate-200/80 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
-                      <div className="flex flex-col gap-4">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
-                          Target Blueprint
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-turning-point">
+                          The Turning Point <span className="text-amber-500">*</span>
+                        </label>
+                        <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                          Story Anchor
                         </span>
-                        <div className="space-y-3">
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Core Goal</span>
-                            <span className="text-xs font-bold text-slate-900">{state.goal}</span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Horizon</span>
-                            <span className="text-xs font-bold text-slate-900">{state.horizon}</span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Weekly Time</span>
-                            <span className="text-xs font-bold text-slate-900">{state.commitment}</span>
-                          </div>
-                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* STEP 6: Discover your content identity */}
-          {currentStep === 6 && !isInitializing && (
-            <section className="step-panel w-full">
-              <div className="max-w-5xl mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80">
-                <CardHeader currentStep={6} totalSteps={totalSteps} />
-
-                <div className="p-6 sm:p-8 md:p-10 max-h-[780px] overflow-y-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <div className="lg:col-span-8 flex flex-col gap-6">
-                      <div>
-                        <h2 className="font-heading text-3xl font-bold text-slate-900 tracking-tight mb-1">Discover your content identity</h2>
-                        <p className="text-slate-600 text-sm mb-6">Short phrases are enough to start; the agent will organically calibrate.</p>
-                      </div>
-
-                      {/* Topics */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-semibold text-slate-800">1. What do you enjoy talking about?</label>
-                          <span className="text-xs font-semibold text-slate-400">Multi-select</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            'My founder journey', 'Teaching & explaining', 'Technology & innovation',
-                            'Helping people solve problems', 'Business & entrepreneurship', 'Personal development',
-                            'Industry debates', 'Experiments & learning'
-                          ].map(t => (
-                            <button
-                              key={t}
-                              type="button"
-                              onClick={() => toggleArrayItem('topics', t)}
-                              className={`selection-card px-3.5 py-1.5 rounded-2xl bg-white/70 border border-slate-200/80 text-xs font-bold transition-colors ${
-                                state.topics.includes(t) ? 'active' : 'text-slate-800'
-                              }`}
-                            >
-                              {t}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Stories */}
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-800">2. Stories you are comfortable sharing?</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {['How I started', 'Failures & setbacks', 'Lessons from experience', 'Turning points', 'Behind the scenes', 'Beliefs & values'].map(s => (
-                            <button
-                              key={s}
-                              type="button"
-                              onClick={() => toggleArrayItem('stories', s)}
-                              className={`selection-card p-2.5 rounded-2xl bg-white/70 border border-slate-200/80 text-left text-xs font-bold transition-colors ${
-                                state.stories.includes(s) ? 'active' : 'text-slate-800'
-                              }`}
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Formats */}
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-800">3. Preferred Formats</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {['Text posts', 'Carousels', 'Short videos', 'Long-form videos', 'Newsletters', 'Audio'].map(f => (
-                            <button
-                              key={f}
-                              type="button"
-                              onClick={() => toggleArrayItem('formats', f)}
-                              className={`selection-card p-2.5 rounded-2xl bg-white/70 border border-slate-200/80 text-left text-xs font-bold transition-colors ${
-                                state.formats.includes(f) ? 'active' : 'text-slate-800'
-                              }`}
-                            >
-                              {f}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Tone Traits */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-semibold text-slate-800">4. Tone traits (up to 3)</label>
-                          <span className="text-xs font-semibold text-slate-400">{state.tones.length} / max 3</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {['Conversational', 'Analytical', 'Practical', 'Opinionated', 'Storytelling', 'Educational', 'Direct', 'Reflective'].map(tone => (
-                            <button
-                              key={tone}
-                              type="button"
-                              onClick={() => toggleArrayItem('tones', tone, 3)}
-                              className={`selection-card px-3.5 py-1.5 rounded-full bg-white/70 border border-slate-200/80 text-xs font-bold transition-colors ${
-                                state.tones.includes(tone) ? 'active' : 'text-slate-800'
-                              }`}
-                            >
-                              {tone}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                        <button 
-                          type="button" 
-                          onClick={() => goToStep(5)}
-                          className="w-12 h-12 rounded-full bg-white hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-colors border border-slate-200/80 shadow-xs"
-                        >
-                          <ArrowLeft size={18} />
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={startInitialization}
-                          className="px-7 h-12 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center gap-2 text-sm font-bold shadow-apple-btn active:scale-95 transition-colors"
-                        >
-                          <span>Complete Onboarding</span>
-                          <Check size={18} className="stroke-[3]" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Right Live Emerging Profile Card */}
-                    <div className="lg:col-span-4 bg-white/80 border border-slate-200/80 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
-                      <div className="flex flex-col gap-5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
-                            Emerging Creator Profile
-                          </span>
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#FAD02C] animate-ping" />
-                        </div>
-
-                        {/* Vector resonance graphic */}
-                        <div className="w-full h-28 rounded-2xl bg-white border border-slate-200/70 flex items-center justify-center p-3 relative overflow-hidden">
-                          <svg className="w-full h-full opacity-80" fill="none" stroke="currentColor" viewBox="0 0 200 90">
-                            <circle cx="35" cy="45" r="24" stroke="#94A3B8" strokeDasharray="2 2" strokeWidth="1" />
-                            <circle cx="100" cy="45" r="32" stroke="#FAD02C" strokeWidth="2.5" />
-                            <circle cx="165" cy="45" r="24" stroke="#0F172A" strokeDasharray="3 3" strokeWidth="1" />
-                            <path d="M35 45 Q100 15 165 45" fill="none" stroke="#FAD02C" strokeWidth="2.5" />
-                            <path d="M35 45 Q100 75 165 45" fill="none" stroke="#0F172A" strokeWidth="1" />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-[9px] uppercase tracking-widest text-slate-700 font-mono font-bold bg-white/95 px-2 py-0.5 rounded-full border border-slate-200 shadow-xs">
-                              Identity Resonance
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Tone Signature</span>
-                            <div className="flex flex-wrap gap-1">
-                              {state.tones.map(t => (
-                                <span key={t} className="px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-[11px] font-bold text-slate-800">
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Pillar Topics</span>
-                            <div className="flex flex-wrap gap-1">
-                              {state.topics.map(top => (
-                                <span key={top} className="px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-slate-900">
-                                  {top}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Selected Formats</span>
-                            <div className="flex flex-wrap gap-1">
-                              {state.formats.map(fmt => (
-                                <span key={fmt} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-[11px] font-semibold text-slate-800">
-                                  {fmt}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="text-slate-500 text-xs leading-relaxed pt-4 border-t border-slate-200/50">
-                        Adaptive weights automatically fine-tune with each reviewed draft in your Soup command station.
+                      <textarea 
+                        id="text-turning-point"
+                        rows={3}
+                        value={state.turningPoint}
+                        onChange={e => setState({ ...state, turningPoint: e.target.value })}
+                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs leading-relaxed"
+                        placeholder="What frustrating breakdown, painful failure, or broken tool made you say 'I have to build this myself'?"
+                      />
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        Audiences bond over the struggle that started your company. Soup uses this turning point to build emotional tension in your stories.
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
-            </section>
-          )}
+                )}
 
-          {/* INITIALIZATION MODAL */}
-          {isInitializing && (
-            <section className="step-panel w-full flex items-center justify-center">
-              <div className="max-w-md mx-auto w-full frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 text-center flex flex-col items-center">
-                <CardHeader currentStep={6} totalSteps={totalSteps} />
-                <div className="p-8 md:p-10 w-full flex flex-col items-center">
-                  <div className="w-24 h-24 relative mb-5 flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-full bg-[#FAD02C]/30 blur-xl animate-ping" />
-                    <div className="w-20 h-20 rounded-full bg-white border border-slate-200/80 shadow-apple-card flex items-center justify-center relative">
-                      <Sparkles className="w-8 h-8 text-[#FAD02C] animate-pulse" />
+                {/* STEP 3: Unpopular Opinions & Brand Persona */}
+                {currentStep === 3 && (
+                  <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700" htmlFor="text-unpopular">
+                        Your Unpopular Opinion <span className="text-amber-500">*</span>
+                      </label>
+                      <textarea 
+                        id="text-unpopular"
+                        rows={2}
+                        value={state.unpopularOpinion}
+                        onChange={e => setState({ ...state, unpopularOpinion: e.target.value })}
+                        className="w-full p-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs leading-relaxed"
+                        placeholder="What is one belief or 'best practice' in your space that you think is completely wrong?"
+                      />
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        This sparks your weekly contrarian teardown posts.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        How do you want your content to feel? <span className="text-amber-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {[
+                          {
+                            id: 'The Builder (Share the Work)',
+                            tag: 'Transparent',
+                            desc: 'Shares real numbers, metrics, bugs, and behind-the-scenes engineering.'
+                          },
+                          {
+                            id: 'The Visionary (Challenge Dogma)',
+                            tag: 'Big Picture',
+                            desc: 'Challenges legacy players, introduces new philosophies, and thinks in paradigm shifts.'
+                          },
+                          {
+                            id: 'The Practical Guide (Actionable)',
+                            tag: 'Tactical',
+                            desc: 'Step-by-step systems, architecture diagrams, zero fluff, how-to teardowns.'
+                          }
+                        ].map(arch => {
+                          const isSelected = state.brandStyle === arch.id;
+                          return (
+                            <button
+                              key={arch.id}
+                              type="button"
+                              onClick={() => setState({ ...state, brandStyle: arch.id })}
+                              className={`selection-card p-4 rounded-2xl border text-left flex flex-col justify-between transition-all ${
+                                isSelected ? 'active' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              <div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-block mb-2">
+                                  {arch.tag}
+                                </span>
+                                <h3 className="text-xs font-bold text-slate-900 mb-1">{arch.id}</h3>
+                                <p className="text-[11px] text-slate-500 leading-relaxed">{arch.desc}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <span className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#FAD02C]" />
-                    System Live
-                  </span>
-
-                  <h2 className="font-heading text-2xl font-bold text-slate-900 tracking-tight mb-2">
-                    Initializing your Soup agent...
-                  </h2>
-                  <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                    Synthesizing personal domain experience, tone resonance, and strategic distribution vectors into your dedicated runtime.
-                  </p>
-
-                  {/* Progress bar */}
-                  <div className="w-full flex flex-col gap-2 mb-6">
-                    <div className="w-full h-2.5 rounded-full bg-slate-200/80 overflow-hidden">
-                      <div 
-                        className="h-full bg-[#FAD02C] transition-all duration-500 ease-out" 
-                        style={{ width: `${initProgress}%` }}
+                {/* STEP 4: Who You’re Building For & Pet Peeves */}
+                {currentStep === 4 && (
+                  <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        Who are you building for? <span className="text-amber-500">*</span>
+                      </label>
+                      <div className="flex flex-wrap gap-1.5 mb-1.5">
+                        {[
+                          'Staff Backend Engineers & AI Leads',
+                          'Seed & Series A Venture Investors',
+                          'Enterprise Buyers & CTOs',
+                          'Independent Developers & Builders',
+                          'Direct Consumers & Enthusiasts'
+                        ].map(aud => {
+                          const isSelected = state.audience === aud;
+                          return (
+                            <button
+                              key={aud}
+                              type="button"
+                              onClick={() => setState({ ...state, audience: aud })}
+                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              {aud}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <input 
+                        type="text"
+                        value={state.audience}
+                        onChange={e => setState({ ...state, audience: e.target.value })}
+                        className="w-full h-10 px-3.5 rounded-xl frosted-input text-slate-900 font-medium placeholder:text-slate-400 outline-none text-xs"
+                        placeholder="Or type custom audience profile..."
                       />
                     </div>
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-                      <span>{initStageText}</span>
-                      <span>{initProgress}%</span>
+
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          What annoys your audience about existing tools or posts?
+                        </label>
+                        <span className="text-[11px] text-slate-400">Multi-select</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Communities bond over shared pet peeves. Soup will frame your solutions around these pain points.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          'Hollow AI wrapper marketing',
+                          'Vendor lock-in & punitive licensing',
+                          'Unverified latency benchmarks',
+                          'Corporate greenwashing & fluff',
+                          'Over-engineered bloatware',
+                          'Synthetic LinkedIn platitudes',
+                          'Gatekept open-source features'
+                        ].map(annoyance => {
+                          const isSelected = state.annoyances.includes(annoyance);
+                          return (
+                            <button
+                              key={annoyance}
+                              type="button"
+                              onClick={() => toggleArrayItem('annoyances', annoyance)}
+                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              {annoyance}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <button 
+                {/* STEP 5: Words You Hate & Real Things to Share */}
+                {currentStep === 5 && (
+                  <div className="flex flex-col gap-5">
+                    {/* Banned Words */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <ShieldAlert size={13} className="text-rose-500" />
+                          <span>Words you hate (AI Cliches to Avoid)</span>
+                        </label>
+                        <span className="text-[11px] text-slate-400 font-normal">Auto-Reject Filter</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Any post containing these words will be rejected by our automated filter before you see it.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mb-1.5">
+                        {state.bannedPhrases.map(phrase => (
+                          <span 
+                            key={phrase}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium"
+                          >
+                            <span>"{phrase}"</span>
+                            <button 
+                              type="button"
+                              onClick={() => toggleArrayItem('bannedPhrases', phrase)}
+                              className="hover:text-rose-950 text-rose-500"
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="text"
+                          value={customBannedInput}
+                          onChange={e => setCustomBannedInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomBanned())}
+                          className="flex-1 h-9 px-3.5 rounded-xl frosted-input text-slate-900 placeholder:text-slate-400 outline-none text-xs"
+                          placeholder="Add phrase to ban (e.g. 'game-changer', 'synergy')..."
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomBanned}
+                          className="h-9 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center gap-1"
+                        >
+                          <Plus size={13} />
+                          <span>Add</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Real Things to Share */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Real things you can share from your camera roll or laptop
+                        </label>
+                        <span className="text-[11px] text-slate-400 font-normal">Visual Prompts</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Soup pairs every weekly post with one of these real assets instead of generic stock images.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {[
+                          { label: 'Terminal screenshots & trace logs', icon: Terminal },
+                          { label: 'Whiteboard architecture sketches', icon: FileText },
+                          { label: 'Raw voice notes & unscripted brain dumps', icon: Zap },
+                          { label: 'Candid workstation / lab photos', icon: Camera },
+                          { label: 'Redacted Slack wins & customer receipts', icon: FileText },
+                          { label: 'Loom / informal selfie video clips', icon: Camera }
+                        ].map(asset => {
+                          const isSelected = state.realAssets.includes(asset.label);
+                          const IconComp = asset.icon;
+                          return (
+                            <button
+                              key={asset.label}
+                              type="button"
+                              onClick={() => toggleArrayItem('realAssets', asset.label)}
+                              className={`selection-chip p-2.5 rounded-xl border text-left flex items-center gap-2.5 text-xs font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              <IconComp size={14} className={isSelected ? 'text-slate-950' : 'text-slate-400'} />
+                              <span className="flex-1">{asset.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Channels */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        Where do you want to publish?
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['LinkedIn', 'X / Twitter', 'Substack / Newsletter', 'YouTube'].map(plat => {
+                          const isSelected = state.platforms.includes(plat);
+                          return (
+                            <button
+                              key={plat}
+                              type="button"
+                              onClick={() => toggleArrayItem('platforms', plat)}
+                              className={`selection-chip px-3 py-2 rounded-xl text-xs border font-medium ${
+                                isSelected ? 'active font-bold text-slate-950' : 'bg-white/80 border-slate-200/90 text-slate-600'
+                              }`}
+                            >
+                              {plat}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+            {/* Stable Footer: Clean, balanced alignment, no weird cuts or floating badges */}
+            <div className="px-6 sm:px-9 py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md flex items-center justify-between select-none">
+              <div>
+                {currentStep > 1 ? (
+                  <button
                     type="button"
-                    disabled={!initComplete}
-                    onClick={() => onComplete && onComplete(state)}
-                    className={`w-full h-12 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-colors shadow-apple-subtle flex items-center justify-center gap-2 ${
-                      initComplete ? 'active:scale-[0.98]' : 'opacity-40 pointer-events-none'
-                    }`}
+                    onClick={() => goToStep(currentStep - 1)}
+                    className="h-10 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition-all border border-slate-200 shadow-2xs text-xs font-semibold active:scale-95"
                   >
-                    <span>Enter Soup Terminal</span>
-                    <ArrowRight size={16} />
+                    <ArrowLeft size={15} />
+                    <span>Back</span>
                   </button>
+                ) : (
+                  <span className="text-[11px] text-slate-400 font-medium">
+                    2-minute founder intake
+                  </span>
+                )}
+              </div>
+
+              <div>
+                {currentStep < totalSteps ? (
+                  <button
+                    type="button"
+                    onClick={() => goToStep(currentStep + 1)}
+                    className="h-10 px-6 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
+                  >
+                    <span>Continue</span>
+                    <ArrowRight size={15} className="stroke-[2.5]" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startInitialization}
+                    className="h-10 px-6 rounded-full bg-[#FAD02C] hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider shadow-apple-btn active:scale-95 transition-all"
+                  >
+                    <span>Complete Intake</span>
+                    <Sparkles size={15} className="stroke-[2.5]" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* INITIALIZATION REVEAL MODAL */
+          <div className="w-full max-w-md mx-auto frosted-glass rounded-3xl shadow-apple-card relative overflow-hidden border border-slate-200/80 text-center flex flex-col items-center">
+            <CardHeader currentStep={5} totalSteps={totalSteps} stepTitle="Calibrating Soup Intelligence..." />
+            <div className="p-8 md:p-10 w-full flex flex-col items-center">
+              <div className="w-20 h-20 relative mb-5 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-[#FAD02C]/30 blur-xl animate-ping" />
+                <div className="w-16 h-16 rounded-full bg-white border border-slate-200/80 shadow-apple-card flex items-center justify-center relative">
+                  <Sparkles className="w-7 h-7 text-[#FAD02C] animate-pulse" />
                 </div>
               </div>
-            </section>
-          )}
-        </div>
+
+              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FAD02C]" />
+                Intelligence Calibrated
+              </span>
+
+              <h2 className="font-heading text-xl font-bold text-slate-900 tracking-tight mb-2">
+                Setting up your Command Center...
+              </h2>
+              <p className="text-slate-500 font-normal text-xs mb-6 leading-relaxed">
+                Weaving your turning point, unpopular takes, and personal analogies into a sustainable weekly content calendar.
+              </p>
+
+              {/* Progress bar */}
+              <div className="w-full flex flex-col gap-2 mb-6">
+                <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                  <div 
+                    className="h-full bg-[#FAD02C] transition-all duration-500 ease-out" 
+                    style={{ width: `${initProgress}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                  <span className="truncate pr-2">{initStageText}</span>
+                  <span>{initProgress}%</span>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                disabled={!initComplete}
+                onClick={() => onComplete && onComplete(state)}
+                className={`w-full h-11 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-apple-subtle flex items-center justify-center gap-2 ${
+                  initComplete ? 'active:scale-[0.98]' : 'opacity-40 pointer-events-none'
+                }`}
+              >
+                <span>Enter Command Center</span>
+                <ArrowRight size={15} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
