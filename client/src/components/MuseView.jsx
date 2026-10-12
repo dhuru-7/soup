@@ -230,28 +230,6 @@ export default function MuseView({
   return (
     <div className="max-w-[1320px] mx-auto w-full px-4 sm:px-6 py-5 sm:py-6 flex flex-col gap-5 animate-fade-in">
       
-      {/* Top Workspace Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
-        <div className="flex items-center gap-2.5">
-          <h1 className="font-heading text-xl font-bold text-slate-950">
-            Muse
-          </h1>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Sarvam 105B Active</span>
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowContextDrawer(!showContextDrawer)}
-          className="self-start sm:self-auto px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs text-slate-700 flex items-center gap-1.5 active:scale-95 transition-all"
-        >
-          <Icon name="tune" size={14} />
-          <span>{showContextDrawer ? 'Hide context panel' : 'Show context panel'}</span>
-        </button>
-      </div>
-
       {/* Main Workspace Layout (Sidebar + Chat Area + Context Panel) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         

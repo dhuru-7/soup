@@ -671,7 +671,7 @@ export default function OverviewView({
               onClick={() => onNavigateToMuse("Develop my onboarding origin story into a 45-second script")}
               className="self-start px-4 py-2 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold shadow-2xs flex items-center gap-1.5 active:scale-95 transition-all"
             >
-              <Icon name="star" size={15} className="text-[#FFCC00]" />
+              <Icon name="star" size={15} fill={true} className="text-[#FFCC00]" />
               <span>Develop in Muse →</span>
             </button>
           </div>

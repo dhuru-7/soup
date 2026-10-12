@@ -63,6 +63,7 @@ export default function Navigation({
                   <Icon 
                     name={item.icon} 
                     size={19} 
+                    fill={isActive}
                     className={isActive ? 'text-[#FFCC00]' : 'text-slate-400'} 
                   />
                   <span className="text-[13px]">{item.label}</span>
@@ -132,6 +133,7 @@ export default function Navigation({
               <Icon 
                 name={item.icon} 
                 size={20} 
+                fill={isActive}
                 className={isActive ? 'text-amber-500 font-bold' : 'text-slate-400'} 
               />
               <span>{item.label}</span>
