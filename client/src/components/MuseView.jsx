@@ -97,14 +97,22 @@ export default function MuseView({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, streamingText]);
 
-  // Auto-resize textarea
-  const handleTextareaChange = (e) => {
-    setInputText(e.target.value);
+  // Auto-resize textarea dynamically
+  const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.max(90, Math.min(textareaRef.current.scrollHeight, 260))}px`;
+      const scrollH = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(Math.max(scrollH, 38), 240)}px`;
     }
   };
+
+  const handleTextareaChange = (e) => {
+    setInputText(e.target.value);
+  };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [inputText]);
 
   // Handle file uploads
   const handleFileSelect = (e) => {
@@ -139,9 +147,6 @@ export default function MuseView({
     setActiveTool(null);
     setIsPlusMenuOpen(false);
     setIsToolsSubmenuOpen(false);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '90px';
-    }
   };
 
   // Check if user's prompt is a strategy file update command (e.g. "change 7 days to 3 days")
@@ -189,10 +194,6 @@ export default function MuseView({
     setIsPlusMenuOpen(false);
     setIsToolsSubmenuOpen(false);
     setIsTyping(true);
-
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '90px';
-    }
 
     // Intercept deletion commands for the active note
     const textLower = textToSend.toLowerCase().trim();
@@ -737,10 +738,10 @@ export default function MuseView({
           </div>
         )}
 
-        {/* Textarea: Multi-line, generous height, comfortable text */}
+        {/* Textarea: Dynamic auto-expanding height, sleek single-line when empty */}
         <textarea
           ref={textareaRef}
-          rows={3}
+          rows={1}
           value={inputText}
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
@@ -751,7 +752,7 @@ export default function MuseView({
                 ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
                 : "Ask Muse, tell to update strategy files, or draft a post..."
           }
-          className="w-full min-h-[84px] sm:min-h-[96px] max-h-64 py-1.5 px-1 bg-transparent text-[15px] text-slate-900 placeholder:text-slate-400 font-sans leading-relaxed resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0"
+          className="w-full min-h-[38px] max-h-48 py-1 px-1 bg-transparent text-[15px] text-slate-900 placeholder:text-slate-400 font-sans leading-normal resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0"
           style={{ 
             outline: 'none', 
             border: 'none', 
@@ -806,15 +807,14 @@ export default function MuseView({
                 setIsPlusMenuOpen(prev => !prev);
                 setIsToolsSubmenuOpen(false);
               }}
-              className={`h-8 px-2.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer text-xs font-semibold ${
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
                 isPlusMenuOpen 
-                  ? 'bg-slate-900 text-white' 
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80'
+                  ? 'bg-slate-900 text-white shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
               }`}
               title="Add files or tools"
             >
-              <Icon name="add" size={16} />
-              <span>Attach</span>
+              <Icon name="add" size={18} />
             </button>
 
             {/* Floating Popover: Opens UPWARDS (bottom-full mb-2) */}

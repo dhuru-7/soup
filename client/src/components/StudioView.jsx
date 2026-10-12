@@ -208,33 +208,20 @@ export default function StudioView({
                         className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:border-amber-300 hover:shadow-xs cursor-pointer flex flex-col justify-between gap-3 transition-all active:scale-[0.99] group"
                       >
                         <div>
-                          {/* Tags: Platform, Format, Calendar Day & Quick Delete */}
-                          <div className="flex items-center justify-between gap-1 mb-2">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
-                                {item.platform}
+                          {/* Tags: Platform, Format, Calendar Day (Single time) */}
+                          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
+                              {item.platform}
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              {item.format}
+                            </span>
+                            {item.day && (
+                              <span className="text-[10px] font-bold text-amber-900 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5" title={`Scheduled for ${item.day}`}>
+                                <Icon name="calendar_month" size={10} className="text-amber-800" />
+                                <span>{item.day}</span>
                               </span>
-                              <span className="text-[11px] text-slate-400 font-medium">
-                                {item.format}
-                              </span>
-                              {item.day && (
-                                <span className="text-[10px] font-bold text-amber-900 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.5 rounded-md flex items-center gap-0.5" title={`Scheduled for ${item.day}`}>
-                                  <Icon name="calendar_month" size={10} className="text-amber-800" />
-                                  <span>{item.day.slice(0, 3)}</span>
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteContentItem(item.id);
-                              }}
-                              className="w-5 h-5 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
-                              title="Delete note"
-                            >
-                              <Icon name="delete" size={13} />
-                            </button>
+                            )}
                           </div>
 
                           {/* Title */}
@@ -256,52 +243,20 @@ export default function StudioView({
                           )}
                         </div>
 
-                        {/* Connected Actions: Edit with Muse & Transfer to Calendar */}
-                        <div className="pt-2.5 border-t border-slate-100 flex flex-col gap-2">
-                          
-                          <div className="flex items-center justify-between gap-1.5">
-                            {/* Connect directly to Muse with this Note */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onOpenInMuse(`Let's refine this board note: "${item.title}". Hook: "${item.hook}". How can we make it hit harder?`, item);
-                              }}
-                              className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-[10.5px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
-                              title="Open and edit this note inside Muse"
-                            >
-                              <Icon name="muse_star" size={12} className="text-[#FEEC98]" />
-                              <span>Edit with Muse</span>
-                            </button>
-
-                            {/* Transfer to Calendar Button */}
-                            <button
-                              type="button"
-                              onClick={(e) => handleQuickTransferToCalendar(e, item, item.day || 'Wednesday')}
-                              className="px-2 py-1 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[10.5px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
-                              title="Schedule this note onto the calendar"
-                            >
-                              <Icon name="calendar_month" size={12} className="text-amber-700" />
-                              <span>{item.day ? item.day.slice(0, 3) : 'To Calendar'}</span>
-                            </button>
-                          </div>
-
-                          {/* Stage selector */}
-                          <div className="flex items-center justify-between text-[10px] text-slate-400">
-                            <span>Stage:</span>
-                            <select
-                              value={item.stage}
-                              onClick={e => e.stopPropagation()}
-                              onChange={e => handleMoveStage(e, item, e.target.value)}
-                              className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 outline-none cursor-pointer"
-                            >
-                              <option value="idea">Idea</option>
-                              <option value="draft">Draft</option>
-                              <option value="approved">Approved</option>
-                              <option value="published">Published</option>
-                            </select>
-                          </div>
-
+                        {/* Connected Action: Edit with Muse */}
+                        <div className="pt-2.5 border-t border-slate-100 flex items-center">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenInMuse(`Let's refine this board note: "${item.title}". Hook: "${item.hook}". How can we make it hit harder?`, item);
+                            }}
+                            className="px-3 py-1.5 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                            title="Open and edit this note inside Muse"
+                          >
+                            <Icon name="muse_star" size={12} className="text-[#FEEC98]" />
+                            <span>Edit with Muse</span>
+                          </button>
                         </div>
                       </div>
                     ))
