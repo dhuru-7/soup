@@ -1,7 +1,66 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
 import { sendAiChat, TOOL_SKILLS } from '../sarvam';
-import { applyAgentUpdate, fetchStrategy } from '../api';
+import { applyAgentUpdate } from '../api';
+import MarkdownContent from './MarkdownContent';
+
+// Robust schedule parser that extracts Day 1...Day 7 drops from text
+function parseScheduleFromContent(text, fallbackPlatform = 'LinkedIn') {
+  if (!text) return [];
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const dayPattern = /(?:^|\n)[*\s#-]*\*{0,2}Day\s*(\d+)[:\s–—-]+([^\n*]+)\*{0,2}/gi;
+  const matches = [];
+  let m;
+  while ((m = dayPattern.exec(text)) !== null) {
+    matches.push({
+      dayNum: parseInt(m[1], 10),
+      title: m[2].replace(/\*\*/g, '').trim(),
+      start: m.index + m[0].length
+    });
+  }
+  if (matches.length === 0) return [];
+
+  const lower = text.toLowerCase();
+  let plat = fallbackPlatform;
+  if (lower.includes('instagram') || lower.includes('insta')) plat = 'Instagram';
+  else if (lower.includes('linkedin')) plat = 'LinkedIn';
+  else if (lower.includes('twitter') || lower.includes(' x ') || lower.includes(' x/')) plat = 'X';
+  else if (lower.includes('youtube')) plat = 'YouTube';
+  else if (lower.includes('substack')) plat = 'Substack';
+
+  const items = [];
+  for (let i = 0; i < matches.length; i++) {
+    const cur = matches[i];
+    const nextStart = matches[i + 1] ? matches[i + 1].start : text.length;
+    const body = text.slice(cur.start, nextStart).trim();
+
+    // Hook / focus extraction
+    const focusMatch = /(?:Focus|Hook|Angle)[:\s*]+([^\n]+)/i.exec(body);
+    let hook = focusMatch ? focusMatch[1].replace(/[*_"]/g, '').trim() : '';
+    if (!hook) {
+      const firstLine = body.split('\n')[0] || '';
+      hook = firstLine.replace(/^[*\s#-]+/, '').replace(/[*_"]/g, '').trim();
+    }
+    if (!hook) hook = cur.title;
+
+    const dayName = daysOfWeek[(cur.dayNum - 1) % daysOfWeek.length] || 'Monday';
+
+    items.push({
+      id: `muse-drop-${Date.now()}-${cur.dayNum}-${Math.random().toString(36).slice(2, 6)}`,
+      title: cur.title,
+      platform: plat,
+      format: plat === 'Instagram' ? 'Instagram Reel & Carousel' : 'Founder Story & Insight',
+      theme: 'Building in Public',
+      stage: 'draft',
+      day: dayName,
+      hook,
+      script: body || cur.title,
+      visualDirection: plat === 'Instagram' ? 'High-contrast 4-slide carousel breakdown or terminal screenshot.' : 'Unfiltered production metric chart or terminal logs.',
+      sourceMaterial: `Muse AI Sprint · ${plat}`
+    });
+  }
+  return items;
+}
 
 /**
  * MuseView - Founder Brand Strategist AI Chat
@@ -17,6 +76,9 @@ import { applyAgentUpdate, fetchStrategy } from '../api';
  */
 export default function MuseView({ 
   profile, 
+  contentItems = [],
+  onClearAllContentItems,
+  _onBatchDeleteContentItems,
   initialPrompt, 
   activeNote,
   onClearActiveNote,
@@ -44,13 +106,32 @@ export default function MuseView({
   const [streamingMeta, setStreamingMeta] = useState(null);
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [activeTool, setActiveTool] = useState(null);
+  const [scheduledMessageIds, setScheduledMessageIds] = useState(new Set());
+
+  const handleScheduleAllToCalendar = (scheduleItems, msgId) => {
+    if (!scheduleItems || scheduleItems.length === 0) return;
+    if (onAddContentToStudio) {
+      onAddContentToStudio(scheduleItems);
+    }
+    applyAgentUpdate(founderId, `Schedule ${scheduleItems.length} drops to weekly calendar`, {
+      new_items: scheduleItems
+    }).catch(console.warn);
+    if (showToast) {
+      showToast(`✓ Added ${scheduleItems.length} drops to Calendar (${scheduleItems[0].day} – ${scheduleItems[scheduleItems.length - 1].day})`);
+    }
+    setScheduledMessageIds(prev => new Set([...prev, msgId]));
+  };
   
-  // Derived multi-line status: switches from single-line capsule to multi-line card instantly
-  const isMultiLine = Boolean(
-    activeNote || 
-    attachedFiles.length > 0 || 
-    (inputText && (inputText.includes('\n') || inputText.length > 70))
-  );
+  // Tool icon mapper helper
+  const getToolIcon = (toolKey) => {
+    switch (toolKey) {
+      case 'update': return 'refresh';
+      case 'brainstorm': return 'auto_awesome';
+      case 'research': return 'explore';
+      case 'plan': return 'calendar_today';
+      default: return 'tune';
+    }
+  };
   
   // Menu states for '+' button
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
@@ -104,22 +185,20 @@ export default function MuseView({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, streamingText]);
 
-  // Auto-resize textarea dynamically according to content
-  const adjustTextareaHeight = () => {
-    if (textareaRef.current) {
-      if (isMultiLine) {
-        textareaRef.current.style.height = 'auto';
-        const scrollH = textareaRef.current.scrollHeight;
-        const targetH = Math.min(Math.max(scrollH, 44), 220);
-        textareaRef.current.style.height = `${targetH}px`;
-      } else {
-        textareaRef.current.style.height = '26px';
-      }
+  // Auto-resize textarea dynamically and synchronously without layout jitter
+  const adjustTextareaHeight = (el) => {
+    const target = el || textareaRef.current;
+    if (target) {
+      target.style.height = 'auto';
+      const scrollH = target.scrollHeight;
+      const targetH = Math.min(Math.max(scrollH, 26), 180);
+      target.style.height = `${targetH}px`;
     }
   };
 
   const handleTextareaChange = (e) => {
     setInputText(e.target.value);
+    adjustTextareaHeight(e.target);
   };
 
   const handleKeyDown = (e) => {
@@ -131,7 +210,7 @@ export default function MuseView({
 
   useEffect(() => {
     adjustTextareaHeight();
-  }, [inputText, activeNote, attachedFiles]);
+  }, [inputText, activeNote, attachedFiles, activeTool]);
 
   // Handle file uploads
   const handleFileSelect = (e) => {
@@ -180,6 +259,9 @@ export default function MuseView({
       t.includes('change plan') ||
       t.includes('7 day') ||
       t.includes('3 day') ||
+      t.includes('5 day') ||
+      t.includes('calendar') ||
+      t.includes('calender') ||
       t.includes('keep it for 3') ||
       t.includes('keep it 3') ||
       t.includes('update strategy') ||
@@ -220,9 +302,58 @@ export default function MuseView({
     setIsToolsSubmenuOpen(false);
     setIsTyping(true);
 
-    // Intercept deletion commands for the active note
+    // 1. Intercept bulk deletion commands (e.g. "delete all posts", "clear calendar", "clear board")
     const textLower = textToSend.toLowerCase().trim();
-    const isDeleteCommand = Boolean(
+    const isDeleteAll = (
+      textLower.includes('delete all') ||
+      textLower.includes('clear all') ||
+      textLower.includes('remove all') ||
+      textLower.includes('delete everything') ||
+      textLower.includes('clear everything') ||
+      textLower.includes('delete all of them') ||
+      textLower.includes('delete of them') ||
+      textLower.includes('clear calendar') ||
+      textLower.includes('clear the calendar') ||
+      textLower.includes('clear calender') ||
+      textLower.includes('clear the calender') ||
+      textLower.includes('clear board') ||
+      textLower.includes('clear the board') ||
+      textLower.includes('clear scrapbook') ||
+      textLower.includes('clear scrapboard') ||
+      (textLower.includes('delete') && (textLower.includes('calendar') || textLower.includes('calender')) && (textLower.includes('board') || textLower.includes('all'))) ||
+      (textLower.includes('delete') && textLower.includes('posts') && (textLower.includes('all') || textLower.includes('every')))
+    );
+
+    if (isDeleteAll) {
+      const count = contentItems?.length || 0;
+      if (onClearAllContentItems) {
+        onClearAllContentItems();
+      }
+      if (onClearActiveNote) {
+        onClearActiveNote();
+      }
+      if (showToast) {
+        showToast(`✓ Removed all ${count} posts from Board & Calendar`);
+      }
+
+      // Sync disk update to clear strategy files
+      applyAgentUpdate(founderId, textToSend, { delete_all: true }).catch(console.warn);
+
+      setIsTyping(false);
+      setMessages([
+        ...newMessages,
+        {
+          id: `muse-${Date.now()}`,
+          sender: 'muse',
+          text: `Understood. All post schedules on your Board and in your Calendar have been deleted (${count} items cleared). Your Scrapbook is now completely clear.\n\nI have also synchronized and cleared your strategy files on disk (\`master_content_plan.json\`, \`strategy_linkedin.json\`, \`strategy_x_twitter.json\`, and \`strategy_instagram.json\`).`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+      return;
+    }
+
+    // 2. Intercept single note deletion (active note or matched title/keyword)
+    const isDeleteActiveNote = Boolean(
       activeNote && (
         textLower === 'delete this' ||
         textLower === 'delete' ||
@@ -230,21 +361,40 @@ export default function MuseView({
         textLower === 'delete note' ||
         textLower === 'remove this' ||
         textLower === 'remove note' ||
-        textLower.startsWith('delete this') ||
-        textLower.startsWith('delete note') ||
+        textLower.startsWith('delete') ||
+        textLower.startsWith('remove') ||
         textLower.includes('delete this note') ||
         textLower.includes('remove this note') ||
         textLower.includes('delete note')
       )
     );
 
-    if (isDeleteCommand) {
-      const deletedTitle = activeNote.title;
-      const deletedId = activeNote.id;
+    const specificItemToDelete = (!activeNote && (textLower.includes('delete') || textLower.includes('remove')))
+      ? contentItems?.find(it => {
+          const title = (it.title || '').toLowerCase();
+          const id = (it.id || '').toLowerCase();
+          return (
+            (id && textLower.includes(id)) ||
+            (title && textLower.includes(title)) ||
+            (title.includes('redis') && textLower.includes('redis')) ||
+            (title.includes('sqlite') && textLower.includes('sqlite')) ||
+            (title.includes('leetcode') && textLower.includes('leetcode')) ||
+            (title.includes('agentscale') && textLower.includes('agentscale')) ||
+            (title.includes('whole foods') && textLower.includes('whole foods')) ||
+            (title.includes('co-packers') && textLower.includes('co-packers')) ||
+            (title.includes('general mills') && textLower.includes('general mills'))
+          );
+        })
+      : null;
+
+    if (isDeleteActiveNote || specificItemToDelete) {
+      const itemToDelete = activeNote || specificItemToDelete;
+      const deletedTitle = itemToDelete.title;
+      const deletedId = itemToDelete.id;
       if (onDeleteContentItem) {
         onDeleteContentItem(deletedId);
       }
-      if (onClearActiveNote) {
+      if (onClearActiveNote && activeNote) {
         onClearActiveNote();
       }
       if (showToast) {
@@ -260,7 +410,7 @@ export default function MuseView({
         {
           id: `muse-${Date.now()}`,
           sender: 'muse',
-          text: `Understood. The note "${deletedTitle}" (ID: \`${deletedId}\`) has been permanently deleted from your Board and Calendar.\n\nI have also synchronized your local strategy files on disk to reflect this deletion.`,
+          text: `Understood. The post "${deletedTitle}" (ID: \`${deletedId}\`) has been permanently deleted from your Board and Calendar.\n\nI have also synchronized your local strategy files on disk to reflect this deletion.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -278,26 +428,122 @@ export default function MuseView({
         }
       }
 
-      // 2. Call Multi-Model AI Agent (Gemini 3.5 Flash Lite or Sarvam 105B)
-      const agentReply = await sendAiChat({
+      // 2. Call Multi-Model AI Agent (Gemini 3.5 Flash Lite or Sarvam 105B) with live contentItems
+      let agentReply = await sendAiChat({
         messages: newMessages,
         profile,
         activeTool: currentTool,
         activeNote,
+        contentItems,
         model: currentModel
       });
 
-      // 3. Draft payload extraction
-      const isDraftable = agentReply.toLowerCase().includes('hook') || 
-                          textToSend.toLowerCase().includes('draft') || 
-                          textToSend.toLowerCase().includes('post');
+      // Guardrail against generic AI disclaimer hallucinations on check queries
+      const isCheckOrStatusQuery = (
+        textLower.includes('check again') ||
+        textLower.includes('check if') ||
+        textLower.includes('are delete') ||
+        textLower.includes('are deleted') ||
+        textLower.includes('is it deleted') ||
+        textLower.includes('did you delete') ||
+        textLower.includes('is the board empty')
+      );
+
+      if (isCheckOrStatusQuery && contentItems?.length === 0) {
+        if (
+          agentReply.includes("As an AI") ||
+          agentReply.includes("persistent memory") ||
+          agentReply.includes("external files") ||
+          agentReply.includes("working memory") ||
+          agentReply.includes("from my perspective")
+        ) {
+          agentReply = `I just checked your live Scrapbook: your Board and Calendar are completely empty (0 posts scheduled). All strategy files on disk (\`master_content_plan.json\`, \`strategy_linkedin.json\`, \`strategy_x_twitter.json\`, \`strategy_instagram.json\`) have been cleared as requested.`;
+        }
+      }
+
+      // 3. Calendar schedule command detection & sync
+      const isCalendarOrScheduleIntent = (
+        textLower.includes('calender') ||
+        textLower.includes('calendar') ||
+        textLower.includes('add it in') ||
+        textLower.includes('add to calendar') ||
+        textLower.includes('add to calender') ||
+        textLower.includes('add in calendar') ||
+        textLower.includes('add in the calender') ||
+        textLower.includes('add in the calendar') ||
+        textLower.includes('schedule it') ||
+        textLower.includes('schedule them') ||
+        textLower.includes('put in calendar') ||
+        textLower.includes('put it in') ||
+        textLower.includes('add to scrapbook') ||
+        textLower.includes('add these to') ||
+        textLower.includes('schedule these')
+      );
+
+      let scheduledItems = null;
+      let proposedSchedule = null;
+
+      if (isCalendarOrScheduleIntent) {
+        // Try parsing from current reply first
+        let drops = parseScheduleFromContent(agentReply, profile?.channels?.primary || 'Instagram');
+        // If current reply did not repeat full schedule, look at previous Muse message in history
+        if (drops.length === 0) {
+          const lastMuse = [...newMessages].reverse().find(m => m.sender === 'muse' && m.text);
+          if (lastMuse) {
+            drops = parseScheduleFromContent(lastMuse.text, profile?.channels?.primary || 'Instagram');
+          }
+        }
+        if (drops.length > 0) {
+          scheduledItems = drops;
+          if (onAddContentToStudio) {
+            onAddContentToStudio(drops);
+          }
+          applyAgentUpdate(founderId, textToSend, { new_items: drops }).catch(console.warn);
+          if (showToast) {
+            showToast(`✓ Added ${drops.length} drops to Calendar (${drops[0].day} – ${drops[drops.length - 1].day})`);
+          }
+        }
+      } else {
+        const potentialSchedule = parseScheduleFromContent(agentReply, profile?.channels?.primary || 'Instagram');
+        if (potentialSchedule.length >= 2) {
+          proposedSchedule = potentialSchedule;
+        }
+      }
+
+      // 4. Single Draft payload extraction (strictly guarded: never trigger on deletions, queries, or checks)
+      const isNegativeOrQuery = 
+        textLower.includes('delete') || 
+        textLower.includes('remove') || 
+        textLower.includes('clear') || 
+        textLower.includes('check') || 
+        textLower.includes('verify') || 
+        textLower.includes('are they') || 
+        textLower.includes('is it') ||
+        textLower.includes('did you') ||
+        textLower.includes('how many') ||
+        agentReply.toLowerCase().includes('deleted') ||
+        agentReply.toLowerCase().includes('cleared') ||
+        (agentReply.toLowerCase().includes('empty') && !isCalendarOrScheduleIntent);
+
+      const isExplicitDraft = 
+        textLower.includes('draft a') || 
+        textLower.includes('write a post') || 
+        textLower.includes('create a post') || 
+        textLower.includes('generate a post') ||
+        textLower.includes('new post for');
+
+      const hasStructuredDraft = 
+        (agentReply.includes('**Hook:**') || agentReply.includes('Hook:')) && 
+        (agentReply.includes('**Core Story:**') || agentReply.includes('Core Story:') || agentReply.includes('Visual Direction:'));
+
+      const isDraftable = !isNegativeOrQuery && (isExplicitDraft || hasStructuredDraft) && (!scheduledItems && !proposedSchedule);
 
       let draftPayload = null;
       if (isDraftable) {
         draftPayload = {
           id: `muse-draft-${Date.now()}`,
           title: activeNote ? `Refined: ${activeNote.title}` : `Draft: ${textToSend.slice(0, 36)}...`,
-          platform: activeNote?.platform || 'LinkedIn',
+          platform: activeNote?.platform || profile?.channels?.primary || 'LinkedIn',
           format: activeNote?.format || 'Founder Story & Insight',
           theme: 'Building in Public',
           day: activeNote?.day || 'Wednesday',
@@ -313,6 +559,8 @@ export default function MuseView({
       setStreamingMeta({
         diskUpdate: diskUpdateResult,
         draftPayload,
+        scheduledItems,
+        proposedSchedule,
         tool: currentTool ? TOOL_SKILLS[currentTool]?.name : null,
         model: currentModel
       });
@@ -338,6 +586,8 @@ export default function MuseView({
               model: currentModel,
               diskUpdate: diskUpdateResult,
               draftPayload,
+              scheduledItems,
+              proposedSchedule,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }
           ]);
@@ -389,7 +639,7 @@ export default function MuseView({
 
           {/* Model Switcher Dropdown */}
           {isModelMenuOpen && (
-            <div className="absolute left-0 top-full mt-1.5 w-52 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
+            <div className="absolute left-0 top-full mt-1.5 w-52 rounded-2xl bg-white border border-slate-200 shadow-[0_12px_36px_-6px_rgba(15,23,42,0.16),0_4px_12px_-2px_rgba(15,23,42,0.08)] py-1.5 z-50 animate-fade-in font-sans">
               <button
                 type="button"
                 onClick={() => {
@@ -525,10 +775,72 @@ export default function MuseView({
                           </div>
                         )}
 
-                        {/* Clean response text directly on canvas */}
-                        <div className="w-full text-slate-800 text-[14.5px] leading-relaxed whitespace-pre-wrap font-sans py-1">
-                          {msg.text}
+                        {/* Clean response text directly on canvas with rich Markdown parsing */}
+                        <div className="w-full text-slate-800 py-1 font-sans">
+                          <MarkdownContent content={msg.text} />
                         </div>
+
+                        {/* Calendar Sync Confirmation Card (if scheduled) */}
+                        {msg.scheduledItems && msg.scheduledItems.length > 0 && (
+                          <div className="w-full mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-slate-700/50 animate-fade-in">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                                <Icon name="calendar_month" size={18} />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                                  <span>✓ {msg.scheduledItems.length} {msg.scheduledItems[0]?.platform || 'Social'} Posts Synced to Scrapbook Calendar</span>
+                                </div>
+                                <div className="text-[11px] text-slate-300">
+                                  Scheduled for {msg.scheduledItems[0]?.day} through {msg.scheduledItems[msg.scheduledItems.length - 1]?.day} • Synchronized with local strategy on disk
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => onNavigateToStudio?.('calendar')}
+                              className="h-8 px-3.5 rounded-full bg-[#FEEC98] hover:bg-[#ffe77a] text-slate-950 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                            >
+                              <span>Open Calendar</span>
+                              <Icon name="arrow_forward" size={13} />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Proposed Multi-Day Schedule 1-Click Action Bar */}
+                        {msg.proposedSchedule && msg.proposedSchedule.length >= 2 && (!msg.scheduledItems || msg.scheduledItems.length === 0) && (
+                          <div className="w-full mt-3 pt-3 border-t border-slate-200/70 flex flex-wrap items-center justify-between gap-2.5 animate-fade-in">
+                            <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                              <span className="w-2 h-2 rounded-full bg-amber-500" />
+                              <span>{msg.proposedSchedule.length} {msg.proposedSchedule[0]?.platform || 'Social'} drops ready ({msg.proposedSchedule[0]?.day} – {msg.proposedSchedule[msg.proposedSchedule.length - 1]?.day})</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleScheduleAllToCalendar(msg.proposedSchedule, msg.id)}
+                                disabled={scheduledMessageIds.has(msg.id)}
+                                className={`h-8 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                  scheduledMessageIds.has(msg.id)
+                                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 cursor-default'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-white shadow-2xs active:scale-95'
+                                }`}
+                              >
+                                <Icon name={scheduledMessageIds.has(msg.id) ? "check" : "calendar_month"} size={13} className={scheduledMessageIds.has(msg.id) ? "text-emerald-700" : "text-[#FEEC98]"} />
+                                <span>{scheduledMessageIds.has(msg.id) ? 'Added to Calendar' : `Schedule All ${msg.proposedSchedule.length} to Calendar`}</span>
+                              </button>
+                              {scheduledMessageIds.has(msg.id) && (
+                                <button
+                                  type="button"
+                                  onClick={() => onNavigateToStudio?.('calendar')}
+                                  className="h-8 px-3.5 rounded-full bg-[#FEEC98] hover:bg-[#ffe77a] text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-xs"
+                                >
+                                  <span>View in Calendar</span>
+                                  <Icon name="arrow_forward" size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Connected Board Note Actions (if linked) */}
                         {activeNote && (
@@ -642,10 +954,9 @@ export default function MuseView({
                       </div>
                     )}
 
-                    {/* Streamed text directly on canvas with pulse cursor */}
-                    <div className="w-full text-slate-800 text-[14.5px] leading-relaxed whitespace-pre-wrap font-sans">
-                      {streamingText}
-                      <span className="inline-block w-1.5 h-4 ml-0.5 bg-slate-700 animate-pulse align-middle" />
+                    {/* Streamed text directly on canvas with rich Markdown parsing */}
+                    <div className="w-full text-slate-800 py-1 font-sans">
+                      <MarkdownContent content={streamingText} isStreaming={true} />
                     </div>
 
                   </div>
@@ -684,14 +995,14 @@ export default function MuseView({
    */
   function renderPlusPopover() {
     return (
-      <div className="absolute left-0 bottom-full mb-2 w-48 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in font-sans">
+      <div className="absolute left-0 bottom-full mb-2.5 w-52 rounded-2xl bg-white border border-slate-200 shadow-[0_12px_36px_-6px_rgba(15,23,42,0.16),0_4px_12px_-2px_rgba(15,23,42,0.08)] py-1.5 z-50 animate-fade-in font-sans">
         {/* 1. Add files */}
         <button
           type="button"
           onClick={() => {
             fileInputRef.current?.click();
           }}
-          className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+          className="w-full px-3.5 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
         >
           <Icon name="attach_file" size={16} className="text-slate-500" />
           <span>Add files</span>
@@ -705,7 +1016,7 @@ export default function MuseView({
           <button
             type="button"
             onClick={() => setIsToolsSubmenuOpen(prev => !prev)}
-            className={`w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center justify-between transition-colors cursor-pointer ${
+            className={`w-full px-3.5 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center justify-between transition-colors cursor-pointer ${
               isToolsSubmenuOpen ? 'bg-slate-100/80 text-slate-900' : ''
             }`}
           >
@@ -719,13 +1030,13 @@ export default function MuseView({
           {/* Tools Submenu Flyout (anchored bottom-0 so it opens UPWARDS) */}
           {isToolsSubmenuOpen && (
             <div 
-              className="absolute left-full bottom-0 ml-1.5 w-52 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl py-1.5 z-50 animate-fade-in"
+              className="absolute left-full bottom-0 ml-1.5 w-56 rounded-2xl bg-white border border-slate-200 shadow-[0_12px_36px_-6px_rgba(15,23,42,0.16),0_4px_12px_-2px_rgba(15,23,42,0.08)] py-1.5 z-50 animate-fade-in"
               onMouseLeave={() => setIsToolsSubmenuOpen(false)}
             >
               <button
                 type="button"
                 onClick={() => handleSelectTool('update')}
-                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+                className="w-full px-3.5 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
               >
                 <Icon name="refresh" size={15} className="text-indigo-600" />
                 <div>
@@ -737,9 +1048,9 @@ export default function MuseView({
               <button
                 type="button"
                 onClick={() => handleSelectTool('brainstorm')}
-                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+                className="w-full px-3.5 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
               >
-                <Icon name="lightbulb" size={15} className="text-amber-500" />
+                <Icon name="auto_awesome" size={15} className="text-amber-500" />
                 <div>
                   <div className="font-semibold text-slate-900">Brainstorm</div>
                   <div className="text-[10px] text-slate-400 leading-tight">Angles & founder war stories</div>
@@ -749,7 +1060,7 @@ export default function MuseView({
               <button
                 type="button"
                 onClick={() => handleSelectTool('research')}
-                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+                className="w-full px-3.5 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
               >
                 <Icon name="explore" size={15} className="text-cyan-600" />
                 <div>
@@ -761,7 +1072,7 @@ export default function MuseView({
               <button
                 type="button"
                 onClick={() => handleSelectTool('plan')}
-                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
+                className="w-full px-3.5 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100/80 flex items-center gap-2.5 transition-colors cursor-pointer"
               >
                 <Icon name="calendar_today" size={15} className="text-emerald-600" />
                 <div>
@@ -777,20 +1088,16 @@ export default function MuseView({
   }
 
   /**
-   * Helper to render the Type Box Component (ChatGPT style compact default capsule + dynamic auto-expand)
+   * Helper to render the Type Box Component (Apple-minimal unified input, jitter-free dynamic auto-expand)
    */
   function renderInputBox() {
     return (
       <div 
-        className={`relative w-full bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-all duration-200 flex flex-col ${
-          isMultiLine 
-            ? 'rounded-[24px] p-3 sm:p-3.5 gap-2.5' 
-            : 'rounded-full px-3 py-1.5 min-h-[48px] sm:min-h-[50px] justify-center'
-        }`}
+        className="relative w-full bg-white border border-slate-200/90 shadow-sm focus-within:border-slate-400 focus-within:shadow-md transition-[border-color,box-shadow] duration-150 rounded-[24px] p-2.5 sm:p-3 flex flex-col gap-2 font-sans"
       >
-        {/* Linked Active Board Note Chip if present */}
+        {/* Linked Active Board Note Banner if present */}
         {activeNote && (
-          <div className="flex items-center justify-between gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-xs animate-fade-in shadow-2xs">
+          <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-xs animate-fade-in shadow-2xs">
             <div className="flex items-center gap-2 min-w-0">
               <Icon name="description" size={14} className="text-amber-700 shrink-0" />
               <span className="font-semibold text-amber-950 truncate">Editing note: "{activeNote.title}"</span>
@@ -860,15 +1167,16 @@ export default function MuseView({
 
         {/* Chips for Active Tool & Attached Files */}
         {(activeTool || attachedFiles.length > 0) && (
-          <div className="flex flex-wrap items-center gap-1.5 pb-0.5">
+          <div className="flex flex-wrap items-center gap-1.5 px-1 pt-0.5 animate-fade-in">
             {activeTool && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEEC98] text-slate-900 text-xs font-semibold">
-                <Icon name={TOOL_SKILLS[activeTool]?.icon === 'RefreshCw' ? 'refresh' : TOOL_SKILLS[activeTool]?.icon === 'Sparkles' ? 'auto_awesome' : TOOL_SKILLS[activeTool]?.icon === 'Compass' ? 'explore' : 'calendar_today'} size={13} />
+              <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-amber-100/90 text-amber-950 border border-amber-300/80 text-xs font-semibold shadow-2xs">
+                <Icon name={getToolIcon(activeTool)} size={13} className="text-amber-800" />
                 <span>{TOOL_SKILLS[activeTool]?.name}</span>
                 <button
                   type="button"
                   onClick={() => setActiveTool(null)}
-                  className="w-3.5 h-3.5 rounded-full hover:bg-slate-900/10 flex items-center justify-center ml-0.5 cursor-pointer"
+                  className="w-4 h-4 rounded-full hover:bg-amber-900/10 flex items-center justify-center cursor-pointer ml-0.5 text-amber-800 transition-colors"
+                  title="Remove tool"
                 >
                   <Icon name="close" size={11} />
                 </button>
@@ -876,13 +1184,14 @@ export default function MuseView({
             )}
 
             {attachedFiles.map((file, idx) => (
-              <span key={idx} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
+              <span key={idx} className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80 text-xs font-medium shadow-2xs">
                 <Icon name="attach_file" size={13} className="text-slate-500" />
-                <span className="max-w-[120px] truncate">{file.name}</span>
+                <span className="max-w-[130px] truncate">{file.name}</span>
                 <button
                   type="button"
                   onClick={() => removeAttachedFile(idx)}
-                  className="w-3.5 h-3.5 rounded-full hover:bg-slate-200 flex items-center justify-center ml-0.5 cursor-pointer text-slate-500"
+                  className="w-4 h-4 rounded-full hover:bg-slate-200 flex items-center justify-center cursor-pointer text-slate-500 transition-colors"
+                  title="Remove file"
                 >
                   <Icon name="close" size={11} />
                 </button>
@@ -891,34 +1200,31 @@ export default function MuseView({
           </div>
         )}
 
-        {/* The Main Input Line or Multi-line Stack */}
-        <div className={`w-full flex ${isMultiLine ? 'flex-col gap-2' : 'items-center gap-2'}`}>
-          
-          {/* In Single-line mode: '+' button is placed inline on the left */}
-          {!isMultiLine && (
-            <div className="relative shrink-0" ref={plusMenuRef}>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsPlusMenuOpen(prev => !prev);
-                  setIsToolsSubmenuOpen(false);
-                }}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
-                  isPlusMenuOpen 
-                    ? 'bg-slate-900 text-white shadow-xs' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
-                }`}
-                title="Add files or tools"
-              >
-                <Icon name="add" size={18} />
-              </button>
+        {/* The Unified Input Row (Plus Button + Auto-growing Textarea + Send Button) */}
+        <div className="w-full flex items-end gap-2 px-1">
+          {/* '+' button with upward popover */}
+          <div className="relative shrink-0 mb-0.5" ref={plusMenuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPlusMenuOpen(prev => !prev);
+                setIsToolsSubmenuOpen(false);
+              }}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer active:scale-95 ${
+                isPlusMenuOpen 
+                  ? 'bg-slate-900 text-white shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
+              }`}
+              title="Add files or tools"
+            >
+              <Icon name="add" size={18} />
+            </button>
 
-              {/* Upward popover */}
-              {isPlusMenuOpen && renderPlusPopover()}
-            </div>
-          )}
+            {/* Upward popover */}
+            {isPlusMenuOpen && renderPlusPopover()}
+          </div>
 
-          {/* Auto-grow Textarea - stays mounted uninterrupted */}
+          {/* Auto-growing Textarea: stays mounted uninterrupted, zero jitter */}
           <textarea
             ref={textareaRef}
             rows={1}
@@ -929,79 +1235,34 @@ export default function MuseView({
               activeNote
                 ? `Ask Muse to refine "${activeNote.title}"...`
                 : activeTool 
-                  ? `Active tool: ${TOOL_SKILLS[activeTool]?.name}. Type instructions...` 
+                  ? `Type instructions for ${TOOL_SKILLS[activeTool]?.name}...` 
                   : "Ask Muse, or type instructions..."
             }
-            className={`bg-transparent text-[15px] text-slate-900 placeholder:text-slate-400 font-sans resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0 ${
-              isMultiLine 
-                ? 'w-full min-h-[44px] max-h-52 py-1 px-1 leading-relaxed overflow-y-auto' 
-                : 'flex-1 min-h-[26px] py-1 px-1.5 leading-normal overflow-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-            }`}
+            className="flex-1 min-w-0 bg-transparent text-[14.5px] text-slate-900 placeholder:text-slate-400 font-sans resize-none border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-0 py-1.5 px-1.5 leading-relaxed overflow-y-auto max-h-48"
             style={{ 
               outline: 'none', 
               border: 'none', 
               boxShadow: 'none',
+              height: '26px',
+              boxSizing: 'border-box',
               WebkitTapHighlightColor: 'transparent'
             }}
           />
 
-          {/* In Single-line mode: Send button inline on right */}
-          {!isMultiLine && (
-            <button
-              type="button"
-              onClick={handleSendMessage}
-              disabled={!inputText.trim() && attachedFiles.length === 0}
-              className={`w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all shrink-0 ${
-                inputText.trim() || attachedFiles.length > 0
-                  ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95 cursor-pointer'
-                  : 'bg-slate-100 text-slate-300 cursor-not-allowed'
-              }`}
-              title="Send message"
-            >
-              <Icon name="arrow_upward" size={17} />
-            </button>
-          )}
-
-          {/* In Multi-line mode: Bottom action bar with '+' on left and Send on right */}
-          {isMultiLine && (
-            <div className="flex items-center justify-between pt-1">
-              <div className="relative shrink-0" ref={plusMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsPlusMenuOpen(prev => !prev);
-                    setIsToolsSubmenuOpen(false);
-                  }}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
-                    isPlusMenuOpen 
-                      ? 'bg-slate-900 text-white shadow-xs' 
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
-                  }`}
-                  title="Add files or tools"
-                >
-                  <Icon name="add" size={18} />
-                </button>
-
-                {/* Upward popover */}
-                {isPlusMenuOpen && renderPlusPopover()}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSendMessage}
-                disabled={!inputText.trim() && attachedFiles.length === 0}
-                className={`w-8.5 h-8.5 rounded-full flex items-center justify-center transition-all shrink-0 ${
-                  inputText.trim() || attachedFiles.length > 0
-                    ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs active:scale-95 cursor-pointer'
-                    : 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                }`}
-                title="Send message"
-              >
-                <Icon name="arrow_upward" size={17} />
-              </button>
-            </div>
-          )}
-
+          {/* Send Button */}
+          <button
+            type="button"
+            onClick={handleSendMessage}
+            disabled={!inputText.trim() && attachedFiles.length === 0}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 shrink-0 mb-0.5 ${
+              inputText.trim() || attachedFiles.length > 0
+                ? 'bg-slate-950 hover:bg-slate-900 text-white shadow-xs active:scale-95 cursor-pointer border border-slate-800'
+                : 'bg-slate-100 text-slate-300 border border-slate-200/50 cursor-not-allowed'
+            }`}
+            title="Send message"
+          >
+            <Icon name="arrow_upward" size={15} />
+          </button>
         </div>
       </div>
     );

@@ -110,7 +110,30 @@ export function getInitialStudioData(profile) {
     };
   }
 
-  // Default: Arjun Vance or Custom Onboarded Founder
+  // Any founder that is not the legacy demo Arjun Vance starts with a clean slate
+  const isDemoArjun = profile?.identity?.name === 'Arjun Vance' && profile?.identity?.company_name === 'AgentScale';
+  if (!isDemoArjun && !isMaya) {
+    const archetypeName = profile?.voiceprint?.insead_archetype || 'The Builder';
+    return {
+      contentItems: [],
+      collectedInbox: [],
+      agentMemory: [
+        { id: 'mem-1', category: 'fact', text: `Founded ${companyName}: ${whyStarted}`, origin: 'Onboarding Scar', verified: true },
+        { id: 'mem-2', category: 'fact', text: `Company mission: ${profile?.identity?.mission || 'Scaling products'}`, origin: 'Company Intake', verified: true },
+        { id: 'mem-3', category: 'voice', text: `Voice Archetype: ${archetypeName}. Core perspective: "${spicyTake}".`, origin: 'Voice Signature', verified: true },
+        { id: 'mem-4', category: 'voice', text: `Personal analogies drawn from: ${hobbies}.`, origin: 'Hobbies Intake', verified: true },
+        ...(profile?.domain_radar?.audience_taboos || []).map((t, idx) => ({
+          id: `mem-taboo-${idx}`,
+          category: 'voice',
+          text: `Anti-BS Guardrail: Rejects "${t}".`,
+          origin: 'Pet Peeves Intake',
+          verified: true
+        }))
+      ]
+    };
+  }
+
+  // Preset demo Arjun Vance
   return {
     contentItems: [
       {

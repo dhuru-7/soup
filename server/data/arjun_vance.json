@@ -1,51 +1,37 @@
 {
   "founder_id": "arjun_vance",
   "identity": {
-    "name": "Arjun Vance",
-    "role": "Co-founder & CTO",
-    "company_name": "AgentScale",
-    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-    "tagline": "Building open-source observability for autonomous AI agent fleets.",
-    "mission": "Making autonomous multi-agent systems debuggable, deterministic, and cost-effective in production.",
+    "name": "Dhruv Gautam",
+    "role": "Founder / Co-founder",
+    "company_name": "Arka",
+    "mission": "Arka : Free mermaid diagram maker and editor",
+    "tagline": "Arka : Free mermaid diagram maker and editor",
     "stage": "Seed ($1.8M raised, 14-person engineering team)",
-    "unfair_advantage": "Ex-Datadog distributed tracing architect. Wrote eBPF kernels for high-throughput stream processing."
+    "origin_scar": "cuz i wanted to tell people that this is something you shouldn't be paying for ",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
   },
   "domain_radar": {
-    "industry": "AI Infrastructure & Developer Tools",
-    "target_audience": ["Staff Backend Engineers", "AI Platform Architects", "Technical CTOs"],
-    "audience_taboos": [
-      "Hype without code or benchmarks",
-      "Vague marketing buzzwords like 'revolutionary AI'",
-      "Ignoring p99 latency spikes and token costs"
+    "industry": "Arka Industry",
+    "target_audience": [
+      "Staff Backend Engineers & AI Leads"
     ],
-    "competitors_watched": ["LangSmith", "Arize AI", "Braintrust Data"],
-    "white_space_topics": [
-      "Why vector databases are overkill for 90% of RAG use cases",
-      "How unbatched LLM tool calls crash production Redis instances",
-      "Why deterministic state machines beat pure prompt chaining every single time"
+    "audience_taboos": [
+      "delve into",
+      "game-changer",
+      "humbled and honored",
+      "thrilled to announce",
+      "in today's fast-paced digital world",
+      "synergy",
+      "supercharge",
+      "revolutionary"
     ]
   },
   "channels": {
-    "primary": "X (Twitter)",
-    "secondary": "LinkedIn",
-    "handles": {
-      "x": "@arjun_scale",
-      "linkedin": "linkedin.com/in/arjun-vance-scale",
-      "github": "github.com/agentscale/core"
-    },
-    "baseline_followers": {
-      "x": 3420,
-      "linkedin": 1850
-    }
+    "primary": "Instagram",
+    "secondary": "Instagram"
   },
   "voiceprint": {
-    "insead_archetype": "The Magnet (Attractor)",
-    "tone_profile": {
-      "technical_depth": 9,
-      "contrarian_level": 8,
-      "candidness": 9,
-      "formality": 2
-    },
+    "insead_archetype": "The Practical Guide (Actionable Teardowns)",
     "banned_phrases": [
       "delve into",
       "game-changer",
@@ -53,104 +39,173 @@
       "thrilled to announce",
       "in today's fast-paced digital world",
       "synergy",
-      "paradigm shift",
-      "supercharge"
+      "supercharge",
+      "revolutionary"
     ],
     "voice_rules": [
-      "Always include concrete numbers (latency in ms, dollars spent, memory in MB).",
-      "Share the actual bug post-mortem before sharing the solution.",
-      "Short, high-velocity sentence cadence. Code snippets and flame graphs speak louder than paragraphs."
+      "Archetype tone: The Practical Guide (Actionable Teardowns).",
+      "Always include concrete proof: exact cost per can, exact batch numbers, or exact millisecond latency.",
+      "Zero synthetic AI boilerplate words (no 'in today's world', 'delve', or rocket emojis).",
+      "Keep sentence rhythm conversational, direct, and unpretentious."
     ],
-    "spicy_take": "Most AI startups don't have a model problem; they have an uninstrumented distributed state catastrophe."
+    "spicy_take": "baaki companies bhoot saare bhoot rakhte h apne ghar peee"
   },
-  "content_pillars": [
-    {
-      "id": "pillar_1",
-      "name": "Production Post-Mortems & Deep-Dive Engineering",
-      "ratio": 60,
-      "description": "Real architectural bugs, latency optimizations, and memory leak root causes from the AgentScale engine."
-    },
-    {
-      "id": "pillar_2",
-      "name": "Contrarian AI Infrastructure Realities",
-      "ratio": 25,
-      "description": "Debunking AI marketing hype with cold benchmarks (SQLite vs Vector DBs, deterministic state vs prompt magic)."
-    },
-    {
-      "id": "pillar_3",
-      "name": "Building in Public & High-Bar Engineering Culture",
-      "ratio": 15,
-      "description": "Hiring standards for founding engineers, internal RFC culture, and open-source release notes."
-    }
-  ],
-  "weekly_calendar": [
-    {
-      "day": "Monday",
-      "platform": "LinkedIn & X",
-      "pillar_id": "pillar_1",
-      "format": "Technical Teardown",
-      "hook": "We accidentally burned $412 in 14 hours on AWS because of a single unbatched Redis scan across 50,000 agent sessions.\n\nHere is the post-mortem and the 12-line Lua script that fixed it.",
-      "draft_structure": {
-        "hook": "Specific dollar cost + time window + precise architectural cause.",
-        "friction": "How an innocent loop in an agent session manager triggered exponential redis latency at p99.",
-        "data_proof": "Flame graph showed 82% CPU time stuck on KEYS instead of SCAN.",
-        "takeaway": "Never use client-side loops for multi-key deletes; push execution to Redis via atomic Lua scripts.",
-        "discussion": "Are you running redis cluster or single node for your agent memory stores?"
-      },
-      "visual_direction": "Screenshot of terminal CPU flame graph before/after Lua script optimization with dark background.",
-      "follow_up_action": "Drop the public GitHub Gist link in the 1st comment; reply to engineers asking about Redis cluster compatibility within 45 mins.",
-      "status": "Ready to Publish"
-    },
-    {
-      "day": "Wednesday",
-      "platform": "X (Twitter)",
-      "pillar_id": "pillar_2",
-      "format": "Contrarian Benchmark",
-      "hook": "Hot take backed by benchmarks: 90% of AI startups using Pinecone or Weaviate would get 4x faster p99 latency and save $800/mo using SQLite with FTS5.\n\nHere is the side-by-side benchmark data on 100k agent memory lookups:",
-      "draft_structure": {
-        "hook": "Contrarian assertion + quantified upside (4x latency, $800 savings).",
-        "friction": "Why vector embeddings add latency overhead when exact keyword + metadata filtering is what the agent actually needed.",
-        "data_proof": "Benchmark chart: 12ms p99 on SQLite vs 58ms on managed vector cloud.",
-        "takeaway": "Don't introduce distributed infrastructure until embedded primitives fail your SLA."
-      },
-      "visual_direction": "Clean ASCII benchmark table or terminal plot comparing latency and memory consumption.",
-      "follow_up_action": "Quote-retweet any AI researchers who disagree with the benchmark repo.",
-      "status": "Scheduled"
-    },
-    {
-      "day": "Friday",
-      "platform": "LinkedIn",
-      "pillar_id": "pillar_3",
-      "format": "Hiring & Engineering RFC",
-      "hook": "We just rejected a candidate who solved our LeetCode hard problem in 15 minutes.\n\nInstead, we gave the offer to an engineer who spent 45 minutes asking why our distributed queue was designed that way in the first place.\n\nHere is how we interview founding engineers at AgentScale:",
-      "draft_structure": {
-        "hook": "Counter-intuitive hiring decision.",
-        "friction": "Why algorithmic puzzle-solving has zero correlation with debugging distributed systems under production load.",
-        "takeaway": "Curiosity and system instincts > memorized patterns. We care about how you reason about failure modes.",
-        "call_to_action": "If you enjoy breaking distributed state machines, our DM is open for founding infra roles."
-      },
-      "visual_direction": "Photo of handwritten whiteboard system architecture diagram from the office interview room.",
-      "follow_up_action": "DM candidates who like or comment on the post with a direct calendar link for an informal intro chat.",
-      "status": "Draft"
-    }
-  ],
-  "raw_assets_history": [
-    {
-      "id": "asset_01",
-      "type": "terminal_log_and_voice_memo",
-      "raw_input": "Voice memo while walking home: 'Dude, our eBPF probe just caught a 400ms stall in the asyncio event loop because someone called a synchronous file read inside an agent tool. Fixed with aioboto3. Should post about this.'",
-      "processed_angle": "Turned into high-authority async Python postmortem with 3 hook variations.",
-      "timestamp": "2 days ago"
-    }
-  ],
+  "execution_capacity": {
+    "channels": [
+      "Instagram"
+    ],
+    "weekly_time_budget": "2 hours/week (15 min daily review)"
+  },
   "goals_tracking": {
+    "north_star": "Technical Authority & Inbound Senior Engineering Hires",
     "timeframe": "6 Months",
-    "north_star": "Inbound Senior Engineering Hires & GitHub Traction",
     "metrics": {
-      "inbound_engineer_dms": { "current": 9, "target": 20, "unit": "DMs" },
-      "github_stars": { "current": 1420, "target": 3000, "unit": "Stars" },
-      "podcast_speaking_invites": { "current": 3, "target": 8, "unit": "Invites" },
-      "authority_score": { "current": 84, "target": 95, "unit": "/100" }
+      "cto_inbounds": {
+        "current": 3,
+        "target": 15,
+        "unit": "Enterprise Inquiries"
+      },
+      "engineering_hires": {
+        "current": 2,
+        "target": 5,
+        "unit": "Staff Engineers in Pipeline"
+      },
+      "github_stars": {
+        "current": 1420,
+        "target": 3000,
+        "unit": "GitHub Stars"
+      },
+      "speaking_invites": {
+        "current": 1,
+        "target": 5,
+        "unit": "Technical Podcasts/Keynotes"
+      },
+      "authority_score": {
+        "current": 84,
+        "target": 95,
+        "unit": "/100"
+      }
     }
+  },
+  "knowledge_and_evidence": {
+    "founder_id": "arjun_vance",
+    "claims": [
+      {
+        "claim_id": "ev_01",
+        "topic": "Production Redis Memory Leak",
+        "claim": "Burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 autonomous agent sessions; resolved via 12-line Lua atomic proxy.",
+        "fact": "Burned $412 in 14 hours on AWS due to an unbatched Redis scan across 50,000 autonomous agent sessions; resolved via 12-line Lua atomic proxy.",
+        "source": "AWS CloudWatch Incident Log #412 & Git Commit 9a41c2",
+        "verification_status": "verified",
+        "permission_to_cite": true,
+        "context_visual": "Dark-mode terminal CPU flame graph before/after Lua script optimization."
+      },
+      {
+        "claim_id": "ev_02",
+        "topic": "SQLite vs Vector DB Benchmark",
+        "claim": "SQLite with BM25 achieved 1.8ms p99 latency compared to 42ms on managed vector DBs for corpora under 250,000 chunks, cutting server costs to zero.",
+        "fact": "SQLite with BM25 achieved 1.8ms p99 latency compared to 42ms on managed vector DBs for corpora under 250,000 chunks, cutting server costs to zero.",
+        "source": "AgentScale Internal Benchmark Report #07",
+        "verification_status": "verified",
+        "permission_to_cite": true,
+        "context_visual": "High-contrast latency vs cost benchmark table."
+      },
+      {
+        "claim_id": "ev_03",
+        "topic": "eBPF Trace Proxy Overhead",
+        "claim": "Our custom eBPF trace kernel captures recursive multi-agent tool loops with under 0.4% CPU overhead.",
+        "fact": "Our custom eBPF trace kernel captures recursive multi-agent tool loops with under 0.4% CPU overhead.",
+        "source": "AgentScale eBPF Kernel Architecture Paper v1.0",
+        "verification_status": "verified",
+        "permission_to_cite": true,
+        "context_visual": "Whiteboard kernel architecture diagram."
+      }
+    ],
+    "achievements": [
+      {
+        "title": "$1.8M Seed Round Closed",
+        "details": "Backed by developer tools seed syndicate to build autonomous agent observability.",
+        "source": "SEC Form D & Syndicate Term Sheet",
+        "verification_status": "verified",
+        "permission_to_cite": true
+      },
+      {
+        "title": "AgentScale Tracing Engine v1.0",
+        "details": "Shipped deterministic replay debugger for multi-agent loops.",
+        "source": "GitHub Release Tags v1.0.0",
+        "verification_status": "verified",
+        "permission_to_cite": true
+      }
+    ],
+    "projects": [
+      {
+        "project_name": "AgentScale Observability Proxy",
+        "description": "Low-overhead distributed trace debugger for LLM agent clusters.",
+        "stage": "Production",
+        "public": true
+      },
+      {
+        "project_name": "AgentBench Suite",
+        "description": "Open latency benchmark comparing SQLite and remote vector stores.",
+        "stage": "Open Source",
+        "public": true
+      }
+    ],
+    "metrics": {
+      "stage": "Seed ($1.8M raised, 14-person engineering team)",
+      "company": "Arka",
+      "primary_metric": "1.8ms p99 latency",
+      "team_size": 14
+    },
+    "lessons": [
+      "Unbatched scans across high-throughput distributed stores will inevitably fail at p99 scale.",
+      "Engineers respect code diffs and flame graphs infinitely more than high-level thought leadership."
+    ],
+    "last_updated": "2026-10-13T03:10:30.473298Z"
+  },
+  "session_index": {
+    "founder_id": "arjun_vance",
+    "total_sessions": 3,
+    "last_active_session": "sess_01",
+    "sessions": [
+      {
+        "session_id": "sess_01",
+        "title": "Founder story: Redis memory leak \u2192 45s video teardown",
+        "timestamp": "2026-10-10T14:30:00Z",
+        "summary": "Calibrated the $412 Redis memory leak incident into a high-proof technical post-mortem for engineering leads.",
+        "decisions": [
+          "Included exact dollar cost ($412) and 12-line Lua solution",
+          "Attached terminal CPU flame graph",
+          "CTA targeted staff backend engineers and AI platform leads"
+        ],
+        "link_to_full_log": "conversations/sess_01.json"
+      },
+      {
+        "session_id": "sess_02",
+        "title": "Research: Why early founders struggle with agent eval",
+        "timestamp": "2026-10-11T16:15:00Z",
+        "summary": "Explored why standard APMs fail on recursive agent loops and documented architectural lessons for distributed tracing.",
+        "decisions": [
+          "Emphasized deterministic state machines over prompt magic",
+          "Outlined open-source post-mortem distribution strategy"
+        ],
+        "link_to_full_log": "conversations/sess_02.json"
+      },
+      {
+        "session_id": "sess_03",
+        "title": "Contrarian angle: SQLite vs Vector DB benchmarks",
+        "timestamp": "2026-10-12T09:45:00Z",
+        "summary": "Formulated high-contrast benchmark thread demonstrating 1.8ms latency using SQLite with BM25 for corpora under 250k chunks.",
+        "decisions": [
+          "Focus on cold benchmarks and infrastructure simplicity",
+          "Prepared follow-up RFC for engineering community"
+        ],
+        "link_to_full_log": "conversations/sess_03.json"
+      }
+    ]
+  },
+  "markdown_contexts": {
+    "interests_and_stories": "# Personal Context & Founder Stories: Dhruv Gautam\n\n## 1. Passions & Topics Enjoyed Discussing\n- **Engineering / AI**: Firsthand insights, real operational trade-offs, and building without marketing fluff.\n- **Product Architecture**: Firsthand insights, real operational trade-offs, and building without marketing fluff.\n- **Distributed Systems**: Firsthand insights, real operational trade-offs, and building without marketing fluff.\n\n## 2. Core Founder Story & Origin Turning Point\n> \"cuz i wanted to tell people that this is something you shouldn't be paying for \"\n\n**Context & Significance:**\nThis moment represents the foundational friction that birthed Arka. It proves Dhruv Gautam is solving a problem discovered through genuine operational pain, not hypothetical market research.\n\n## 3. Key Lessons Learned\n- Firsthand production incident post-mortems build 10x more engineering credibility than polished feature announcements.\n- Client-side loops across high-throughput distributed stores will inevitably fail at p99 scale.\n- Stripping out unnecessary architectural abstractions saves both latency and millions in cloud overruns.\n\n## 4. Personal Hobbies & Humanizing Metaphors\n- **Chess & Strategy**: Draw metaphors from this discipline to humanize and explain complex operating concepts.\n- **Specialty Coffee**: Draw metaphors from this discipline to humanize and explain complex operating concepts.\n- **Mechanical Keyboards**: Draw metaphors from this discipline to humanize and explain complex operating concepts.\n\n## 5. Publicly Off-Limit Topics (Taboos & Privacy Boundaries)\n- \ud83d\udeab delve into\n- \ud83d\udeab game-changer\n- \ud83d\udeab humbled and honored\n- \ud83d\udeab thrilled to announce\n- \ud83d\udeab in today's fast-paced digital world\n- \ud83d\udeab synergy\n- \ud83d\udeab supercharge\n- \ud83d\udeab revolutionary\n- \ud83d\udeab Confidential co-founder equity splits or unannounced funding discussions.\n- \ud83d\udeab Speculative claims without verifiable documentation.\n- \ud83d\udeab Naming enterprise pilot customers or private suppliers prior to formal authorization.\n",
+    "active_direction": "# Active Strategic Direction & Positioning: Dhruv Gautam\n\n## 1. Approved Positioning Statement\n> **Mission:** Arka : Free mermaid diagram maker and editor  \n> **Core Category Wedge:** \"baaki companies bhoot saare bhoot rakhte h apne ghar peee\"\n\n## 2. Content Themes & Strategic Pillars\n### Production Post-Mortems & Deep-Dive Engineering (60%)\n- **Pillar ID:** `pillar_1`\n- **Scope:** Real architectural bugs, latency optimizations, and memory leak root causes from the AgentScale engine.\n### Contrarian AI Infrastructure Realities (25%)\n- **Pillar ID:** `pillar_2`\n- **Scope:** Debunking AI marketing hype with cold benchmarks (SQLite vs Vector DBs, deterministic state vs prompt magic).\n### Building in Public & High-Bar Engineering Culture (15%)\n- **Pillar ID:** `pillar_3`\n- **Scope:** Hiring standards for founding engineers, internal RFC culture, and open-source release notes.\n\n## 3. Platform Priorities\n- **Primary Priority:** Instagram (Scheduled 3x/week: Mon/Wed/Fri)\n- **Secondary Priority:** LinkedIn (Scheduled 2x/week: Tue/Thu)\n\n## 4. Publishing Cadence\n- **Weekly Cadence:** 4 to 5 high-proof pieces of content weekly.\n- **Workflow:** 15-minute daily async review on mobile; agent compiles drafts from raw receipts.\n\n## 5. Current Objectives (3-Month & 6-Month)\n- **North Star:** Technical Authority & Inbound Senior Engineering Hires\n- **3-Month Target:** Establish undeniable category authority, generating qualified inbound conversations.\n- **6-Month Target:** Convert organic authority into strategic hiring, retail shelf presence, and investor inbound.\n\n## 6. Strategic Rationale\nBy prioritizing radical proof-of-work and candid failure post-mortems over generic promotional announcements, Arka bypasses audience skepticism. The strategy turns operational friction into the company's highest-converting marketing asset.\n"
   }
 }

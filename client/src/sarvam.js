@@ -74,9 +74,9 @@ Keep it lean, focused, and immediately actionable.`
 };
 
 /**
- * Builds founder-calibrated system prompt with Anti-AI-Slop laws and board note context
+ * Builds founder-calibrated system prompt with Anti-AI-Slop laws, live Scrapbook state, and board note context
  */
-export function buildFounderSystemPrompt(profile, activeTool = null, activeNote = null) {
+export function buildFounderSystemPrompt(profile, activeTool = null, activeNote = null, contentItems = []) {
   const name = profile?.identity?.name || "Arjun Vance";
   const role = profile?.identity?.role || "Founder";
   const company = profile?.identity?.company_name || "Startup";
@@ -100,35 +100,61 @@ Scheduled Day: ${activeNote.day || 'Unassigned'}
 Instructions for this Note: You are actively refining and editing THIS note with the founder. When you suggest improvements, give a ready-to-save revision. If asked to transfer to the calendar, assign it a concrete day (e.g. Wednesday or Friday) and confirm.
 ` : '';
 
-  return `You are Muse, the founder brand strategist and co-pilot for ${name} (${role} at ${company}).
+  const scrapbookContext = (contentItems && contentItems.length > 0)
+    ? `
+[LIVE SCRAPBOOK / BOARD & CALENDAR STATE (${contentItems.length} active scheduled items)]
+${contentItems.map(it => `• [ID: ${it.id}] "${it.title}" | Stage: ${it.stage || 'draft'} | Platform: ${it.platform || 'LinkedIn'} | Day: ${it.day || 'Unscheduled'}`).join('\n')}
+You have direct, real-time access to these exact items on the founder's Scrapbook.`
+    : `
+[LIVE SCRAPBOOK / BOARD & CALENDAR STATE (0 items - COMPLETELY EMPTY)]
+The Scrapbook (Kanban Board & Weekly Calendar) currently contains 0 scheduled or drafted posts. It has been cleared completely.
+If the founder asks whether posts are deleted or what is currently scheduled, definitively confirm that the board and calendar have 0 posts and all files are clean.`;
+
+  return `You are Muse, the founder brand strategist and autonomous operating co-pilot for ${name} (${role} at ${company}).
 Mission: ${mission}
 Founder turning point & war story: ${turningPoint}
 Founder spicy take / contrarian perspective: ${spicyTake}
 Voice archetype: ${archetype}
 ${toolPrompt}
 ${notePrompt}
-ANTI-AI-SLOP SKILL & HUMAN VOICE LAWS (STRICT):
-1. BANNED CLICHÉS: NEVER use: "in today's fast-paced world", "delve", "game-changer", "supercharge", "unleash", "tapestry", "revolutionize", "pivotal", "humbled and honored", "thrilled to announce", "testament to", "seamless", "synergy", "cutting-edge".
-2. BANNED FORMULAS: Avoid starting posts with rhetorical questions ("Have you ever wondered...?"), and avoid "It's not just about X, it's about Y."
-3. WRITE LIKE A REAL HUMAN OPERATOR:
-   - Use concrete numbers, real dollar amounts, specific timeframes, or actual code/operational trade-offs.
-   - Write with natural flow, concise sentences, and authentic voice.
-   - If the founder asks for a post draft or note revision, give:
-     • Hook: 1-2 punchy lines that stop the scroll.
-     • Core Story: Concrete reality, friction, what failed, what worked.
-     • Actionable Takeaway: Direct principle for peer founders.
-     • Visual Brief: Specific asset to pair (e.g., terminal trace, whiteboard photo, unpolished bench test).
-4. PROACTIVE CLARIFYING QUESTIONS:
+${scrapbookContext}
+
+CRITICAL OPERATING RULES & CO-PILOT IDENTITY:
+1. YOU ARE THE NATIVE CO-PILOT WITH FULL ACCESS: You have direct operational access to the founder's live Scrapbook (Board & Calendar) and strategy files (master_content_plan.json, strategy_linkedin.json, strategy_x_twitter.json, strategy_instagram.json).
+2. NEVER GIVE AI DISCLAIMERS: NEVER say "As an AI, I don't have persistent memory or direct access to external files" or "internally, I've cleared that from my working memory". You are the integrated brand OS co-pilot. When asked to verify or check if posts are deleted or what is on the board, check [LIVE SCRAPBOOK / BOARD & CALENDAR STATE] above and confirm the true state with 100% confidence.
+3. ANTI-AI-SLOP SKILL & HUMAN VOICE LAWS (STRICT):
+   - BANNED CLICHÉS: NEVER use: "in today's fast-paced world", "delve", "game-changer", "supercharge", "unleash", "tapestry", "revolutionize", "pivotal", "humbled and honored", "thrilled to announce", "testament to", "seamless", "synergy", "cutting-edge".
+   - BANNED FORMULAS: Avoid starting posts with rhetorical questions ("Have you ever wondered...?"), and avoid "It's not just about X, it's about Y."
+   - WRITE LIKE A REAL HUMAN OPERATOR:
+     • Use concrete numbers, real dollar amounts, specific timeframes, or actual code/operational trade-offs.
+     • Write with natural flow, authentic voice, and compelling founder depth.
+     • If the founder asks for a post draft or note revision, give:
+       - Hook: 1-2 punchy lines that stop the scroll.
+       - Core Story: Concrete reality, friction, what failed, what worked.
+       - Actionable Takeaway: Direct principle for peer founders.
+       - Visual Brief: Specific asset to pair (e.g., terminal trace, whiteboard photo, unpolished bench test).
+4. DEPTH, SUBSTANCE & COMPLETENESS (NO SURFACE-LEVEL ONE-LINERS):
+   - NEVER give superficial 1-line bullet summaries, brief teasers, or high-level placeholders when creating content, schedules, plans, or answering strategy questions. Founders need deep, production-ready substance they can actually post or execute immediately.
+   - For ANY multi-day schedule or sprint plan (e.g., 3-day or 5-day plan):
+     For EACH day, provide a thorough, self-contained breakdown:
+     * **Day & Format:** [e.g. Day 1 (Monday) - Instagram Reel & Carousel Teardown]
+     * **Working Title & Core Angle:** [Punchy, narrative-driven title]
+     * **The Verbatim Hook:** [1-2 scroll-stopping opening lines written out in full, ready to publish]
+     * **The Narrative / Breakdown:** [3-5 detailed sentences explaining the exact story, real tension, metrics/code trade-off, or behind-the-scenes engineering reality]
+     * **Actionable Takeaway:** [The high-leverage rule or lesson for peer founders]
+     * **Visual Direction:** [Specific asset brief: e.g. terminal log snapshot, whiteboard diagram, unpolished desk setup]
+   - When giving tactical advice or answers: Provide deep, operator-grade tactical depth with specific frameworks, real trade-offs, and actionable playbooks, not brief hand-waving.
+5. PROACTIVE CLARIFYING QUESTIONS:
    - If a request is vague or could go multiple ways, don't guess blindly. Ask 1-2 short, direct questions to get the exact story, metric, or audience angle before locking in final copy.
-5. STRATEGY FILE UPDATES:
-   - When asked to change or update a plan (e.g. from 7 days to 3 days, or tweaking posting frequency), explicitly confirm that the strategy files (master_content_plan.json, strategy_linkedin.json, strategy_x_twitter.json, or strategy_instagram.json) are updated.`;
+6. STRATEGY FILE UPDATES & DELETIONS:
+   - When asked to delete, clear, or update a plan (e.g. from 7 days to 3 days, or clearing all posts), explicitly confirm that both the Scrapbook board/calendar and local strategy files (master_content_plan.json, strategy_linkedin.json, strategy_x_twitter.json, strategy_instagram.json) are updated.`;
 }
 
 /**
  * Send chat message to Google Gemini 3.5 Flash Lite
  */
-export async function sendGeminiChat({ messages, profile, activeTool = null, activeNote = null }) {
-  const systemPrompt = buildFounderSystemPrompt(profile, activeTool, activeNote);
+export async function sendGeminiChat({ messages, profile, activeTool = null, activeNote = null, contentItems = [] }) {
+  const systemPrompt = buildFounderSystemPrompt(profile, activeTool, activeNote, contentItems);
 
   // Format messages for Gemini API
   const contents = messages.map(m => ({
@@ -147,7 +173,7 @@ export async function sendGeminiChat({ messages, profile, activeTool = null, act
         contents,
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 1024
+          maxOutputTokens: 3072
         }
       })
     });
@@ -164,15 +190,15 @@ export async function sendGeminiChat({ messages, profile, activeTool = null, act
     return reply || "Understood. How would you like to refine this further?";
   } catch (error) {
     console.error("Gemini API call failed, falling back to local calibration:", error);
-    return getFallbackResponse({ messages, profile, activeTool, activeNote });
+    return getFallbackResponse({ messages, profile, activeTool, activeNote, contentItems });
   }
 }
 
 /**
  * Send chat message to Sarvam 105B
  */
-export async function sendSarvamChat({ messages, profile, activeTool = null, activeNote = null }) {
-  const systemPrompt = buildFounderSystemPrompt(profile, activeTool, activeNote);
+export async function sendSarvamChat({ messages, profile, activeTool = null, activeNote = null, contentItems = [] }) {
+  const systemPrompt = buildFounderSystemPrompt(profile, activeTool, activeNote, contentItems);
   
   const formattedMessages = [
     { role: "system", content: systemPrompt },
@@ -193,7 +219,7 @@ export async function sendSarvamChat({ messages, profile, activeTool = null, act
         model: SARVAM_MODEL,
         messages: formattedMessages,
         temperature: 0.7,
-        max_tokens: 1024
+        max_tokens: 3072
       })
     });
 
@@ -208,29 +234,42 @@ export async function sendSarvamChat({ messages, profile, activeTool = null, act
     return reply || "Understood. Would you like me to refine this further?";
   } catch (error) {
     console.error("Sarvam request fallback triggered:", error);
-    return getFallbackResponse({ messages, profile, activeTool, activeNote });
+    return getFallbackResponse({ messages, profile, activeTool, activeNote, contentItems });
   }
 }
 
 /**
  * Unified Chat Function that routes to the chosen active model
  */
-export async function sendAiChat({ messages, profile, activeTool = null, activeNote = null, model = 'gemini-flash' }) {
+export async function sendAiChat({ messages, profile, activeTool = null, activeNote = null, contentItems = [], model = 'gemini-flash' }) {
   if (model === 'sarvam-105b') {
-    return sendSarvamChat({ messages, profile, activeTool, activeNote });
+    return sendSarvamChat({ messages, profile, activeTool, activeNote, contentItems });
   }
-  return sendGeminiChat({ messages, profile, activeTool, activeNote });
+  return sendGeminiChat({ messages, profile, activeTool, activeNote, contentItems });
 }
 
 /**
  * High-quality Anti-AI-Slop local fallback
  */
-function getFallbackResponse({ messages, profile, activeTool, activeNote }) {
+function getFallbackResponse({ messages, profile, activeTool, activeNote, contentItems = [] }) {
   const company = profile?.identity?.company_name || 'our company';
   const lastUserText = (messages[messages.length - 1]?.text || "").toLowerCase();
 
   if (activeNote) {
     return `Here is a refined angle for "${activeNote.title}":\n\n**Hook**: "${activeNote.hook || 'Most teams get this completely backwards.'}"\n\n**The Trade-off**: At ${company}, we tested this against production traffic and cut latency by 40%.\n\n**Action**: Ready to update this note directly on your board or transfer it to the calendar?`;
+  }
+
+  // Deletion checks and verifications
+  if (lastUserText.includes("check again") || lastUserText.includes("check if") || lastUserText.includes("are delete") || lastUserText.includes("is it delete") || lastUserText.includes("did you delete")) {
+    const count = contentItems ? contentItems.length : 0;
+    if (count === 0) {
+      return `I just checked your live Scrapbook: your Board and Calendar are completely empty (0 posts scheduled). All strategy files on disk (\`master_content_plan.json\`, \`strategy_linkedin.json\`, \`strategy_x_twitter.json\`, \`strategy_instagram.json\`) are clean.`;
+    }
+    return `I verified your live Scrapbook: you currently have ${count} post(s) active on your Board & Calendar:\n\n${contentItems.map(it => `• "${it.title}" (${it.platform || 'LinkedIn'}, ${it.day || 'Unscheduled'})`).join('\n')}`;
+  }
+
+  if (lastUserText.includes("delete all") || lastUserText.includes("clear") || lastUserText.includes("delete of them") || lastUserText.includes("delete all of them")) {
+    return `Confirmed. All post schedules have been removed from your Scrapbook (Board & Calendar), and your strategy files on disk (\`master_content_plan.json\`, \`strategy_linkedin.json\`, \`strategy_x_twitter.json\`, \`strategy_instagram.json\`) have been cleared.`;
   }
 
   if (lastUserText.includes("3 day") || (lastUserText.includes("day") && lastUserText.includes("3"))) {

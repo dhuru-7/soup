@@ -32,16 +32,40 @@ export default function Dashboard({
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Data stores initialized synchronously from profile
-  const [contentItems, setContentItems] = useState(() => getInitialStudioData(profile).contentItems);
+  // Data stores initialized with localStorage persistence fallback
+  const [contentItems, setContentItems] = useState(() => {
+    const key = `soup_content_items_${profile?.founder_id || 'default'}`;
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.warn("Failed to parse saved contentItems:", e);
+      }
+    }
+    return getInitialStudioData(profile).contentItems;
+  });
   const [collectedInbox, setCollectedInbox] = useState(() => getInitialStudioData(profile).collectedInbox);
   const [agentMemory, setAgentMemory] = useState(() => getInitialStudioData(profile).agentMemory);
+
+  // Sync contentItems to localStorage whenever changed
+  useEffect(() => {
+    if (typeof window !== 'undefined' && profile?.founder_id) {
+      const key = `soup_content_items_${profile.founder_id}`;
+      try {
+        localStorage.setItem(key, JSON.stringify(contentItems));
+      } catch (e) {
+        console.warn("Failed to save contentItems to localStorage:", e);
+      }
+    }
+  }, [contentItems, profile?.founder_id]);
 
   // Modals & Navigation intents
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [selectedContentItem, setSelectedContentItem] = useState(null);
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [museInitialPrompt, setMuseInitialPrompt] = useState('');
+  const [studioSubView, setStudioSubView] = useState('board');
 
   // Main scroll container ref
   const mainRef = React.useRef(null);
@@ -64,10 +88,20 @@ export default function Dashboard({
 
   // Re-initialize data when active profile changes
   useEffect(() => {
-    const initialData = getInitialStudioData(profile);
-    setContentItems(initialData.contentItems);
-    setCollectedInbox(initialData.collectedInbox);
-    setAgentMemory(initialData.agentMemory);
+    const key = `soup_content_items_${profile?.founder_id || 'default'}`;
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+    if (saved) {
+      try {
+        setContentItems(JSON.parse(saved));
+      } catch (e) {
+        setContentItems(getInitialStudioData(profile).contentItems);
+      }
+    } else {
+      const initialData = getInitialStudioData(profile);
+      setContentItems(initialData.contentItems);
+    }
+    setCollectedInbox(getInitialStudioData(profile).collectedInbox);
+    setAgentMemory(getInitialStudioData(profile).agentMemory);
 
     // If user is authenticated, sync to Firestore
     if (currentUser?.uid) {
@@ -97,6 +131,11 @@ export default function Dashboard({
   };
 
   const handleAddContentItem = (newItem) => {
+    if (Array.isArray(newItem)) {
+      setContentItems(prev => [...newItem, ...prev]);
+      showToast(`✓ Added ${newItem.length} drops to Board & Calendar`);
+      return;
+    }
     setContentItems(prev => [newItem, ...prev]);
     showToast(`✓ Added "${newItem.title || 'New item'}" to Board & Calendar`);
   };
@@ -109,6 +148,26 @@ export default function Dashboard({
       setActiveNoteContext(null);
     }
     showToast(`✓ Removed "${title}" from Board & Calendar`);
+  };
+
+  const handleClearAllContentItems = () => {
+    setContentItems([]);
+    if (activeNoteContext) {
+      setActiveNoteContext(null);
+    }
+    if (typeof window !== 'undefined' && profile?.founder_id) {
+      localStorage.setItem(`soup_content_items_${profile.founder_id}`, JSON.stringify([]));
+    }
+    showToast("✓ Cleared all posts from Board & Calendar");
+  };
+
+  const handleBatchDeleteContentItems = (ids = []) => {
+    const idSet = new Set(ids);
+    setContentItems(prev => prev.filter(item => !idSet.has(item.id)));
+    if (activeNoteContext && idSet.has(activeNoteContext.id)) {
+      setActiveNoteContext(null);
+    }
+    showToast(`✓ Removed ${ids.length} post${ids.length > 1 ? 's' : ''} from Board & Calendar`);
   };
 
   const handleOpenContentModal = (item) => {
@@ -155,10 +214,17 @@ export default function Dashboard({
     return updated;
   };
 
-  const handleNavigateToStudio = (itemId = null) => {
+  const handleNavigateToStudio = (itemOrSubView = null) => {
     setActivePage('studio');
-    if (itemId) {
-      const targetItem = contentItems.find(i => i.id === itemId);
+    if (typeof itemOrSubView === 'string' && (itemOrSubView === 'calendar' || itemOrSubView === 'board' || itemOrSubView === 'published')) {
+      setStudioSubView(itemOrSubView);
+      return;
+    }
+    if (itemOrSubView && typeof itemOrSubView === 'object') {
+      setSelectedContentItem(itemOrSubView);
+      setIsContentModalOpen(true);
+    } else if (itemOrSubView) {
+      const targetItem = contentItems.find(i => i.id === itemOrSubView);
       if (targetItem) {
         setSelectedContentItem(targetItem);
         setIsContentModalOpen(true);
@@ -202,6 +268,9 @@ export default function Dashboard({
         {activePage === 'muse' && (
           <MuseView
             profile={profile}
+            contentItems={contentItems}
+            onClearAllContentItems={handleClearAllContentItems}
+            onBatchDeleteContentItems={handleBatchDeleteContentItems}
             initialPrompt={museInitialPrompt}
             activeNote={activeNoteContext}
             onClearActiveNote={() => setActiveNoteContext(null)}
@@ -209,7 +278,7 @@ export default function Dashboard({
             onDeleteContentItem={handleDeleteContentItem}
             onTransferToCalendar={handleTransferNoteToCalendar}
             onAddContentToStudio={handleAddContentItem}
-            onNavigateToStudio={() => setActivePage('studio')}
+            onNavigateToStudio={handleNavigateToStudio}
             showToast={showToast}
           />
         )}
@@ -219,6 +288,7 @@ export default function Dashboard({
             profile={profile}
             contentItems={contentItems}
             collectedInbox={collectedInbox}
+            initialSubView={studioSubView}
             onUpdateContentItem={handleUpdateContentItem}
             onAddContentItem={handleAddContentItem}
             onDeleteContentItem={handleDeleteContentItem}

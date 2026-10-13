@@ -989,6 +989,7 @@ def ensure_strategy_files(founder_id: str) -> Dict[str, Any]:
     # 4. Master Content Plan (Timeframe Plan)
     master_path = os.path.join(fdir, "master_content_plan.json")
     if not os.path.exists(master_path):
+        is_preset_demo = founder_id in ["arjun_vance", "maya_lin"]
         default_items = [
             {
                 "id": "plan-1",
@@ -1017,7 +1018,7 @@ def ensure_strategy_files(founder_id: str) -> Dict[str, Any]:
                 "hook": "Most people think getting into Whole Foods is a victory lap. In reality, getting into our first 12 stores almost bankrupted us." if is_maya else "We just rejected a candidate who solved our LeetCode hard problem in 15 minutes. Here is how we actually evaluate founding engineers at AgentScale:",
                 "status": "planned"
             }
-        ]
+        ] if is_preset_demo else []
 
         data = {
             "plan_timeframe": "7 Days",
@@ -1127,29 +1128,99 @@ def apply_agent_strategy_command(
         )
         updated_files.append("master_content_plan.json")
 
-    # Check for item deletion (e.g. "delete this", "remove note")
-    if "delete" in text_lower or "remove" in text_lower:
+    # Check for item deletion (e.g. "delete this", "remove note", "delete all", "clear calendar")
+    if "delete" in text_lower or "remove" in text_lower or "clear" in text_lower:
         item_id = params.get("item_id")
+        delete_all = (
+            params.get("delete_all") is True or
+            "delete all" in text_lower or
+            "clear all" in text_lower or
+            "delete all of them" in text_lower or
+            "delete of them" in text_lower or
+            "delete every" in text_lower or
+            "clear calendar" in text_lower or
+            "clear board" in text_lower or
+            "clear the board" in text_lower or
+            "clear the calender" in text_lower or
+            "clear the calendar" in text_lower or
+            "remove all" in text_lower
+        )
         items = master_plan.get("planned_items", [])
         original_count = len(items)
-        if item_id:
-            master_plan["planned_items"] = [it for it in items if it.get("id") != item_id]
-        else:
-            master_plan["planned_items"] = [
-                it for it in items
-                if it.get("id") not in text_lower and it.get("title", "").lower() not in text_lower
-            ]
-        if len(master_plan["planned_items"]) < original_count or item_id:
+        
+        if delete_all:
+            master_plan["planned_items"] = []
             update_strategy_asset(
                 founder_id=founder_id,
                 platform_or_master="master",
                 data=master_plan,
-                what_changed=f"Deleted item from content plan per user command",
+                what_changed="Cleared all planned items from content plan per founder command",
                 why=instruction
             )
             if "master_content_plan.json" not in updated_files:
                 updated_files.append("master_content_plan.json")
 
+            # Also clear and sync all platform strategy files on disk
+            for plat in ["linkedin", "x", "instagram"]:
+                plat_data = get_strategy_asset(founder_id, plat) or {}
+                plat_data["scheduled_posts"] = []
+                plat_data["active_schedule"] = []
+                update_strategy_asset(
+                    founder_id=founder_id,
+                    platform_or_master=plat,
+                    data=plat_data,
+                    what_changed=f"Cleared all scheduled posts for {plat.capitalize()} per founder command",
+                    why=instruction
+                )
+                filename = normalize_strategy_key(plat)
+                if filename not in updated_files:
+                    updated_files.append(filename)
+        elif item_id:
+            master_plan["planned_items"] = [it for it in items if it.get("id") != item_id]
+            if len(master_plan["planned_items"]) < original_count:
+                update_strategy_asset(
+                    founder_id=founder_id,
+                    platform_or_master="master",
+                    data=master_plan,
+                    what_changed=f"Deleted item {item_id} from content plan",
+                    why=instruction
+                )
+                if "master_content_plan.json" not in updated_files:
+                    updated_files.append("master_content_plan.json")
+        else:
+            master_plan["planned_items"] = [
+                it for it in items
+                if it.get("id", "").lower() not in text_lower and it.get("title", "").lower() not in text_lower
+            ]
+            if len(master_plan["planned_items"]) < original_count:
+                update_strategy_asset(
+                    founder_id=founder_id,
+                    platform_or_master="master",
+                    data=master_plan,
+                    what_changed="Deleted item(s) from content plan per user command",
+                    why=instruction
+                )
+                if "master_content_plan.json" not in updated_files:
+                    updated_files.append("master_content_plan.json")
+
+
+    # Check for adding new scheduled items (e.g. from Muse calendar schedule)
+    new_items = params.get("new_items")
+    if new_items and isinstance(new_items, list):
+        master_plan.setdefault("planned_items", [])
+        for nit in new_items:
+            existing = next((it for it in master_plan["planned_items"] if it.get("id") == nit.get("id") or it.get("title") == nit.get("title")), None)
+            if not existing:
+                master_plan["planned_items"].append(nit)
+        update_strategy_asset(
+            founder_id=founder_id,
+            platform_or_master="master",
+            data=master_plan,
+            what_changed=f"Added {len(new_items)} drops to master content plan from Muse",
+            why=instruction
+        )
+        if "master_content_plan.json" not in updated_files:
+            updated_files.append("master_content_plan.json")
 
     # Check for platform-specific cadence or hook updates
     target_platform = None
@@ -1162,6 +1233,11 @@ def apply_agent_strategy_command(
         
     if target_platform:
         plat_data = get_strategy_asset(founder_id, target_platform) or {}
+        if new_items and isinstance(new_items, list):
+            plat_data.setdefault("scheduled_posts", [])
+            for nit in new_items:
+                if not any(it.get("id") == nit.get("id") for it in plat_data["scheduled_posts"]):
+                    plat_data["scheduled_posts"].append(nit)
         if "cadence" in text_lower or "frequency" in text_lower:
             new_cadence = params.get("cadence") or f"Adjusted active cadence per instruction: {instruction}"
             plat_data["active_cadence"] = new_cadence

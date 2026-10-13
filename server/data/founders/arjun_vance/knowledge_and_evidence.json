@@ -64,7 +64,7 @@
   ],
   "metrics": {
     "stage": "Seed ($1.8M raised, 14-person engineering team)",
-    "company": "AgentScale",
+    "company": "Arka",
     "primary_metric": "1.8ms p99 latency",
     "team_size": 14
   },
@@ -72,5 +72,5 @@
     "Unbatched scans across high-throughput distributed stores will inevitably fail at p99 scale.",
     "Engineers respect code diffs and flame graphs infinitely more than high-level thought leadership."
   ],
-  "last_updated": "2026-10-12T17:07:51.443883Z"
+  "last_updated": "2026-10-13T03:10:30.473298Z"
 }

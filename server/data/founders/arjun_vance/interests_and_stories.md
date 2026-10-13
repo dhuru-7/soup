@@ -1,4 +1,4 @@
-# Personal Context & Founder Stories: Arjun Vance
+# Personal Context & Founder Stories: Dhruv Gautam
 
 ## 1. Passions & Topics Enjoyed Discussing
 - **Engineering / AI**: Firsthand insights, real operational trade-offs, and building without marketing fluff.
@@ -6,10 +6,10 @@
 - **Distributed Systems**: Firsthand insights, real operational trade-offs, and building without marketing fluff.
 
 ## 2. Core Founder Story & Origin Turning Point
-> "Spent 14 hours debugging a production Redis memory leak caused by unbatched key scans that cost $400/hr in cloud overruns; realized existing APMs are completely blind to autonomous agent loops."
+> "cuz i wanted to tell people that this is something you shouldn't be paying for "
 
 **Context & Significance:**
-This moment represents the foundational friction that birthed AgentScale. It proves Arjun Vance is solving a problem discovered through genuine operational pain, not hypothetical market research.
+This moment represents the foundational friction that birthed Arka. It proves Dhruv Gautam is solving a problem discovered through genuine operational pain, not hypothetical market research.
 
 ## 3. Key Lessons Learned
 - Firsthand production incident post-mortems build 10x more engineering credibility than polished feature announcements.
@@ -22,9 +22,14 @@ This moment represents the foundational friction that birthed AgentScale. It pro
 - **Mechanical Keyboards**: Draw metaphors from this discipline to humanize and explain complex operating concepts.
 
 ## 5. Publicly Off-Limit Topics (Taboos & Privacy Boundaries)
-- 🚫 Hollow AI wrapper marketing
-- 🚫 Unverified latency benchmarks
-- 🚫 Hype without verifiable code or flame graphs
+- 🚫 delve into
+- 🚫 game-changer
+- 🚫 humbled and honored
+- 🚫 thrilled to announce
+- 🚫 in today's fast-paced digital world
+- 🚫 synergy
+- 🚫 supercharge
+- 🚫 revolutionary
 - 🚫 Confidential co-founder equity splits or unannounced funding discussions.
 - 🚫 Speculative claims without verifiable documentation.
 - 🚫 Naming enterprise pilot customers or private suppliers prior to formal authorization.

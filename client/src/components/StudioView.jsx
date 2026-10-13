@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icon';
+import { getUserPlatforms } from '../data/platforms';
 
 export default function StudioView({ 
   profile, 
@@ -11,11 +12,21 @@ export default function StudioView({
   onOpenInMuse, 
   onTransferToCalendar,
   onOpenQuickCapture,
+  initialSubView = 'board',
   showToast 
 }) {
-  const [activeSubView, setActiveSubView] = useState('board'); // 'board' | 'calendar' | 'published'
+  const [activeSubView, setActiveSubView] = useState(initialSubView || 'board'); // 'board' | 'calendar' | 'published'
   const [platformFilter, setPlatformFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  React.useEffect(() => {
+    if (initialSubView) {
+      setActiveSubView(initialSubView);
+    }
+  }, [initialSubView]);
+
+  const userPlatforms = getUserPlatforms(profile);
+  const effectiveFilter = (platformFilter !== 'All' && !userPlatforms.includes(platformFilter)) ? 'All' : platformFilter;
 
   const stages = [
     { id: 'idea', label: 'Ideas', color: 'border-slate-300 text-slate-700 bg-slate-100' },
@@ -25,7 +36,7 @@ export default function StudioView({
   ];
 
   const filteredItems = contentItems.filter(item => {
-    const matchesPlatform = platformFilter === 'All' || item.platform?.toLowerCase().includes(platformFilter.toLowerCase());
+    const matchesPlatform = effectiveFilter === 'All' || item.platform?.toLowerCase().includes(effectiveFilter.toLowerCase());
     const matchesSearch = !searchQuery.trim() || 
       item.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
       item.hook?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -101,6 +112,21 @@ export default function StudioView({
       );
     }
 
+    const hasSubstack = lower.includes('substack') || lower.includes('newsletter');
+    if (hasSubstack) {
+      icons.push(
+        <span 
+          key="substack"
+          className="w-5.5 h-5.5 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#FF6719] shadow-2xs shrink-0"
+          title="Substack"
+        >
+          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
+          </svg>
+        </span>
+      );
+    }
+
     if (icons.length === 0) {
       icons.push(
         <span key="generic" className="w-5.5 h-5.5 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 text-[10px] font-bold shrink-0">
@@ -146,7 +172,7 @@ export default function StudioView({
         <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-full border border-slate-200/80 self-start">
           {[
             { id: 'board', label: 'Board', icon: 'view_kanban', count: contentItems.length },
-            { id: 'calendar', label: 'Calendar', icon: 'calendar_month', count: contentItems.filter(i => i.day).length || 3 },
+            { id: 'calendar', label: 'Calendar', icon: 'calendar_month', count: contentItems.filter(i => i.day).length },
             { id: 'published', label: 'Published', icon: 'task_alt', count: contentItems.filter(i => i.stage === 'published').length },
           ].map(view => {
             const isActive = activeSubView === view.id;
@@ -177,12 +203,14 @@ export default function StudioView({
           {/* Platform Filter Segmented Capsule Pill Group */}
           <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-full border border-slate-200/80">
             {[
-              { id: 'All', label: 'All platforms' },
-              { id: 'LinkedIn', label: 'LinkedIn', icon: 'linkedin' },
-              { id: 'X', label: 'X', icon: 'x' },
-              { id: 'Instagram', label: 'Instagram', icon: 'instagram' },
+              { id: 'All', label: 'All platforms', icon: 'all' },
+              ...userPlatforms.map(p => ({
+                id: p,
+                label: p,
+                icon: p.toLowerCase()
+              }))
             ].map(plat => {
-              const isActive = platformFilter === plat.id;
+              const isActive = effectiveFilter === plat.id;
               return (
                 <button
                   key={plat.id}
@@ -207,6 +235,16 @@ export default function StudioView({
                   {plat.icon === 'instagram' && (
                     <svg className={`w-3 h-3 fill-current ${isActive ? 'text-pink-600' : 'text-slate-400'}`} viewBox="0 0 24 24">
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                  )}
+                  {plat.icon === 'youtube' && (
+                    <svg className={`w-3.5 h-3.5 fill-current ${isActive ? 'text-red-600' : 'text-slate-400'}`} viewBox="0 0 24 24">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                  )}
+                  {plat.icon === 'substack' && (
+                    <svg className={`w-3 h-3 fill-current ${isActive ? 'text-orange-600' : 'text-slate-400'}`} viewBox="0 0 24 24">
+                      <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
                     </svg>
                   )}
                   <span>{plat.label}</span>
@@ -324,10 +362,12 @@ export default function StudioView({
                               e.stopPropagation();
                               onOpenInMuse(`Let's refine this board note: "${item.title}". Hook: "${item.hook}". How can we make it hit harder?`, item);
                             }}
-                            className="px-3 py-1.5 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                            className="group inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-slate-950 hover:bg-slate-900 text-white text-[11px] font-semibold border border-slate-800 hover:border-slate-700 shadow-2xs hover:shadow-xs transition-all duration-150 active:scale-[0.97] cursor-pointer"
                             title="Open and edit this note inside Muse"
                           >
-                            <Icon name="muse_star" size={12} className="text-[#FEEC98]" />
+                            <span className="flex items-center justify-center text-[#FEEC98] transition-transform duration-200 group-hover:scale-110">
+                              <Icon name="muse_star" size={11} />
+                            </span>
                             <span>Edit with Muse</span>
                           </button>
                         </div>
@@ -358,7 +398,7 @@ export default function StudioView({
 
           <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
             {calendarDays.map(day => {
-              const dayItems = filteredItems.filter(i => i.day === day || (day === 'Wednesday' && i.stage === 'draft' && !i.day));
+              const dayItems = filteredItems.filter(i => i.day === day);
 
               return (
                 <div 

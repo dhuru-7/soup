@@ -157,13 +157,11 @@ def onboard_founder():
     """
     payload = request.get_json() or {}
     
-    # Determine founder_id
-    founder_id = payload.get("founder_id")
-    if not founder_id:
-        name_val = payload.get("fullName") or payload.get("identity", {}).get("name", "new_founder")
-        founder_id = name_val.lower().strip().replace(" ", "_").replace("/", "_")
+    # Keep 1 canonical file: don't create new files per user, update the canonical profile file every time
+    founder_id = "maya_lin" if payload.get("founder_id") == "maya_lin" or payload.get("fullName") == "Maya Lin" else "arjun_vance"
+    payload["founder_id"] = founder_id
     
-    # Process given onboarding data and generate all 7 agent memory files
+    # Process given onboarding data and update the 7 agent memory files in the canonical house
     result = memory_manager.create_or_update_founder_memory(founder_id, payload)
     
     # Also compile the unified profile for immediate frontend render

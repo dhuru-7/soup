@@ -231,54 +231,47 @@ export default function App() {
           description: `Turning points and lessons from struggle: "${turningPt.slice(0, 80)}...".`
         }
       ],
-      weekly_calendar: [
-        {
-          day: 'Monday',
-          platform: onboardingState.platforms?.[0] || 'LinkedIn',
-          format: 'High-Proof Teardown',
-          hook: `Most founders hide what goes wrong behind closed doors.\n\nWhen we were building ${onboardingState.entityName}, here is the exact friction that forced us to rewrite our core engine:`,
-          visual_direction: `Attach: ${realAssetsList[0] || 'Terminal screenshot or trace log'}.`,
-          follow_up_action: 'Reply to comments from peers and engineers within the first 60 minutes.'
-        },
-        {
-          day: 'Wednesday',
-          platform: onboardingState.platforms?.[1] || 'X (Twitter)',
-          format: 'The Contrarian Wedge',
-          hook: `Unpopular opinion: "${spicy}"\n\nWhy 90% of people in our industry get this wrong:`,
-          visual_direction: `Attach: ${realAssetsList[1] || 'Whiteboard sketch comparing old vs new approach'}.`,
-          follow_up_action: 'Retweet with additional context if debate sparks in comments.'
-        },
-        {
-          day: 'Friday',
-          platform: onboardingState.platforms?.[0] || 'LinkedIn',
-          format: 'Origin Story & Culture',
-          hook: `This is what building looks like when things break:\n\n${turningPt.slice(0, 110)}...`,
-          visual_direction: `Attach: ${realAssetsList[2] || 'Unfiltered workstation photo'}.`,
-          follow_up_action: 'Directly message qualified applicants or prospective partners who engage.'
-        }
-      ],
+      weekly_calendar: [],
       goals_tracking: {
         north_star: 'Authority & Inbound Velocity',
         metrics: {
-          inbound_leads: { current: 3, target: 15, unit: 'Inquiries' },
-          community_advocates: { current: 140, target: 500, unit: 'Members' },
-          speaking_invites: { current: 1, target: 5, unit: 'Panels' },
-          authority_score: { current: 78, target: 94, unit: '/100' }
+          inbound_leads: { current: 0, target: 15, unit: 'Inquiries' },
+          community_advocates: { current: 0, target: 500, unit: 'Members' },
+          speaking_invites: { current: 0, target: 5, unit: 'Panels' },
+          authority_score: { current: 50, target: 94, unit: '/100' }
         }
       }
     };
 
+    dynamicProfile.founder_id = 'arjun_vance';
+
     try {
       localStorage.setItem('soup_custom_profile', JSON.stringify(dynamicProfile));
+      // Clear any prior content items so the new profile starts completely clean
+      localStorage.removeItem('soup_content_items_arjun_vance');
+      localStorage.setItem('soup_content_items_arjun_vance', JSON.stringify([]));
     } catch (e) {
       console.warn("Storage save:", e);
     }
 
+    // Sync newly onboarded profile to the Python/Flask backend into the single canonical profile file
+    onboardFounder({
+      founder_id: 'arjun_vance',
+      ...onboardingState,
+      identity: dynamicProfile.identity,
+      voiceprint: dynamicProfile.voiceprint,
+      domain_radar: dynamicProfile.domain_radar,
+      expertise: dynamicProfile.expertise,
+      hobbies: dynamicProfile.hobbies,
+      real_assets: dynamicProfile.real_assets,
+      channels: dynamicProfile.channels
+    }).catch(err => console.warn("Backend onboarding sync:", err));
+
     setCustomProfile(dynamicProfile);
-    setCurrentProfileId('custom_founder');
+    setCurrentProfileId('arjun_vance');
     setViewMode('dashboard');
     setActivePage('overview');
-    syncUrl('dashboard', 'overview', 'custom_founder', 1);
+    syncUrl('dashboard', 'overview', 'arjun_vance', 1);
   };
 
   const handleSwitchProfile = (profileId) => {

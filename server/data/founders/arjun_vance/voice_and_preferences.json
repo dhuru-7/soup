@@ -1,10 +1,10 @@
 {
   "founder_id": "arjun_vance",
-  "tone": "The Builder (Share the Work) - Direct, transparent, practitioner-level depth, zero synthetic buzzwords.",
-  "archetype": "The Builder (Share the Work)",
+  "tone": "The Practical Guide (Actionable Teardowns) - Direct, transparent, practitioner-level depth, zero synthetic buzzwords.",
+  "archetype": "The Practical Guide (Actionable Teardowns)",
   "writing_samples": [
     "We accidentally burned $412 in 14 hours on AWS because of a single unbatched Redis scan across 50,000 agent sessions.\n\nHere is the post-mortem and the 12-line Lua script that fixed it:",
-    "Unpopular opinion: \"Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.\"\n\nHere is our benchmark comparing p99 latency under concurrent load:"
+    "Unpopular opinion: \"baaki companies bhoot saare bhoot rakhte h apne ghar peee\"\n\nHere is our benchmark comparing p99 latency under concurrent load:"
   ],
   "preferred_formats": [
     "Production Post-Mortem",
@@ -31,7 +31,7 @@
       "deterministic replay"
     ],
     "voice_rules": [
-      "Archetype tone: The Builder (Share the Work).",
+      "Archetype tone: The Practical Guide (Actionable Teardowns).",
       "Always include concrete proof: exact cost per can, exact batch numbers, or exact millisecond latency.",
       "Zero synthetic AI boilerplate words (no 'in today's world', 'delve', or rocket emojis).",
       "Keep sentence rhythm conversational, direct, and unpretentious."
@@ -52,6 +52,6 @@
     "Never reveal proprietary batch formulation ratios before patent filing.",
     "Never name pilot enterprise partners without mutual press sign-off."
   ],
-  "spicy_take": "Vector databases are 90% marketing hype for small-scale apps; SQLite with BM25 beats them in latency, cost, and maintainability.",
-  "last_updated": "2026-10-12T17:07:51.443883Z"
+  "spicy_take": "baaki companies bhoot saare bhoot rakhte h apne ghar peee",
+  "last_updated": "2026-10-13T03:10:30.473298Z"
 }
