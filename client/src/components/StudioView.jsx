@@ -403,10 +403,10 @@ export default function StudioView({
                                 onOpenInMuse(`Let's refine this scheduled ${day} note: "${item.title}". Hook: "${item.hook || ''}". What are the best hooks and distribution angles?`, item);
                               }}
                               className="w-full py-1.5 px-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer"
-                              title="Edit with Muse"
+                              title="Muse"
                             >
                               <Icon name="muse_star" size={10} className="text-[#FEEC98]" />
-                              <span>Edit w Muse</span>
+                              <span>Muse</span>
                             </button>
                           </div>
                         </div>
