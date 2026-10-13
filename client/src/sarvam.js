@@ -147,7 +147,17 @@ CRITICAL OPERATING RULES & CO-PILOT IDENTITY:
 5. PROACTIVE CLARIFYING QUESTIONS:
    - If a request is vague or could go multiple ways, don't guess blindly. Ask 1-2 short, direct questions to get the exact story, metric, or audience angle before locking in final copy.
 6. STRATEGY FILE UPDATES & DELETIONS:
-   - When asked to delete, clear, or update a plan (e.g. from 7 days to 3 days, or clearing all posts), explicitly confirm that both the Scrapbook board/calendar and local strategy files (master_content_plan.json, strategy_linkedin.json, strategy_x_twitter.json, strategy_instagram.json) are updated.`;
+   - When asked to delete, clear, or update a plan (e.g. from 7 days to 3 days, or clearing all posts), explicitly confirm that both the Scrapbook board/calendar and local strategy files (master_content_plan.json, strategy_linkedin.json, strategy_x_twitter.json, strategy_instagram.json) are updated.
+7. FOUNDER BRAND PRESENCE & STRATEGIC CONTENT LAWS (PRESENTATION PILLARS):
+   - FOUNDER PRESENCE OVER CHEAP ENGAGEMENT:
+     Our primary mission is establishing deep, defensible founder presence, unquestioned domain authority, and high-conviction trust in our market - NOT chasing empty vanity metrics, viral meme views, or cheap engagement hacks. Engagement matters, but only as a byproduct of genuine respect and credibility.
+   - SELECTIVE & SAFE TREND ADOPTION (STRICT GUARDRAILS):
+     Trends are secondary amplifiers, NEVER our first priority. We refuse to jump on trends blindly or engage in cheap meme-chasing. We ONLY participate in a trend if:
+     1. Zero Negative PR Risk: It must be 100% brand-safe with zero potential for controversy, reputational damage, or looking unprofessional.
+     2. Competitor & Category Validation: Respected peer brands or competitive innovators have already proven the format/angle works in our space.
+     3. Authentic Domain Relevance: It must tie directly back to our core founder scars, product truths, or technical perspective.
+   - ALWAYS DIRECTLY ADDRESS THE FOUNDER'S EXACT QUESTION:
+     Never give canned, unrelated, or generic responses. If the founder asks a specific format question (e.g. YouTube Shorts vs Long-Form for NLP, Reels vs Carousels for Instagram), analyze the exact strategic trade-offs through the lens of founder presence and provide a clear, reasoned recommendation and roadmap.`;
 }
 
 /**
@@ -180,17 +190,25 @@ export async function sendGeminiChat({ messages, profile, activeTool = null, act
 
     if (!res.ok) {
       const errText = await res.text();
-      console.error("Gemini API error:", errText);
-      throw new Error(`Gemini API returned status ${res.status}`);
+      console.warn("Gemini API rate limit or error, failing over seamlessly to Sarvam 105B:", errText);
+      return await sendSarvamChat({ messages, profile, activeTool, activeNote, contentItems });
     }
 
     const data = await res.json();
     const candidate = data.candidates?.[0];
     const reply = candidate?.content?.parts?.[0]?.text;
-    return reply || "Understood. How would you like to refine this further?";
+    if (!reply) {
+      return await sendSarvamChat({ messages, profile, activeTool, activeNote, contentItems });
+    }
+    return reply;
   } catch (error) {
-    console.error("Gemini API call failed, falling back to local calibration:", error);
-    return getFallbackResponse({ messages, profile, activeTool, activeNote, contentItems });
+    console.warn("Gemini API call unavailable, failing over seamlessly to Sarvam 105B:", error);
+    try {
+      return await sendSarvamChat({ messages, profile, activeTool, activeNote, contentItems });
+    } catch (sarvamErr) {
+      console.error("Sarvam failover also failed:", sarvamErr);
+      return getFallbackResponse({ messages, profile, activeTool, activeNote, contentItems });
+    }
   }
 }
 
@@ -276,13 +294,20 @@ function getFallbackResponse({ messages, profile, activeTool, activeNote, conten
     return `Got it. I've updated \`master_content_plan.json\` directly on disk from 7 days to a **3-day high-impact sprint**.\n\nHere's your refined 3-day roadmap:\n\n**Day 1 (LinkedIn)**: Post-Mortem on the biggest technical tradeoff we made this month.\n**Day 2 (X / Twitter)**: Contrarian benchmark thread comparing SQLite + BM25 vs bloated Vector DBs.\n**Day 3 (LinkedIn)**: Founder lesson on evaluating founding engineers beyond LeetCode.\n\nAll strategy files are synced. Want to draft Day 1's hook first?`;
   }
 
+  const rawUserText = messages[messages.length - 1]?.text || "";
+
+  // Dynamic responses grounded in founder presence & safe trend strategy
+  if (lastUserText.includes("shorts") || lastUserText.includes("long form") || lastUserText.includes("video") || lastUserText.includes("yt") || lastUserText.includes("youtube") || lastUserText.includes("nlp")) {
+    return `When choosing between YouTube Shorts and Long-Form, our primary filter is **founder presence and authority over cheap vanity engagement**.\n\nHere is how to approach this strategically:\n\n1. **Lead with Long-Form (8–12 mins) for Authority:**\n   Explaining a technical topic like NLP in 60 seconds only gives surface-level exposure, whereas long-form establishes you as the undisputed domain authority. It becomes an evergreen asset that builds deep founder trust for months.\n\n2. **Use Shorts Strategically as Amplifiers:**\n   Never chase generic viral trends. Instead, extract 2–3 high-tension clips directly from your long-form video (e.g. "The biggest misconception about Tokenization" or "Why most embeddings fail"). Use Shorts strictly to drive qualified viewers to your authoritative deep dive.\n\n3. **Trend & Competitor Guardrails:**\n   We only adopt YouTube trends if competitive leaders have proven they carry zero negative PR risk. Your presence should look like a seasoned operator teaching, not a creator dancing for the algorithm.\n\nShall we outline the long-form script structure first, or carve out the top 3 Shorts hook concepts?`;
+  }
+
   if (activeTool === 'brainstorm' || lastUserText.includes("brainstorm") || lastUserText.includes("idea")) {
-    return `Here are 2 high-conviction angles tailored to your voice:\n\n1. **The Cost of Over-Engineering**: We burned $412 in 14 hours chasing micro-optimizations that users never noticed. Here is what we pruned.\n2. **The Contrarian Wedge**: Why 90% of early AI teams are adding complexity instead of shipping utility.\n\nQuick clarification before I draft one: do you want to highlight the latency numbers or the engineering time saved?`;
+    return `Here are strategic angles calibrated for founder presence at ${company}:\n\n1. **The Tactical Breakdown**: A direct, transparent teardown of a real technical or product challenge in your space.\n2. **The Contrarian Wedge**: Challenging standard industry dogma that competitors shy away from, showing why simpler approaches win.\n\nWhich angle best serves your authority right now?`;
   }
 
   if (activeTool === 'research' || lastUserText.includes("trend") || lastUserText.includes("research")) {
-    return `Here is what is performing in your domain right now:\n\n• **LinkedIn**: High-signal system architecture diffs and raw founder lessons are outperforming generic motivational posts by 4.8x in dwell time.\n• **X (Twitter)**: Short, screenshot-backed benchmark comparisons (1 terminal image + 4 bullet points) drive the highest bookmark-to-impression ratio.\n\nShould we align your next post to a benchmark screenshot or an architectural post-mortem?`;
+    return `Here is our strategic filter on trends for ${company}:\n\n• **Presence Over Vanity**: Chasing empty viral memes damages credibility. We focus on high-signal narratives that earn buyer trust.\n• **Safe Trend Adoption**: We only tap into trends that carry zero negative PR risk and have already been validated by peer innovators in our category.\n\nWould you like to analyze what competitive leaders are publishing, or evaluate a specific trend?`;
   }
 
-  return `Here is a human, anti-slop draft calibrated to your voice:\n\n**Hook**: Most founders hide what breaks behind closed doors. At ${company}, our unbatched I/O spike almost crashed our main ingest pipeline.\n\n**The Reality**: We spent 14 hours diagnosing what seemed like a memory leak. Turns out an unbatched scan across 50,000 sessions was silently killing throughput.\n\n**Takeaway**: Before rewriting your database layer, check your unbatched queries. Two lines of Lua saved us 400ms.\n\n**Visual**: Attach a screenshot of the p99 latency drop.\n\nWant to tweak the numbers or adjust the punchline?`;
+  return `Here is a high-conviction perspective on "${rawUserText}":\n\n1. **Prioritize Founder Presence Over Cheap Metrics:**\n   We don't optimize for hollow vanity metrics. Every piece of content should cement your authority as the founder of ${company} and build buyer trust.\n\n2. **Selective & Safe Trend Multipliers:**\n   We only tap into trends that are 100% brand-safe (zero negative PR risk) and already validated by peer innovators in your space.\n\n3. **Actionable Next Step:**\n   Would you like to turn this into a production-ready post draft, or map it into your weekly content cadence?`;
 }
