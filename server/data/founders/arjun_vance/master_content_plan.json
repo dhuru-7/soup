@@ -4,5 +4,15 @@
   "north_star": "Technical Authority & Inbound Pipeline",
   "active_sprint_goal": "Establish category leadership and drive inbound inquiries from qualified buyers and engineering peers.",
   "planned_items": [],
-  "last_updated": "2026-10-13T02:09:33.450198Z"
+  "last_updated": "2026-10-13T02:09:33.450198Z",
+  "schedule": [
+    {
+      "day": 6,
+      "platform": "Instagram",
+      "pillar": "Technical Teardown",
+      "hook": "Why we built an MCP server in 10 minutes instead of a separate mobile app.",
+      "draft_brief": "Teardown on MCP protocol vs bloated APIs.",
+      "status": "scheduled"
+    }
+  ]
 }

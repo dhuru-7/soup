@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "soup": {
+      "command": "python",
+      "args": [
+        "d:\\project_ps02\\server\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}
