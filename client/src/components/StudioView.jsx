@@ -248,9 +248,6 @@ export default function StudioView({
                     <span className="font-heading text-xs font-bold text-slate-900">
                       {col.label}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${col.color}`}>
-                      {colItems.length}
-                    </span>
                   </div>
                   {col.id === 'idea' && (
                     <button
@@ -434,9 +431,6 @@ export default function StudioView({
               <h3 className="font-heading text-base font-bold text-slate-900">
                 Published Content Library
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Live posts with engagement benchmarks and instant repurpose actions
-              </p>
             </div>
           </div>
 
